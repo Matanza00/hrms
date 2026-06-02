@@ -9,38 +9,117 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppEmployeesIndexRouteImport } from './routes/_app.employees.index'
+import { Route as AppEmployeesCreateRouteImport } from './routes/_app.employees.create'
+import { Route as AppEmployeesIdIndexRouteImport } from './routes/_app.employees.$id.index'
+import { Route as AppEmployeesIdEditRouteImport } from './routes/_app.employees.$id.edit'
 
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmployeesIndexRoute = AppEmployeesIndexRouteImport.update({
+  id: '/employees/',
+  path: '/employees/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmployeesCreateRoute = AppEmployeesCreateRouteImport.update({
+  id: '/employees/create',
+  path: '/employees/create',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmployeesIdIndexRoute = AppEmployeesIdIndexRouteImport.update({
+  id: '/employees/$id/',
+  path: '/employees/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmployeesIdEditRoute = AppEmployeesIdEditRouteImport.update({
+  id: '/employees/$id/edit',
+  path: '/employees/$id/edit',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/employees/create': typeof AppEmployeesCreateRoute
+  '/employees/': typeof AppEmployeesIndexRoute
+  '/employees/$id/edit': typeof AppEmployeesIdEditRoute
+  '/employees/$id/': typeof AppEmployeesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/employees/create': typeof AppEmployeesCreateRoute
+  '/employees': typeof AppEmployeesIndexRoute
+  '/employees/$id/edit': typeof AppEmployeesIdEditRoute
+  '/employees/$id': typeof AppEmployeesIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/employees/create': typeof AppEmployeesCreateRoute
+  '/_app/employees/': typeof AppEmployeesIndexRoute
+  '/_app/employees/$id/edit': typeof AppEmployeesIdEditRoute
+  '/_app/employees/$id/': typeof AppEmployeesIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/employees/create'
+    | '/employees/'
+    | '/employees/$id/edit'
+    | '/employees/$id/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/employees/create'
+    | '/employees'
+    | '/employees/$id/edit'
+    | '/employees/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/dashboard'
+    | '/_app/employees/create'
+    | '/_app/employees/'
+    | '/_app/employees/$id/edit'
+    | '/_app/employees/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +127,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/employees/': {
+      id: '/_app/employees/'
+      path: '/employees'
+      fullPath: '/employees/'
+      preLoaderRoute: typeof AppEmployeesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/employees/create': {
+      id: '/_app/employees/create'
+      path: '/employees/create'
+      fullPath: '/employees/create'
+      preLoaderRoute: typeof AppEmployeesCreateRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/employees/$id/': {
+      id: '/_app/employees/$id/'
+      path: '/employees/$id'
+      fullPath: '/employees/$id/'
+      preLoaderRoute: typeof AppEmployeesIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/employees/$id/edit': {
+      id: '/_app/employees/$id/edit'
+      path: '/employees/$id/edit'
+      fullPath: '/employees/$id/edit'
+      preLoaderRoute: typeof AppEmployeesIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppEmployeesCreateRoute: typeof AppEmployeesCreateRoute
+  AppEmployeesIndexRoute: typeof AppEmployeesIndexRoute
+  AppEmployeesIdEditRoute: typeof AppEmployeesIdEditRoute
+  AppEmployeesIdIndexRoute: typeof AppEmployeesIdIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppDashboardRoute: AppDashboardRoute,
+  AppEmployeesCreateRoute: AppEmployeesCreateRoute,
+  AppEmployeesIndexRoute: AppEmployeesIndexRoute,
+  AppEmployeesIdEditRoute: AppEmployeesIdEditRoute,
+  AppEmployeesIdIndexRoute: AppEmployeesIdIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
