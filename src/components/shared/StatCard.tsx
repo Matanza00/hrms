@@ -22,19 +22,19 @@ const toneClasses: Record<NonNullable<Props["tone"]>, string> = {
 export function StatCard({ label, value, icon: Icon, trend, hint, tone = "default" }: Props) {
   const up = (trend ?? 0) >= 0;
   return (
-    <div className="group relative overflow-hidden rounded-2xl border bg-card p-5 transition-all hover:shadow-sm hover:-translate-y-0.5">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">{label}</p>
-          <p className="text-2xl md:text-[26px] font-semibold tracking-tight">{value}</p>
+    <div className="group relative overflow-hidden rounded-2xl border bg-card p-4 sm:p-5 transition-all hover:shadow-sm hover:-translate-y-0.5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate">{label}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight truncate tabular-nums">{value}</p>
         </div>
         {Icon && (
-          <div className={cn("grid h-10 w-10 place-items-center rounded-xl", toneClasses[tone])}>
-            <Icon className="h-4.5 w-4.5" />
+          <div className={cn("grid h-8 w-8 sm:h-9 sm:w-9 shrink-0 place-items-center rounded-lg sm:rounded-xl", toneClasses[tone])}>
+            <Icon className="h-4 w-4" />
           </div>
         )}
       </div>
-      <div className="mt-4 flex items-center gap-2 text-xs">
+      <div className="mt-3 sm:mt-4 flex items-center gap-2 text-[11px] sm:text-xs">
         {trend !== undefined && (
           <span className={cn(
             "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-medium",
@@ -45,7 +45,7 @@ export function StatCard({ label, value, icon: Icon, trend, hint, tone = "defaul
             {Math.abs(trend)}%
           </span>
         )}
-        {hint && <span className="text-muted-foreground">{hint}</span>}
+        {hint && <span className="text-muted-foreground truncate">{hint}</span>}
       </div>
     </div>
   );

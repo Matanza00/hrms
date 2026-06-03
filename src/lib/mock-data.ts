@@ -214,3 +214,11 @@ export const profitDistribution = [
 export function formatPKR(n: number) {
   return new Intl.NumberFormat("en-PK", { style: "currency", currency: "PKR", maximumFractionDigits: 0 }).format(n);
 }
+
+export function formatPKRCompact(n: number) {
+  const abs = Math.abs(n);
+  if (abs >= 10_000_000) return `Rs ${(n / 10_000_000).toFixed(2)}Cr`;
+  if (abs >= 100_000) return `Rs ${(n / 100_000).toFixed(2)}L`;
+  if (abs >= 1_000) return `Rs ${(n / 1_000).toFixed(1)}K`;
+  return `Rs ${n}`;
+}

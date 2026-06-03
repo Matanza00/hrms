@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import {
   attendanceTrend, payrollTrend, revenueExpenseTrend, profitDistribution,
-  formatPKR, leaveRequests, expenses, attendanceRecords,
+  formatPKR, formatPKRCompact, leaveRequests, expenses, attendanceRecords,
 } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
@@ -37,7 +37,7 @@ function Dashboard() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <StatCard label="Total Employees" value="48" icon={Users} trend={6} hint="vs last month" tone="accent" />
         <StatCard label="Present Today" value="41" icon={UserCheck} trend={3} tone="success" />
         <StatCard label="Absent Today" value="3" icon={UserX} trend={-1} tone="danger" />
@@ -45,12 +45,12 @@ function Dashboard() {
         <StatCard label="Pending Leaves" value="7" icon={CalendarClock} hint="3 awaiting today" tone="accent" />
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-        <StatCard label="Monthly Payroll" value={formatPKR(2480000)} icon={Wallet} trend={4} tone="accent" />
-        <StatCard label="Monthly Revenue" value={formatPKR(4930000)} icon={TrendingUp} trend={12} tone="success" />
-        <StatCard label="Monthly Expenses" value={formatPKR(3120000)} icon={TrendingDown} trend={-5} tone="warning" />
-        <StatCard label="Monthly Profit" value={formatPKR(1810000)} icon={BadgeDollarSign} trend={18} tone="success" />
-        <StatCard label="Reserve Balance" value={formatPKR(4800000)} icon={PiggyBank} trend={11} tone="accent" />
+      <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <StatCard label="Monthly Payroll" value={formatPKRCompact(2480000)} icon={Wallet} trend={4} tone="accent" />
+        <StatCard label="Monthly Revenue" value={formatPKRCompact(4930000)} icon={TrendingUp} trend={12} tone="success" />
+        <StatCard label="Monthly Expenses" value={formatPKRCompact(3120000)} icon={TrendingDown} trend={-5} tone="warning" />
+        <StatCard label="Monthly Profit" value={formatPKRCompact(1810000)} icon={BadgeDollarSign} trend={18} tone="success" />
+        <StatCard label="Reserve Balance" value={formatPKRCompact(4800000)} icon={PiggyBank} trend={11} tone="accent" />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
