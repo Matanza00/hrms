@@ -62,9 +62,41 @@ function EmployeeAttendance() {
         <h3 className="mb-4 text-sm font-semibold">Today's Actions</h3>
         <div className="flex flex-wrap gap-2">
           <Button disabled={!!todayRecord?.checkIn || checkIn.isPending} onClick={handleCheckIn}>Check In</Button>
-          <Button variant="outline" disabled={!todayRecord?.checkIn || !!todayRecord?.breakStart || breakStart.isPending} onClick={() => breakStart.mutate(CURRENT_EMPLOYEE_CODE)}>Start Break</Button>
-          <Button variant="outline" disabled={!todayRecord?.breakStart || !!todayRecord?.breakEnd || breakEnd.isPending} onClick={() => breakEnd.mutate(CURRENT_EMPLOYEE_CODE)}>End Break</Button>
-          <Button variant="outline" disabled={!todayRecord?.checkIn || !!todayRecord?.checkOut || checkOut.isPending} onClick={() => checkOut.mutate(CURRENT_EMPLOYEE_CODE)}>Check Out</Button>
+          <Button
+            variant="outline"
+            disabled={
+              !todayRecord?.checkIn ||
+              !!todayRecord?.breakStart ||
+              breakStart.isPending
+            }
+            onClick={() => breakStart.mutate(CURRENT_EMPLOYEE_CODE)}
+          >
+            Start Break
+          </Button>
+
+          <Button
+            variant="outline"
+            disabled={
+              !todayRecord?.breakStart ||
+              !!todayRecord?.breakEnd ||
+              breakEnd.isPending
+            }
+            onClick={() => breakEnd.mutate(CURRENT_EMPLOYEE_CODE)}
+          >
+            End Break
+          </Button>
+
+          <Button
+            variant="outline"
+            disabled={
+              !todayRecord?.checkIn ||
+              !!todayRecord?.checkOut ||
+              checkOut.isPending
+            }
+            onClick={() => checkOut.mutate(CURRENT_EMPLOYEE_CODE)}
+          >
+            Check Out
+          </Button>
         </div>
 
         <div className="mt-4 grid gap-3 text-sm md:grid-cols-4">
