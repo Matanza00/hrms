@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useQuery } from "@tanstack/react-query";
 import { getLeaveRequests } from "@/lib/api/leaves";
+import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [dark, setDark] = useState(false);
@@ -184,6 +185,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             {children}
           </main>
         </div>
+
+        <FeedbackWidget />
       </div>
     </SidebarProvider>
   );

@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { RequireRole } from "@/lib/auth/RequireRole";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 
 export const Route = createFileRoute("/employee")({
   component: EmployeeLayout,
@@ -126,6 +127,8 @@ function EmployeeShell() {
       <main className="mx-auto max-w-5xl px-4 py-6">
         <Outlet />
       </main>
+
+      <FeedbackWidget />
     </div>
   );
 }
