@@ -12,6 +12,7 @@ import {
   Wallet,
   FolderOpen,
   FileStack,
+  ClipboardCheck,
   User,
   LogOut,
 } from "lucide-react";
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/employee")({
 const nav = [
   { url: "/employee/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { url: "/employee/attendance", label: "Attendance", icon: Clock },
+  { url: "/employee/corrections", label: "Corrections", icon: ClipboardCheck },
   { url: "/employee/leaves", label: "Leaves", icon: CalendarDays },
   { url: "/employee/payroll", label: "Payroll", icon: Wallet },
   { url: "/employee/documents", label: "Documents", icon: FolderOpen },

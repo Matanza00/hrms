@@ -50,18 +50,31 @@ function getFeedbackFolder_() {
     : DriveApp.createFolder(FEEDBACK_SCREENSHOT_FOLDER);
 }
 
-/** Save a base64 data URL to Drive and return a shareable link. */
+/**
+ * Save a base64 data URL to Drive and return a shareable link.
+ *
+ * Wrapped so that a missing Drive authorization can NEVER block a feedback
+ * submission — if Drive isn't authorized yet the report still saves, just
+ * without the screenshot link. To enable screenshots, authorize the Drive
+ * scope (see "ENABLE SCREENSHOTS" note at the bottom of this file).
+ */
 function saveFeedbackScreenshot_(dataUrl, feedbackId) {
   if (!dataUrl) return "";
-  var match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.*)$/.exec(dataUrl);
-  if (!match) return "";
-  var contentType = match[1];
-  var bytes = Utilities.base64Decode(match[2]);
-  var ext = contentType.split("/")[1] || "png";
-  var blob = Utilities.newBlob(bytes, contentType, feedbackId + "." + ext);
-  var file = getFeedbackFolder_().createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return file.getUrl();
+  try {
+    var match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.*)$/.exec(dataUrl);
+    if (!match) return "";
+    var contentType = match[1];
+    var bytes = Utilities.base64Decode(match[2]);
+    var ext = contentType.split("/")[1] || "png";
+    var blob = Utilities.newBlob(bytes, contentType, feedbackId + "." + ext);
+    var file = getFeedbackFolder_().createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return file.getUrl();
+  } catch (err) {
+    // e.g. "You do not have permission to call DriveApp.getFoldersByName".
+    // Swallow it so the feedback row is still written; note it for the admin.
+    return "SCREENSHOT_NOT_SAVED (" + err + ")";
+  }
 }
 
 /** POST: create a new feedback report. `data` is the JSON payload. */
@@ -145,3 +158,29 @@ function jsonError_(message) {
     .createTextOutput(JSON.stringify({ success: false, error: message }))
     .setMimeType(ContentService.MimeType.JSON);
 }
+
+/* ===========================================================================
+ * ENABLE SCREENSHOTS  (fixes: "You do not have permission to call
+ * DriveApp.getFoldersByName")
+ * ---------------------------------------------------------------------------
+ * Saving screenshots to Drive needs the Drive scope, which your deployment
+ * hasn't been authorized for yet. To turn it on:
+ *
+ * 1. In the Apps Script editor: Project Settings (gear) -> tick
+ *    "Show appsscript.json manifest file in editor".
+ * 2. Open appsscript.json and add the Drive scope to oauthScopes, e.g.:
+ *
+ *      "oauthScopes": [
+ *        "https://www.googleapis.com/auth/spreadsheets",
+ *        "https://www.googleapis.com/auth/script.external_request",
+ *        "https://www.googleapis.com/auth/drive"
+ *      ]
+ *
+ * 3. Run any function once from the editor (e.g. getFeedbackFolder_) and accept
+ *    the Google authorization prompt, granting Drive access.
+ * 4. Re-deploy the web app: Manage deployments -> Edit -> New version.
+ *    (Web apps run as the owner, so this owner-side re-auth is what matters.)
+ *
+ * Until then, feedback still submits fine — the screenshot column just records
+ * that the image wasn't saved. No submissions are lost.
+ * ======================================================================== */

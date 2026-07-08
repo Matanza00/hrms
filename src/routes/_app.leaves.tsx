@@ -17,7 +17,9 @@ import {
   Plus,
   Check,
   X,
+  Pencil,
 } from "lucide-react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getLeaveRequests,
@@ -25,6 +27,8 @@ import {
 } from "@/lib/api/leaves";
 import { apiPost } from "@/lib/apiClient";
 import { useEmployees } from "@/hooks/useEmployees";
+import { LeaveEditDialog } from "@/components/leaves/LeaveEditDialog";
+import type { Employee } from "@/lib/api/employees";
 
 export const Route = createFileRoute("/_app/leaves")({
   component: LeavesLayout,
@@ -82,9 +86,22 @@ function LeavesOverview() {
 
   const { data: employeesRaw = [] } = useEmployees();
 
-  const employees = Array.isArray(employeesRaw)
+  const employees: Employee[] = Array.isArray(employeesRaw)
     ? employeesRaw
     : [];
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<LeaveRequest | null>(null);
+
+  function openAdd() {
+    setEditing(null);
+    setDialogOpen(true);
+  }
+
+  function openEdit(leave: LeaveRequest) {
+    setEditing(leave);
+    setDialogOpen(true);
+  }
 
   function getEmployeeName(employeeId?: string) {
     const employee = employees.find(
@@ -197,7 +214,15 @@ function LeavesOverview() {
         />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 flex items-center justify-between">
+        <h3 className="text-sm font-semibold">Leave records</h3>
+        <Button size="sm" variant="outline" onClick={openAdd}>
+          <Plus className="mr-1.5 h-3.5 w-3.5" />
+          Add old leave
+        </Button>
+      </div>
+
+      <div className="mt-3">
         <DataTable<LeaveRequest>
           rowKey={(r) => r.leaveId}
           data={leaveRequests}
@@ -299,6 +324,16 @@ function LeavesOverview() {
                       <X className="mr-1 h-3 w-3" />
                       Reject
                     </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7"
+                      onClick={() => openEdit(r)}
+                    >
+                      <Pencil className="mr-1 h-3 w-3" />
+                      Edit
+                    </Button>
                   </div>
                 );
               },
@@ -306,6 +341,13 @@ function LeavesOverview() {
           ]}
         />
       </div>
+
+      <LeaveEditDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        leave={editing}
+        employees={employees}
+      />
     </>
   );
 }

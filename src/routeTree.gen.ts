@@ -19,6 +19,7 @@ import { Route as EmployeePayrollRouteImport } from './routes/employee.payroll'
 import { Route as EmployeeLeavesRouteImport } from './routes/employee.leaves'
 import { Route as EmployeeDocumentsRouteImport } from './routes/employee.documents'
 import { Route as EmployeeDashboardRouteImport } from './routes/employee.dashboard'
+import { Route as EmployeeCorrectionsRouteImport } from './routes/employee.corrections'
 import { Route as EmployeeAttendanceRouteImport } from './routes/employee.attendance'
 import { Route as EmployeeApplicationsRouteImport } from './routes/employee.applications'
 import { Route as AppSpecialWorkingDaysRouteImport } from './routes/_app.special-working-days'
@@ -91,6 +92,11 @@ const EmployeeDocumentsRoute = EmployeeDocumentsRouteImport.update({
 const EmployeeDashboardRoute = EmployeeDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const EmployeeCorrectionsRoute = EmployeeCorrectionsRouteImport.update({
+  id: '/corrections',
+  path: '/corrections',
   getParentRoute: () => EmployeeRoute,
 } as any)
 const EmployeeAttendanceRoute = EmployeeAttendanceRouteImport.update({
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/special-working-days': typeof AppSpecialWorkingDaysRoute
   '/employee/applications': typeof EmployeeApplicationsRoute
   '/employee/attendance': typeof EmployeeAttendanceRoute
+  '/employee/corrections': typeof EmployeeCorrectionsRoute
   '/employee/dashboard': typeof EmployeeDashboardRoute
   '/employee/documents': typeof EmployeeDocumentsRoute
   '/employee/leaves': typeof EmployeeLeavesRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/special-working-days': typeof AppSpecialWorkingDaysRoute
   '/employee/applications': typeof EmployeeApplicationsRoute
   '/employee/attendance': typeof EmployeeAttendanceRoute
+  '/employee/corrections': typeof EmployeeCorrectionsRoute
   '/employee/dashboard': typeof EmployeeDashboardRoute
   '/employee/documents': typeof EmployeeDocumentsRoute
   '/employee/leaves': typeof EmployeeLeavesRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/_app/special-working-days': typeof AppSpecialWorkingDaysRoute
   '/employee/applications': typeof EmployeeApplicationsRoute
   '/employee/attendance': typeof EmployeeAttendanceRoute
+  '/employee/corrections': typeof EmployeeCorrectionsRoute
   '/employee/dashboard': typeof EmployeeDashboardRoute
   '/employee/documents': typeof EmployeeDocumentsRoute
   '/employee/leaves': typeof EmployeeLeavesRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/special-working-days'
     | '/employee/applications'
     | '/employee/attendance'
+    | '/employee/corrections'
     | '/employee/dashboard'
     | '/employee/documents'
     | '/employee/leaves'
@@ -374,6 +384,7 @@ export interface FileRouteTypes {
     | '/special-working-days'
     | '/employee/applications'
     | '/employee/attendance'
+    | '/employee/corrections'
     | '/employee/dashboard'
     | '/employee/documents'
     | '/employee/leaves'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/_app/special-working-days'
     | '/employee/applications'
     | '/employee/attendance'
+    | '/employee/corrections'
     | '/employee/dashboard'
     | '/employee/documents'
     | '/employee/leaves'
@@ -507,6 +519,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/employee/dashboard'
       preLoaderRoute: typeof EmployeeDashboardRouteImport
+      parentRoute: typeof EmployeeRoute
+    }
+    '/employee/corrections': {
+      id: '/employee/corrections'
+      path: '/corrections'
+      fullPath: '/employee/corrections'
+      preLoaderRoute: typeof EmployeeCorrectionsRouteImport
       parentRoute: typeof EmployeeRoute
     }
     '/employee/attendance': {
@@ -775,6 +794,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 interface EmployeeRouteChildren {
   EmployeeApplicationsRoute: typeof EmployeeApplicationsRoute
   EmployeeAttendanceRoute: typeof EmployeeAttendanceRoute
+  EmployeeCorrectionsRoute: typeof EmployeeCorrectionsRoute
   EmployeeDashboardRoute: typeof EmployeeDashboardRoute
   EmployeeDocumentsRoute: typeof EmployeeDocumentsRoute
   EmployeeLeavesRoute: typeof EmployeeLeavesRoute
@@ -786,6 +806,7 @@ interface EmployeeRouteChildren {
 const EmployeeRouteChildren: EmployeeRouteChildren = {
   EmployeeApplicationsRoute: EmployeeApplicationsRoute,
   EmployeeAttendanceRoute: EmployeeAttendanceRoute,
+  EmployeeCorrectionsRoute: EmployeeCorrectionsRoute,
   EmployeeDashboardRoute: EmployeeDashboardRoute,
   EmployeeDocumentsRoute: EmployeeDocumentsRoute,
   EmployeeLeavesRoute: EmployeeLeavesRoute,

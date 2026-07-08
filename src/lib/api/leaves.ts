@@ -30,3 +30,25 @@ export const applyLeave = (data: {
   totalDays: number;
   reason?: string;
 }) => apiPost<LeaveRequest>("applyLeave", data);
+
+/** Fields an admin can set when backfilling or correcting a leave record. */
+export type AdminLeaveInput = {
+  employeeId?: string;
+  employeeCode?: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  totalDays: number;
+  paidDays?: number;
+  unpaidDays?: number;
+  status?: string;
+  reason?: string;
+};
+
+/** Admin-only: add a historical/backdated leave (defaults to Approved). */
+export const adminAddLeave = (data: AdminLeaveInput) =>
+  apiPost<LeaveRequest>("adminAddLeave", data);
+
+/** Admin-only: correct an existing leave record. */
+export const adminUpdateLeave = (leaveId: string, data: Partial<AdminLeaveInput>) =>
+  apiPost<LeaveRequest>("adminUpdateLeave", { leaveId, data });

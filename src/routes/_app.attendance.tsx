@@ -16,10 +16,14 @@ import {
   AlertTriangle,
   Activity,
   Download,
+  Pencil,
+  Plus,
 } from "lucide-react";
+import { useState } from "react";
 import { useAttendance } from "@/hooks/useAttendance";
 import type { AttendanceRecord } from "@/lib/api/attendance";
 import { useEmployees } from "@/hooks/useEmployees";
+import { AttendanceEditDialog } from "@/components/attendance/AttendanceEditDialog";
 
 export const Route = createFileRoute("/_app/attendance")({
   component: AttendanceLayout,
@@ -106,6 +110,19 @@ function AttendanceOverview() {
     ? employeesRaw
     : [];
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<AttendanceRecord | null>(null);
+
+  function openEdit(record: AttendanceRecord) {
+    setEditing(record);
+    setDialogOpen(true);
+  }
+
+  function openCreate() {
+    setEditing(null);
+    setDialogOpen(true);
+  }
+
   function getEmployeeName(employeeId?: string) {
     const employee = employees.find(
       (e) => e.employeeId === employeeId
@@ -175,7 +192,15 @@ function AttendanceOverview() {
         />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 flex items-center justify-between">
+        <h3 className="text-sm font-semibold">Records</h3>
+        <Button size="sm" variant="outline" onClick={openCreate}>
+          <Plus className="mr-1.5 h-3.5 w-3.5" />
+          Add record
+        </Button>
+      </div>
+
+      <div className="mt-3">
         <DataTable<AttendanceRecord>
           rowKey={(r) => r.attendanceId}
           data={attendanceRecords}
@@ -264,9 +289,32 @@ function AttendanceOverview() {
                 </span>
               ),
             },
+            {
+              key: "actions",
+              header: "",
+              className: "text-right",
+              render: (r) => (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7"
+                  onClick={() => openEdit(r)}
+                >
+                  <Pencil className="mr-1 h-3 w-3" />
+                  Edit
+                </Button>
+              ),
+            },
           ]}
         />
       </div>
+
+      <AttendanceEditDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        record={editing}
+        employees={employees}
+      />
     </>
   );
 }
