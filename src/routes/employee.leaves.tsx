@@ -1,4 +1,3 @@
-import { CURRENT_EMPLOYEE_CODE, CURRENT_EMPLOYEE_ID } from "@/lib/currentEmployee";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { useEmployeeStats } from "@/hooks/useEmployeeStats";
 
 export const Route = createFileRoute("/employee/leaves")({
   component: EmployeeLeaves,
@@ -24,10 +25,12 @@ function days(start: string, end: string) {
 
 function EmployeeLeaves() {
   const qc = useQueryClient();
+  const { employeeId, employeeCode } = useAuth();
   const { data: raw = [] } = useQuery({ queryKey: ["leaveRequests"], queryFn: getLeaveRequests });
+  const stats = useEmployeeStats(employeeId);
 
   const [form, setForm] = useState({ leaveType: "", startDate: "", endDate: "", reason: "" });
-  const records = Array.isArray(raw) ? raw.filter((l) => l.employeeId === CURRENT_EMPLOYEE_ID) : [];
+  const records = Array.isArray(raw) ? raw.filter((l) => l.employeeId === employeeId) : [];
 
   const mutation = useMutation({
     mutationFn: applyLeave,
@@ -40,8 +43,9 @@ function EmployeeLeaves() {
   const totalDays = days(form.startDate, form.endDate);
 
   function submit() {
+    if (!employeeCode) return;
     mutation.mutate({
-      employeeCode: CURRENT_EMPLOYEE_CODE,
+      employeeCode,
       leaveType: form.leaveType,
       startDate: form.startDate,
       endDate: form.endDate,
@@ -54,6 +58,44 @@ function EmployeeLeaves() {
     <div>
       <h1 className="text-3xl font-bold">My Leaves</h1>
       <p className="text-muted-foreground">Apply for leave and track approval status.</p>
+
+      {/* Leave balance summary */}
+      <div className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-4">
+        <div className="rounded-2xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Total Leaves</p>
+          <p className="text-2xl font-semibold tabular-nums">{stats.leaves.entitlement}</p>
+        </div>
+        <div className="rounded-2xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Taken</p>
+          <p className="text-2xl font-semibold tabular-nums">{stats.leaves.taken}</p>
+        </div>
+        <div className="rounded-2xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Remaining</p>
+          <p className="text-2xl font-semibold tabular-nums text-primary">
+            {stats.leaves.remaining}
+          </p>
+        </div>
+        <div className="rounded-2xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Pending</p>
+          <p className="text-2xl font-semibold tabular-nums">{stats.leaves.pending}</p>
+        </div>
+      </div>
+
+      {/* Per-type breakdown */}
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        {stats.leaves.byType.map((t) => (
+          <div
+            key={t.type}
+            className="flex items-center justify-between rounded-xl border bg-card px-4 py-3"
+          >
+            <span className="text-sm font-medium">{t.type}</span>
+            <span className="text-sm text-muted-foreground tabular-nums">
+              <span className="font-semibold text-foreground">{t.remaining}</span> left · {t.taken}/
+              {t.quota} used
+            </span>
+          </div>
+        ))}
+      </div>
 
       <div className="mt-6 rounded-2xl border bg-card p-5">
         <h3 className="mb-4 text-sm font-semibold">Apply Leave</h3>
