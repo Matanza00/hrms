@@ -33,19 +33,39 @@ function minutesToHours(minutes?: number) {
   return (Number(minutes || 0) / 60).toFixed(2);
 }
 
-function formatDateTime(value?: string) {
+function formatDate(value?: string) {
   if (!value) return "—";
 
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) return String(value);
 
-  return date.toLocaleString("en-PK", {
+  return date.toLocaleDateString("en-PK", {
+    day: "2-digit",
     month: "short",
-    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatTime(value?: string) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return String(value);
+
+  return date.toLocaleTimeString("en-PK", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: true,
   });
+}
+
+/** Millis for sorting; falls back to the check-in time when no date. */
+function recordTime(r: AttendanceRecord) {
+  const raw = r.attendanceDate || r.checkIn || "";
+  const t = new Date(raw).getTime();
+  return Number.isNaN(t) ? 0 : t;
 }
 
 function isLate(value: AttendanceRecord["isLate"]) {
@@ -103,6 +123,11 @@ function AttendanceLayout() {
 
 function AttendanceOverview() {
   const { data: attendanceRecords = [], isLoading, error } = useAttendance();
+
+  // Newest first — latest check-ins/check-outs at the top.
+  const sortedRecords = [...attendanceRecords].sort(
+    (a, b) => recordTime(b) - recordTime(a)
+  );
 
   const { data: employeesRaw = [] } = useEmployees();
 
@@ -203,7 +228,7 @@ function AttendanceOverview() {
       <div className="mt-3">
         <DataTable<AttendanceRecord>
           rowKey={(r) => r.attendanceId}
-          data={attendanceRecords}
+          data={sortedRecords}
           columns={[
             {
               key: "employee",
@@ -217,27 +242,40 @@ function AttendanceOverview() {
             {
               key: "attendanceDate",
               header: "Date",
-              render: (r) => r.attendanceDate || "—",
+              render: (r) => (
+                <span className="whitespace-nowrap">
+                  {formatDate(r.attendanceDate || r.checkIn)}
+                </span>
+              ),
             },
             {
               key: "checkIn",
               header: "Check In",
-              render: (r) => formatDateTime(r.checkIn),
+              render: (r) => (
+                <span className="whitespace-nowrap tabular-nums">
+                  {formatTime(r.checkIn)}
+                </span>
+              ),
             },
             {
               key: "checkOut",
               header: "Check Out",
-              render: (r) => formatDateTime(r.checkOut),
+              render: (r) => (
+                <span className="whitespace-nowrap tabular-nums">
+                  {formatTime(r.checkOut)}
+                </span>
+              ),
             },
             {
               key: "break",
               header: "Break",
-              render: (r) =>
-                r.breakStart || r.breakEnd
-                  ? `${formatDateTime(r.breakStart)} – ${formatDateTime(
-                      r.breakEnd
-                    )}`
-                  : "—",
+              render: (r) => (
+                <span className="whitespace-nowrap tabular-nums">
+                  {r.breakStart || r.breakEnd
+                    ? `${formatTime(r.breakStart)} – ${formatTime(r.breakEnd)}`
+                    : "—"}
+                </span>
+              ),
             },
             {
               key: "workingMinutes",
