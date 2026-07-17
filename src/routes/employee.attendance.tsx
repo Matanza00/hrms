@@ -16,14 +16,38 @@ export const Route = createFileRoute("/employee/attendance")({
   component: EmployeeAttendance,
 });
 
-function isToday(value?: string) {
-  const d = new Date(value || "");
-  const n = new Date();
-  return (
-    d.getFullYear() === n.getFullYear() &&
-    d.getMonth() === n.getMonth() &&
-    d.getDate() === n.getDate()
-  );
+// The office runs a 18:00 -> 03:00 shift that crosses midnight, so a "day" is a
+// business day, not a calendar day. Everything is evaluated in the office time
+// zone (never the device's) so every device/account agrees with the server.
+const OFFICE_TZ = "Asia/Karachi";
+const DAY_ROLLOVER_HOUR = 12; // times before noon belong to the previous shift day
+
+/** {y,m,d,h} of a moment as seen in the office time zone. */
+function officeParts(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: OFFICE_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const g = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+  return { y: g("year"), m: g("month"), d: g("day"), h: g("hour") };
+}
+
+/** Current business date (yyyy-mm-dd) in the office zone, with noon rollover. */
+function currentBusinessDate() {
+  const { y, m, d, h } = officeParts(new Date());
+  let dt = new Date(Date.UTC(y, m - 1, d));
+  if (h < DAY_ROLLOVER_HOUR) dt = new Date(dt.getTime() - 86400000);
+  return dt.toISOString().slice(0, 10);
+}
+
+/** Compare a stored attendanceDate (yyyy-mm-dd, possibly with a time) to today. */
+function isCurrentShift(value?: string) {
+  if (!value) return false;
+  return String(value).slice(0, 10) === currentBusinessDate();
 }
 
 function formatTime(v?: string) {
@@ -31,7 +55,11 @@ function formatTime(v?: string) {
   const d = new Date(v);
   return Number.isNaN(d.getTime())
     ? String(v)
-    : d.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
+    : d.toLocaleTimeString("en-PK", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: OFFICE_TZ,
+      });
 }
 
 function EmployeeAttendance() {
@@ -49,7 +77,7 @@ function EmployeeAttendance() {
     : [];
 
   const todayRecord = records.find((a) =>
-    isToday(a.attendanceDate || a.checkIn)
+    isCurrentShift(a.attendanceDate || a.checkIn)
   );
 
   async function handleCheckIn() {
@@ -71,7 +99,8 @@ function EmployeeAttendance() {
           longitude: 67.1003725,
           ipAddress: "browser",
         });
-      }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }
 
