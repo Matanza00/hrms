@@ -1,0 +1,64 @@
+# LDS HRMS — Supabase local/dev config.
+# Docs: https://supabase.com/docs/guides/local-development/cli/config
+#
+# NOTE ON TIME: Postgres stores every timestamp as `timestamptz` in UTC. The
+# business shift (18:00 -> 03:00) and all "business date" logic run in
+# Asia/Karachi and are computed in the Edge Function (see functions/api/_shared/
+# time.ts + businessDate.ts). Do NOT rely on the DB session timezone for shift math.
+
+project_id = "lds-hrms"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+# Local email testing UI (catches Supabase Auth mails during dev).
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+# Feedback screenshots + employee documents live here (replaces Google Drive).
+file_size_limit = "10MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000", "http://localhost:5173"]
+# 1 week. The frontend stores only the access token (no refresh flow yet), so a
+# short expiry would log users out mid-day. Deactivation is still enforced on
+# every request via the users.active check, so long-lived tokens stay safe.
+jwt_expiry = 604800
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+# Employees are provisioned by an admin (no self sign-up), and log in with an
+# employee code / username mapped to a synthetic email under the hood.
+enable_signup = false
+
+[auth.email]
+enable_signup = false
+# Internal users are created pre-confirmed via the admin API, so no mailbox needed.
+enable_confirmations = false
+double_confirm_changes = false
+
+# The single action-router Edge Function. verify_jwt=false because the function
+# hosts BOTH public actions (login) and private ones; it verifies the JWT and
+# authorizes each action itself (see _shared/auth.ts).
+[functions.api]
+verify_jwt = false
