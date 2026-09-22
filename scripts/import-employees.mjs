@@ -1,5 +1,5 @@
 // Import employees from a CSV export of your Google Sheet.
-//   node scripts/import-employees.mjs <employees.csv> [--with-logins] [--password=Changeme123]
+//   node scripts/import-employees.mjs <employees.csv> [--with-logins] [--password=admin12345]
 //
 // CSV headers may be camelCase (employeeCode, basicSalary) or snake_case. The
 // only required column is `employeeCode` (or employee_code) + `name`.
@@ -10,7 +10,7 @@ import { adminCreateUser, adminFindUserByEmail, rest, authEmailFor } from "./_su
 const args = process.argv.slice(2);
 const file = args.find((a) => !a.startsWith("--"));
 const withLogins = args.includes("--with-logins");
-const password = (args.find((a) => a.startsWith("--password=")) || "").split("=")[1] || "Changeme123";
+const password = (args.find((a) => a.startsWith("--password=")) || "").split("=")[1] || "admin12345";
 
 if (!file) {
   console.error("Usage: node scripts/import-employees.mjs <employees.csv> [--with-logins] [--password=...]");

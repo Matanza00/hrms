@@ -224,7 +224,9 @@ function EmployeeProfile() {
                   label="Permanent Date"
                   value={formatDate(emp.permanentDate)}
                 />
-                <Field label="End Date" value={formatDate(emp.endDate)} />
+                {!(emp.active === true || emp.active === "TRUE") && (
+                  <Field label="End Date" value={formatDate(emp.endDate)} />
+                )}
                 <Field
                   label="Active"
                   value={

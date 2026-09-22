@@ -72,7 +72,6 @@ type EmployeeForm = {
   status: "Permanent" | "Contract" | "Probation" | "Intern";
   joiningDate: string;
   permanentDate: string;
-  endDate: string;
   basicSalary: string;
   fuelAllowance: string;
   opdAllowance: string;
@@ -92,7 +91,6 @@ const initialForm: EmployeeForm = {
   status: "Probation",
   joiningDate: "",
   permanentDate: "",
-  endDate: "",
   basicSalary: "",
   fuelAllowance: "",
   opdAllowance: "",
@@ -142,7 +140,6 @@ function EmployeeCreate() {
         dob: form.dob,
         joiningDate: form.joiningDate,
         permanentDate: form.permanentDate,
-        endDate: form.endDate,
         status: form.status,
         department: form.department,
         designation: form.designation,
@@ -252,7 +249,10 @@ function EmployeeCreate() {
           </div>
         </Section>
 
-        <Section title="Employment information">
+        <Section
+          title="Employment information"
+          description="A login is created automatically: the Login ID is the employee code and the password is admin12345."
+        >
           <F label="Employee code">
             <Input
               value={form.employeeCode}
@@ -329,14 +329,6 @@ function EmployeeCreate() {
               type="date"
               value={form.permanentDate}
               onChange={(e) => updateField("permanentDate", e.target.value)}
-            />
-          </F>
-
-          <F label="End date">
-            <Input
-              type="date"
-              value={form.endDate}
-              onChange={(e) => updateField("endDate", e.target.value)}
             />
           </F>
         </Section>
