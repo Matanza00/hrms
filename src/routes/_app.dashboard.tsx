@@ -39,7 +39,14 @@ import { useAttendance } from "@/hooks/useAttendance";
 import { useQuery } from "@tanstack/react-query";
 import { getLeaveRequests } from "@/lib/api/leaves";
 import { getPayroll } from "@/lib/api/payroll";
-import { getExpenses, getRevenue, getReserveLedger } from "@/lib/api/accounts";
+import {
+  getExpenses,
+  getRevenue,
+  getReserveLedger,
+  type ReserveTransaction,
+} from "@/lib/api/accounts";
+import { isCurrentShift, isInMonth } from "@/lib/businessDate";
+import { useCurrentBusinessDate } from "@/hooks/useBusinessDate";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — LDS HRMS" }] }),
@@ -86,23 +93,6 @@ function formatTime(value?: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function isToday(value?: string) {
-  if (!value) return false;
-
-  const date = new Date(value);
-  const today = new Date();
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value).slice(0, 10) === today.toISOString().slice(0, 10);
-  }
-
-  return (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
-  );
 }
 
 function isLate(value: unknown) {
@@ -181,6 +171,9 @@ function EmptyChart() {
 }
 
 function Dashboard() {
+  // The night shift crosses midnight, so "today" is the business day (rolls
+  // over at noon), not the calendar day — a 1 AM shift still counts as today's.
+  const businessDate = useCurrentBusinessDate();
   const employeesQuery = useEmployees();
   const attendanceQuery = useAttendance();
 
@@ -262,7 +255,7 @@ function Dashboard() {
   const reserveLedger = safeArray<any>(reserveQuery.data);
 
   const todayAttendance = attendanceRecords.filter((a) =>
-    isToday(a.attendanceDate || a.checkIn)
+    isCurrentShift(a.attendanceDate || a.checkIn, businessDate)
   );
 
   const totalEmployees = employees.length;
@@ -273,27 +266,34 @@ function Dashboard() {
 
   const activePayroll = payrollRecords.filter((p) => p.status !== "Cancelled");
 
-  const monthlyPayroll = activePayroll.reduce(
-    (sum, p) => sum + Number(p.netSalary || 0),
-    0
-  );
+  // The tiles below say "Monthly", so they count the current month only.
+  const currentMonth = businessDate.slice(0, 7);
 
-  const monthlyRevenue = revenues.reduce(
-    (sum, r) => sum + Number(r.amount || 0),
-    0
-  );
+  const monthlyPayroll = activePayroll
+    .filter((p) => isInMonth(p.month || p.generatedAt, currentMonth))
+    .reduce((sum, p) => sum + Number(p.netSalary || 0), 0);
 
-  const monthlyExpenses = expenses.reduce(
-    (sum, e) => sum + Number(e.amount || 0),
-    0
-  );
+  const monthlyRevenue = revenues
+    .filter((r) => isInMonth(r.revenueDate || r.date || r.createdAt, currentMonth))
+    .reduce((sum, r) => sum + Number(r.amount || 0), 0);
+
+  const monthlyExpenses = expenses
+    .filter((e) => isInMonth(e.expenseDate || e.date || e.createdAt, currentMonth))
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
   const monthlyProfit = monthlyRevenue - monthlyExpenses - monthlyPayroll;
 
-  const reserveBalance =
-    reserveLedger.length > 0
-      ? Number(reserveLedger[reserveLedger.length - 1].balanceAfter || 0)
-      : 0;
+  // The ledger arrives newest-first; pick by timestamp so either order works.
+  const latestReserve = reserveLedger.reduce<ReserveTransaction | null>(
+    (latest, row) =>
+      !latest ||
+      new Date(row.createdAt ?? 0).getTime() >= new Date(latest.createdAt ?? 0).getTime()
+        ? row
+        : latest,
+    null
+  );
+
+  const reserveBalance = Number(latestReserve?.balanceAfter || 0);
 
   const attendanceTrend = buildAttendanceTrend(attendanceRecords);
   const payrollTrend = buildPayrollTrend(payrollRecords);

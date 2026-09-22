@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/DataTable";
@@ -12,69 +12,12 @@ import {
 } from "@/hooks/useAttendance";
 import type { AttendanceRecord } from "@/lib/api/attendance";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { isCurrentShift, OFFICE_TZ } from "@/lib/businessDate";
+import { useCurrentBusinessDate } from "@/hooks/useBusinessDate";
 
 export const Route = createFileRoute("/employee/attendance")({
   component: EmployeeAttendance,
 });
-
-// The office runs a 18:00 -> 03:00 shift that crosses midnight, so a "day" is a
-// business day, not a calendar day. Everything is evaluated in the office time
-// zone (never the device's) so every device/account agrees with the server.
-const OFFICE_TZ = "Asia/Karachi";
-const DAY_ROLLOVER_HOUR = 12; // times before noon belong to the previous shift day
-
-/** {y,m,d,h} of a moment as seen in the office time zone. */
-function officeParts(date: Date) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: OFFICE_TZ,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(date);
-  const g = (t: string) => Number(parts.find((p) => p.type === t)?.value);
-  return { y: g("year"), m: g("month"), d: g("day"), h: g("hour") };
-}
-
-/** Current business date (yyyy-mm-dd) in the office zone, with noon rollover. */
-function currentBusinessDate() {
-  const { y, m, d, h } = officeParts(new Date());
-  let dt = new Date(Date.UTC(y, m - 1, d));
-  if (h < DAY_ROLLOVER_HOUR) dt = new Date(dt.getTime() - 86400000);
-  return dt.toISOString().slice(0, 10);
-}
-
-/**
- * The business date, kept current while the page stays open. Without this the
- * page keeps what it computed at its last render, so a tab left open after a
- * 3 AM checkout still shows that finished shift (Check In disabled) at 6 PM.
- */
-function useCurrentBusinessDate() {
-  const [date, setDate] = useState(currentBusinessDate);
-
-  useEffect(() => {
-    const update = () => setDate(currentBusinessDate());
-    const timer = window.setInterval(update, 60_000);
-    // Background tabs throttle timers, so also re-check when the user returns.
-    document.addEventListener("visibilitychange", update);
-    window.addEventListener("focus", update);
-    update();
-    return () => {
-      window.clearInterval(timer);
-      document.removeEventListener("visibilitychange", update);
-      window.removeEventListener("focus", update);
-    };
-  }, []);
-
-  return date;
-}
-
-/** Compare a stored attendanceDate (yyyy-mm-dd, possibly with a time) to today. */
-function isCurrentShift(value: string | undefined, businessDate: string) {
-  if (!value) return false;
-  return String(value).slice(0, 10) === businessDate;
-}
 
 function formatTime(v?: string) {
   if (!v) return "—";

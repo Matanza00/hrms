@@ -3,6 +3,7 @@ import { getLeaveRequests, type LeaveRequest } from "@/lib/api/leaves";
 import { getAttendance, type AttendanceRecord } from "@/lib/api/attendance";
 import { getHolidays, type Holiday } from "@/lib/api/holidays";
 import { getSettings, type SettingsMap } from "@/lib/api/settings";
+import { isInMonth } from "@/lib/businessDate";
 
 /** Leave types that draw down a quota. "Unpaid" is excluded on purpose. */
 const QUOTA_TYPES = ["Annual", "Casual", "Sick"] as const;
@@ -135,10 +136,12 @@ export function useEmployeeStats(employeeId: string | null): EmployeeStats {
   const year = now.getFullYear();
   const month = now.getMonth();
 
-  const monthAttendance = myAttendance.filter((a) => {
-    const d = new Date(a.attendanceDate || a.checkIn || "");
-    return !Number.isNaN(d.getTime()) && d.getFullYear() === year && d.getMonth() === month;
-  });
+  // attendanceDate is already the business date, so compare the yyyy-mm text
+  // rather than re-parsing it into the device's time zone.
+  const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+  const monthAttendance = myAttendance.filter((a) =>
+    isInMonth(a.attendanceDate || a.checkIn, monthKey)
+  );
 
   const monthWorked = monthAttendance.reduce((sum, a) => sum + num(a.workingMinutes) / 60, 0);
   const requiredPerDay = num(settings.requiredHours, 8);
