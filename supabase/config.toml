@@ -52,7 +52,10 @@ refresh_token_reuse_interval = 10
 enable_signup = false
 
 [auth.email]
-enable_signup = false
+# Must stay true: on hosted projects this flag is the whole email provider, so
+# false disables password login too. Sign-ups are already blocked by
+# [auth] enable_signup = false above.
+enable_signup = true
 # Internal users are created pre-confirmed via the admin API, so no mailbox needed.
 enable_confirmations = false
 double_confirm_changes = false

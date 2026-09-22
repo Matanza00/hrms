@@ -12,4 +12,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Self-hosted on Vercel: emit .vercel/output (Build Output API). Inside a
+  // Lovable build the preset is still forced to Cloudflare, so this is safe there.
+  nitro: { preset: "vercel" },
 });
