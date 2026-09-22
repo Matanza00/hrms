@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/DataTable";
@@ -44,10 +45,35 @@ function currentBusinessDate() {
   return dt.toISOString().slice(0, 10);
 }
 
+/**
+ * The business date, kept current while the page stays open. Without this the
+ * page keeps what it computed at its last render, so a tab left open after a
+ * 3 AM checkout still shows that finished shift (Check In disabled) at 6 PM.
+ */
+function useCurrentBusinessDate() {
+  const [date, setDate] = useState(currentBusinessDate);
+
+  useEffect(() => {
+    const update = () => setDate(currentBusinessDate());
+    const timer = window.setInterval(update, 60_000);
+    // Background tabs throttle timers, so also re-check when the user returns.
+    document.addEventListener("visibilitychange", update);
+    window.addEventListener("focus", update);
+    update();
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", update);
+      window.removeEventListener("focus", update);
+    };
+  }, []);
+
+  return date;
+}
+
 /** Compare a stored attendanceDate (yyyy-mm-dd, possibly with a time) to today. */
-function isCurrentShift(value?: string) {
+function isCurrentShift(value: string | undefined, businessDate: string) {
   if (!value) return false;
-  return String(value).slice(0, 10) === currentBusinessDate();
+  return String(value).slice(0, 10) === businessDate;
 }
 
 function formatTime(v?: string) {
@@ -70,6 +96,13 @@ function EmployeeAttendance() {
   const breakStart = useBreakStart();
   const breakEnd = useBreakEnd();
   const checkOut = useCheckOut();
+  const businessDate = useCurrentBusinessDate();
+  const [actionError, setActionError] = useState("");
+
+  // Surface server rejections (already checked in, holiday, geofence, ...)
+  // instead of the button silently doing nothing.
+  const onError = (err: Error) =>
+    setActionError(err.message || "Something went wrong");
 
   // Scope strictly to the logged-in employee.
   const records = Array.isArray(raw)
@@ -77,28 +110,35 @@ function EmployeeAttendance() {
     : [];
 
   const todayRecord = records.find((a) =>
-    isCurrentShift(a.attendanceDate || a.checkIn)
+    isCurrentShift(a.attendanceDate || a.checkIn, businessDate)
   );
 
   async function handleCheckIn() {
     if (!employeeCode) return;
+    setActionError("");
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        checkIn.mutate({
-          employeeCode,
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          ipAddress: "browser",
-        });
+        checkIn.mutate(
+          {
+            employeeCode,
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            ipAddress: "browser",
+          },
+          { onError }
+        );
       },
       () => {
-        checkIn.mutate({
-          employeeCode,
-          latitude: 24.91412985,
-          longitude: 67.1003725,
-          ipAddress: "browser",
-        });
+        checkIn.mutate(
+          {
+            employeeCode,
+            latitude: 24.91412985,
+            longitude: 67.1003725,
+            ipAddress: "browser",
+          },
+          { onError }
+        );
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
@@ -113,6 +153,13 @@ function EmployeeAttendance() {
 
       <div className="mt-6 rounded-2xl border bg-card p-5">
         <h3 className="mb-4 text-sm font-semibold">Today's Actions</h3>
+
+        {actionError && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {actionError}
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-2">
           <Button
             disabled={!!todayRecord?.checkIn || checkIn.isPending}
@@ -128,7 +175,11 @@ function EmployeeAttendance() {
               !!todayRecord?.breakStart ||
               breakStart.isPending
             }
-            onClick={() => employeeCode && breakStart.mutate(employeeCode)}
+            onClick={() => {
+              if (!employeeCode) return;
+              setActionError("");
+              breakStart.mutate(employeeCode, { onError });
+            }}
           >
             Start Break
           </Button>
@@ -140,7 +191,11 @@ function EmployeeAttendance() {
               !!todayRecord?.breakEnd ||
               breakEnd.isPending
             }
-            onClick={() => employeeCode && breakEnd.mutate(employeeCode)}
+            onClick={() => {
+              if (!employeeCode) return;
+              setActionError("");
+              breakEnd.mutate(employeeCode, { onError });
+            }}
           >
             End Break
           </Button>
@@ -152,7 +207,11 @@ function EmployeeAttendance() {
               !!todayRecord?.checkOut ||
               checkOut.isPending
             }
-            onClick={() => employeeCode && checkOut.mutate(employeeCode)}
+            onClick={() => {
+              if (!employeeCode) return;
+              setActionError("");
+              checkOut.mutate(employeeCode, { onError });
+            }}
           >
             Check Out
           </Button>
