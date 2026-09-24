@@ -15,6 +15,39 @@ export function clientIp(req: Request): string {
   return first || req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "";
 }
 
+/** Expand an IPv6 address to its eight groups, resolving "::" compression. */
+function ipv6Groups(ip: string): string[] | null {
+  const bare = ip.split("%")[0].toLowerCase();
+  if (!bare.includes(":")) return null;
+
+  const [head, tail] = bare.split("::");
+  const left = head ? head.split(":").filter(Boolean) : [];
+  const right = tail !== undefined && tail ? tail.split(":").filter(Boolean) : [];
+  const groups = bare.includes("::")
+    ? [...left, ...Array(Math.max(0, 8 - left.length - right.length)).fill("0"), ...right]
+    : left;
+
+  return groups.length === 8 ? groups.map((g) => g.replace(/^0+(?=.)/, "")) : null;
+}
+
+/**
+ * Do two addresses mean "the same line"?
+ *
+ * IPv4 is compared whole: one address, one connection. IPv6 is compared on the
+ * /64 prefix, because Windows and Android rotate the back half of an IPv6
+ * address for privacy — the exact address a desktop shows today is gone
+ * tomorrow, while the prefix belongs to the connection.
+ */
+export function sameNetwork(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+
+  const ga = ipv6Groups(a);
+  const gb = ipv6Groups(b);
+  if (!ga || !gb) return false;
+  return ga.slice(0, 4).join(":") === gb.slice(0, 4).join(":");
+}
+
 /**
  * May this employee mark attendance from here?
  *
@@ -39,16 +72,15 @@ export async function checkPresence(
   if (ip) {
     const { data } = await svc
       .from("employee_ips")
-      .select("ip_id")
-      .eq("employee_id", employeeId)
-      .eq("ip_address", ip)
-      .maybeSingle();
+      .select("ip_id, ip_address")
+      .eq("employee_id", employeeId);
 
-    if (data) {
+    const match = (data ?? []).find((row) => sameNetwork(String(row.ip_address), ip));
+    if (match) {
       await svc
         .from("employee_ips")
         .update({ last_used_at: new Date().toISOString() })
-        .eq("ip_id", data.ip_id);
+        .eq("ip_id", match.ip_id);
       return null;
     }
   }
