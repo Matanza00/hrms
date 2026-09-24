@@ -13,6 +13,7 @@ import * as auth from "./handlers/auth.ts";
 import * as employees from "./handlers/employees.ts";
 import * as attendance from "./handlers/attendance.ts";
 import * as devices from "./handlers/devices.ts";
+import * as ips from "./handlers/ips.ts";
 import * as leaves from "./handlers/leaves.ts";
 import * as calendar from "./handlers/calendar.ts";
 import * as settings from "./handlers/settings.ts";
@@ -50,6 +51,11 @@ const routes: Record<string, Handler> = {
   scanAttendance: attendance.scanAttendance,
   employeeDevices: devices.getEmployeeDevices,
   resetEmployeeDevice: devices.resetEmployeeDevice,
+  employeeIps: ips.getEmployeeIps,
+  addEmployeeIp: ips.addEmployeeIp,
+  removeEmployeeIp: ips.removeEmployeeIp,
+  whereAmI: ips.whereAmI,
+
   attendanceQr: devices.getAttendanceQr,
   rotateAttendanceQr: devices.rotateAttendanceQr,
 

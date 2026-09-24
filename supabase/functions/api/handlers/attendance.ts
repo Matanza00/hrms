@@ -6,7 +6,7 @@ import { ApiError } from "../_shared/errors.ts";
 import { camelizeRow } from "../_shared/case.ts";
 import { withEmployeeName, withEmployeeNameOne } from "../_shared/rows.ts";
 import { loadSettings, num } from "../_shared/settings.ts";
-import { checkGeofence } from "../_shared/geofence.ts";
+import { checkPresence, clientIp } from "../_shared/presence.ts";
 import { assertDeviceAllowed, commitDevice } from "./devices.ts";
 import {
   computeWorkMinutes,
@@ -50,12 +50,14 @@ async function createCheckIn(
   svc: SupabaseClient,
   employee: Employee,
   input: Record<string, unknown>,
+  req: Request,
 ) {
   const settings = await loadSettings(svc);
+  const ip = clientIp(req);
 
-  // 1) Geofence (honours toggle, tolerates GPS drift, fails open on misconfig).
-  const geoErr = checkGeofence(settings, input.latitude, input.longitude);
-  if (geoErr) throw new ApiError(geoErr, 422);
+  // 1) At the office, by GPS or by a registered network.
+  const err = await checkPresence(svc, employee.employee_id, settings, input.latitude, input.longitude, ip);
+  if (err) throw new ApiError(err, 422);
 
   // 2) Server time + business date of the overnight shift.
   const now = new Date();
@@ -78,7 +80,7 @@ async function createCheckIn(
     is_late: isLate(now, officeStart, grace),
     latitude: numOrNull(input.latitude),
     longitude: numOrNull(input.longitude),
-    ip_address: str(input.ipAddress) || null,
+    ip_address: ip || null,
     attendance_status: "Present",
   };
 
@@ -102,12 +104,15 @@ async function closeShift(
   svc: SupabaseClient,
   open: Record<string, unknown>,
   input: Record<string, unknown>,
+  req: Request,
 ) {
   const now = new Date().toISOString();
   const settings = await loadSettings(svc);
 
-  const geoErr = checkGeofence(settings, input.latitude, input.longitude);
-  if (geoErr) throw new ApiError(geoErr, 422);
+  const err = await checkPresence(
+    svc, open.employee_id as string, settings, input.latitude, input.longitude, clientIp(req),
+  );
+  if (err) throw new ApiError(err, 422);
   const derived = computeWorkMinutes(
     { checkIn: open.check_in, checkOut: now, breakStart: open.break_start, breakEnd: open.break_end },
     num(settings.requiredHours, 8),
@@ -130,7 +135,7 @@ async function closeShift(
 export async function checkIn(ctx: Ctx) {
   const caller = requireCaller(ctx.caller);
   const employee = await resolveActingEmployee(ctx.svc, caller, str(ctx.data.employeeCode));
-  return withEmployeeNameOne(await createCheckIn(ctx.svc, employee, ctx.data));
+  return withEmployeeNameOne(await createCheckIn(ctx.svc, employee, ctx.data, ctx.req));
 }
 
 /**
@@ -160,8 +165,8 @@ export async function scanAttendance(ctx: Ctx) {
   //    a finished shift, which is why the phone is only recorded afterwards.
   const open = await getOpenAttendance(svc, employee.employee_id);
   const row = open
-    ? await closeShift(svc, open, ctx.data)
-    : await createCheckIn(svc, employee, ctx.data);
+    ? await closeShift(svc, open, ctx.data, ctx.req)
+    : await createCheckIn(svc, employee, ctx.data, ctx.req);
 
   const registered = await commitDevice(
     svc, employee.employee_id, token, str(ctx.data.deviceLabel), check,
@@ -220,7 +225,7 @@ export async function checkOut(ctx: Ctx) {
   const open = await getOpenAttendance(ctx.svc, employee.employee_id);
   if (!open) throw new ApiError("No open shift to check out from", 409);
 
-  return withEmployeeNameOne(await closeShift(ctx.svc, open, ctx.data));
+  return withEmployeeNameOne(await closeShift(ctx.svc, open, ctx.data, ctx.req));
 }
 
 /* --------------------------- Correction requests --------------------------- */

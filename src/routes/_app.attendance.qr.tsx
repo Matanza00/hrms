@@ -2,7 +2,24 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import QRCode from "qrcode";
-import { Printer, RefreshCw, Smartphone } from "lucide-react";
+import { Laptop, Printer, RefreshCw, Smartphone, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useEmployees } from "@/hooks/useEmployees";
+import {
+  addEmployeeIp,
+  getEmployeeIps,
+  removeEmployeeIp,
+  whereAmI,
+  type EmployeeIp,
+} from "@/lib/api/ips";
 import { DataTable } from "@/components/shared/DataTable";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,9 +76,32 @@ function AttendanceQr() {
   const qc = useQueryClient();
   const [image, setImage] = useState("");
   const [confirmRotate, setConfirmRotate] = useState(false);
+  const [ipEmployee, setIpEmployee] = useState("");
+  const [ipAddress, setIpAddress] = useState("");
+  const [ipLabel, setIpLabel] = useState("");
 
   const qrQuery = useQuery({ queryKey: ["attendanceQr"], queryFn: getAttendanceQr });
   const devicesQuery = useQuery({ queryKey: ["employeeDevices"], queryFn: getEmployeeDevices });
+
+  const { data: employeesRaw = [] } = useEmployees();
+  const employees = Array.isArray(employeesRaw) ? employeesRaw : [];
+
+  const myIpQuery = useQuery({ queryKey: ["whereAmI"], queryFn: whereAmI });
+  const ipsQuery = useQuery({ queryKey: ["employeeIps"], queryFn: getEmployeeIps });
+
+  const addIp = useMutation({
+    mutationFn: addEmployeeIp,
+    onSuccess: () => {
+      setIpAddress("");
+      setIpLabel("");
+      qc.invalidateQueries({ queryKey: ["employeeIps"] });
+    },
+  });
+
+  const removeIp = useMutation({
+    mutationFn: removeEmployeeIp,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["employeeIps"] }),
+  });
 
   const rotate = useMutation({
     mutationFn: rotateAttendanceQr,
@@ -95,8 +135,17 @@ function AttendanceQr() {
     };
   }, [scanUrl]);
 
-  const error = qrQuery.error || devicesQuery.error || rotate.error || reset.error;
+  const error =
+    qrQuery.error ||
+    devicesQuery.error ||
+    rotate.error ||
+    reset.error ||
+    addIp.error ||
+    removeIp.error ||
+    ipsQuery.error;
   const devices = Array.isArray(devicesQuery.data) ? devicesQuery.data : [];
+  const ips = Array.isArray(ipsQuery.data) ? ipsQuery.data : [];
+  const myIp = myIpQuery.data?.ip ?? "";
 
   return (
     <div className="space-y-6">
@@ -128,7 +177,11 @@ function AttendanceQr() {
           <p className="mt-3 break-all text-[11px] text-muted-foreground">{scanUrl}</p>
 
           <div className="mt-4 space-y-2">
-            <Button className="w-full" onClick={() => image && printPoster(image)} disabled={!image}>
+            <Button
+              className="w-full"
+              onClick={() => image && printPoster(image)}
+              disabled={!image}
+            >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
               Print poster
             </Button>
@@ -167,16 +220,14 @@ function AttendanceQr() {
             <h3 className="text-sm font-semibold">Registered phones</h3>
           </div>
           <p className="mb-4 text-xs text-muted-foreground">
-            The first phone an employee scans with becomes theirs. Reset it when
-            someone changes phone — their next scan registers the new one.
+            The first phone an employee scans with becomes theirs. Reset it when someone changes
+            phone — their next scan registers the new one.
           </p>
 
           {devicesQuery.isLoading ? (
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : devices.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No phones registered yet.
-            </p>
+            <p className="text-sm text-muted-foreground">No phones registered yet.</p>
           ) : (
             <DataTable<EmployeeDevice>
               rowKey={(r) => r.deviceId}
@@ -209,6 +260,132 @@ function AttendanceQr() {
                       disabled={reset.isPending}
                     >
                       Reset
+                    </Button>
+                  ),
+                },
+              ]}
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border bg-card p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <Laptop className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-sm font-semibold">Desktop networks</h3>
+        </div>
+        <p className="mb-4 text-xs text-muted-foreground">
+          A desktop has no GPS, so the office radius alone can never let one through. Register the
+          network an employee&apos;s computer connects from and they can check in and out on it.
+          Everyone else still has to be inside the {"‘"}office radius{"’"} on their phone.
+        </p>
+
+        <div className="mb-4 rounded-xl border bg-muted/30 p-3 text-xs">
+          This computer is reaching the server from{" "}
+          <span className="font-mono font-medium">{myIp || "…"}</span>. If the office computers
+          share this internet connection, that is the address to register.
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Employee</Label>
+            <Select value={ipEmployee} onValueChange={setIpEmployee}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose employee" />
+              </SelectTrigger>
+              <SelectContent>
+                {employees.map((e) => (
+                  <SelectItem key={e.employeeId} value={e.employeeId}>
+                    {e.name} ({e.employeeCode})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">IP address</Label>
+            <Input
+              value={ipAddress}
+              onChange={(e) => setIpAddress(e.target.value)}
+              placeholder="e.g. 103.12.34.56"
+              inputMode="decimal"
+            />
+            {myIp && ipAddress !== myIp && (
+              <button
+                type="button"
+                onClick={() => setIpAddress(myIp)}
+                className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+              >
+                Use this computer&apos;s address
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Label (optional)</Label>
+            <Input
+              value={ipLabel}
+              onChange={(e) => setIpLabel(e.target.value)}
+              placeholder="e.g. Reception PC"
+            />
+          </div>
+
+          <Button
+            className="h-10"
+            disabled={!ipEmployee || !ipAddress.trim() || addIp.isPending}
+            onClick={() =>
+              addIp.mutate({
+                employeeId: ipEmployee,
+                ipAddress: ipAddress.trim(),
+                label: ipLabel.trim() || undefined,
+              })
+            }
+          >
+            {addIp.isPending ? "Adding..." : "Add"}
+          </Button>
+        </div>
+
+        <div className="mt-6">
+          {ipsQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : ips.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No networks registered yet, so attendance is phone-only.
+            </p>
+          ) : (
+            <DataTable<EmployeeIp>
+              rowKey={(r) => r.ipId}
+              data={ips}
+              columns={[
+                {
+                  key: "employee",
+                  header: "Employee",
+                  render: (r) => <span className="font-medium">{r.employeeName || "—"}</span>,
+                },
+                {
+                  key: "ipAddress",
+                  header: "Network",
+                  render: (r) => <span className="font-mono text-xs">{r.ipAddress}</span>,
+                },
+                { key: "label", header: "Label", render: (r) => r.label || "—" },
+                {
+                  key: "lastUsedAt",
+                  header: "Last used",
+                  render: (r) => formatDateTime(r.lastUsedAt),
+                },
+                {
+                  key: "actions",
+                  header: "",
+                  render: (r) => (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => removeIp.mutate(r.ipId)}
+                      disabled={removeIp.isPending}
+                    >
+                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      Remove
                     </Button>
                   ),
                 },
