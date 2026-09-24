@@ -4,6 +4,9 @@
 //   - tolerates GPS drift via a buffer (default 50 m)
 //   - FAILS OPEN when the office location isn't configured (never blocks the
 //     whole company on a Settings mistake)
+//   - once the office IS configured, a missing location is a refusal, not a
+//     free pass — otherwise denying the browser's location prompt would be
+//     the way around the fence
 //   - reports the measured distance so a rejection is diagnosable
 import type { SettingsMap } from "./settings.ts";
 import { bool, num } from "./settings.ts";
@@ -24,7 +27,11 @@ export function haversineMeters(
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-/** Returns null when the check-in is allowed, or an error message when blocked. */
+/**
+ * Returns null when the attendance action is allowed, or an error message when
+ * blocked. Applied to both ends of the shift: someone who checked in at the
+ * office must still be at the office to check out.
+ */
 export function checkGeofence(
   settings: SettingsMap,
   userLat: unknown,
@@ -44,8 +51,11 @@ export function checkGeofence(
 
   const uLat = Number(userLat);
   const uLng = Number(userLng);
-  // No location from the device -> don't block on missing GPS.
-  if (!Number.isFinite(uLat) || !Number.isFinite(uLng)) return null;
+  // The office is configured, so location is required. A phone that will not
+  // share it cannot be placed inside the fence.
+  if (!Number.isFinite(uLat) || !Number.isFinite(uLng)) {
+    return "We could not get your location. Allow location for this site and try again.";
+  }
 
   const distance = haversineMeters(oLat, oLng, uLat, uLng);
   if (distance > radius + buffer) {

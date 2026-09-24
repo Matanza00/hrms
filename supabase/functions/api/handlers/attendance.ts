@@ -93,10 +93,21 @@ async function createCheckIn(
   return data;
 }
 
-/** Close an open shift and recompute its break/working/deficit minutes. */
-async function closeShift(svc: SupabaseClient, open: Record<string, unknown>) {
+/**
+ * Close an open shift and recompute its break/working/deficit minutes. Fenced
+ * like the check-in: leaving the office does not let you close the shift from
+ * home.
+ */
+async function closeShift(
+  svc: SupabaseClient,
+  open: Record<string, unknown>,
+  input: Record<string, unknown>,
+) {
   const now = new Date().toISOString();
   const settings = await loadSettings(svc);
+
+  const geoErr = checkGeofence(settings, input.latitude, input.longitude);
+  if (geoErr) throw new ApiError(geoErr, 422);
   const derived = computeWorkMinutes(
     { checkIn: open.check_in, checkOut: now, breakStart: open.break_start, breakEnd: open.break_end },
     num(settings.requiredHours, 8),
@@ -149,7 +160,7 @@ export async function scanAttendance(ctx: Ctx) {
   //    a finished shift, which is why the phone is only recorded afterwards.
   const open = await getOpenAttendance(svc, employee.employee_id);
   const row = open
-    ? await closeShift(svc, open)
+    ? await closeShift(svc, open, ctx.data)
     : await createCheckIn(svc, employee, ctx.data);
 
   const registered = await commitDevice(
@@ -209,7 +220,7 @@ export async function checkOut(ctx: Ctx) {
   const open = await getOpenAttendance(ctx.svc, employee.employee_id);
   if (!open) throw new ApiError("No open shift to check out from", 409);
 
-  return withEmployeeNameOne(await closeShift(ctx.svc, open));
+  return withEmployeeNameOne(await closeShift(ctx.svc, open, ctx.data));
 }
 
 /* --------------------------- Correction requests --------------------------- */

@@ -76,8 +76,12 @@ export const breakStart = (employeeCode: string) =>
 export const breakEnd = (employeeCode: string) =>
   apiPost("breakEnd", { employeeCode });
 
-export const checkOut = (employeeCode: string) =>
-  apiPost("checkOut", { employeeCode });
+export const checkOut = (data: {
+  employeeCode: string;
+  latitude: number;
+  longitude: number;
+  ipAddress: string;
+}) => apiPost("checkOut", data);
 
 /** Fields an admin can set when directly editing/adding an attendance row. */
 export type AdminAttendanceInput = {

@@ -31,6 +31,27 @@ function formatTime(v?: string) {
       });
 }
 
+/**
+ * The phone's position. Attendance is fenced to the office at both ends, so a
+ * refused or unavailable fix is an error the employee sees — never a stand-in
+ * location, which would place everyone at the office by default.
+ */
+function currentPosition(): Promise<{ latitude: number; longitude: number }> {
+  return new Promise((resolve, reject) => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      return reject(new Error("This device cannot share its location."));
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+      () =>
+        reject(
+          new Error("We could not get your location. Allow location for this site and try again.")
+        ),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  });
+}
+
 function EmployeeAttendance() {
   const { employeeId, employeeCode } = useAuth();
 
@@ -59,32 +80,23 @@ function EmployeeAttendance() {
   async function handleCheckIn() {
     if (!employeeCode) return;
     setActionError("");
+    try {
+      const where = await currentPosition();
+      checkIn.mutate({ employeeCode, ...where, ipAddress: "browser" }, { onError });
+    } catch (err) {
+      onError(err as Error);
+    }
+  }
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        checkIn.mutate(
-          {
-            employeeCode,
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-            ipAddress: "browser",
-          },
-          { onError }
-        );
-      },
-      () => {
-        checkIn.mutate(
-          {
-            employeeCode,
-            latitude: 24.91412985,
-            longitude: 67.1003725,
-            ipAddress: "browser",
-          },
-          { onError }
-        );
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+  async function handleCheckOut() {
+    if (!employeeCode) return;
+    setActionError("");
+    try {
+      const where = await currentPosition();
+      checkOut.mutate({ employeeCode, ...where, ipAddress: "browser" }, { onError });
+    } catch (err) {
+      onError(err as Error);
+    }
   }
 
   return (
@@ -150,11 +162,7 @@ function EmployeeAttendance() {
               !!todayRecord?.checkOut ||
               checkOut.isPending
             }
-            onClick={() => {
-              if (!employeeCode) return;
-              setActionError("");
-              checkOut.mutate(employeeCode, { onError });
-            }}
+            onClick={handleCheckOut}
           >
             Check Out
           </Button>
