@@ -1,8 +1,4 @@
-import {
-  createFileRoute,
-  Navigate,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,32 +56,38 @@ function LoginPage() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-background px-4">
+    <div className="grid min-h-screen-safe place-items-center bg-background px-4 py-8">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
           <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
             <span className="text-xl font-bold">LDS</span>
           </div>
-          <h1 className="mt-4 text-lg font-semibold tracking-tight">
-            Sign in to LDS HRMS
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Use your employee code or admin username.
-          </p>
+          <h1 className="mt-4 text-lg font-semibold tracking-tight">Sign in to LDS HRMS</h1>
+          <p className="text-xs text-muted-foreground">Use your employee code or admin username.</p>
         </div>
 
         <div className="rounded-2xl border bg-card p-6 shadow-sm">
-          <div className="space-y-4">
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
             <div className="space-y-1.5">
               <Label className="text-xs" htmlFor="loginId">
                 Login ID
               </Label>
               <Input
                 id="loginId"
-                autoFocus
+                name="username"
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                enterKeyHint="next"
                 value={loginId}
                 onChange={(e) => setLoginId(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                 placeholder="EMP001 or admin"
               />
             </div>
@@ -96,10 +98,12 @@ function LoginPage() {
               </Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
+                enterKeyHint="go"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                 placeholder="••••••••"
               />
             </div>
@@ -111,13 +115,13 @@ function LoginPage() {
             )}
 
             <Button
-              className="w-full"
+              type="submit"
+              className="h-11 w-full"
               disabled={submitting || !loginId.trim() || !password}
-              onClick={handleSubmit}
             >
               {submitting ? "Signing in…" : "Sign in"}
             </Button>
-          </div>
+          </form>
         </div>
       </div>
     </div>

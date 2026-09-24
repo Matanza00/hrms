@@ -83,7 +83,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div className="flex flex-1 flex-col min-w-0">
           <header className="sticky top-0 z-30 flex h-14 items-center gap-2 sm:gap-3 border-b bg-background/80 px-3 sm:px-4 backdrop-blur">
-            <SidebarTrigger />
+            <SidebarTrigger className="h-11 w-11 sm:h-9 sm:w-9" />
 
             <div className="relative hidden md:flex max-w-md flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -181,7 +181,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </header>
 
-          <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 min-w-0 overflow-x-hidden">
+          <main className="min-w-0 flex-1 overflow-x-hidden p-3 pb-24 sm:p-4 sm:pb-24 md:p-6 lg:p-8">
             {children}
           </main>
         </div>

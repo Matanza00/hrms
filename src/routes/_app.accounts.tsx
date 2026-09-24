@@ -68,7 +68,7 @@ function AccountsLayout() {
         description="Revenue, expenses, reserve and profit distribution."
       />
 
-      <div className="mb-6 inline-flex rounded-xl border bg-card p-1 overflow-x-auto">
+      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border bg-card p-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:inline-flex [&::-webkit-scrollbar]:hidden">
         {tabs.map((t) => {
           const active = path === t.url;
 
@@ -76,7 +76,7 @@ function AccountsLayout() {
             <Link
               key={t.url}
               to={t.url}
-              className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-medium transition ${
+              className={`flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-medium transition sm:min-h-0 ${
                 active
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"

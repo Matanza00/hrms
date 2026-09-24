@@ -45,7 +45,7 @@ function currentPosition(): Promise<{ latitude?: number; longitude?: number }> {
 
 function Panel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-background px-4">
+    <div className="grid min-h-screen-safe place-items-center bg-background px-4 py-8">
       <div className="w-full max-w-sm rounded-2xl border bg-card p-6 text-center shadow-sm">
         <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground">
           <span className="text-base font-bold">LDS</span>

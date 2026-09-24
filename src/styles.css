@@ -142,3 +142,22 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+/* Full-height panels on phones.
+   iOS Safari's address bar overlays 100vh, so the bottom of a centred panel can
+   sit under it; 100svh is the visible height where supported. The insets keep
+   content clear of the notch and home indicator now that the viewport is
+   declared viewport-fit=cover. Old browsers keep plain 100vh. */
+.min-h-screen-safe {
+  min-height: 100vh;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+@supports (min-height: 100svh) {
+  .min-h-screen-safe {
+    min-height: 100svh;
+  }
+}

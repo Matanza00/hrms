@@ -97,7 +97,7 @@ function AttendanceLayout() {
         }
       />
 
-      <div className="mb-6 inline-flex rounded-xl border bg-card p-1">
+      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border bg-card p-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:inline-flex [&::-webkit-scrollbar]:hidden">
         {tabs.map((t) => {
           const active = path === t.url;
 
@@ -105,7 +105,7 @@ function AttendanceLayout() {
             <Link
               key={t.url}
               to={t.url}
-              className={`rounded-lg px-3.5 py-1.5 text-xs font-medium transition ${
+              className={`flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-medium transition sm:min-h-0 ${
                 active
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -314,6 +314,7 @@ function AttendanceOverview() {
             {
               key: "location",
               header: "Location",
+              hideOnMobile: true,
               render: (r) =>
                 r.latitude && r.longitude
                   ? `${r.latitude}, ${r.longitude}`
@@ -322,6 +323,7 @@ function AttendanceOverview() {
             {
               key: "ipAddress",
               header: "IP",
+              hideOnMobile: true,
               render: (r) => (
                 <span className="font-mono text-xs text-muted-foreground">
                   {r.ipAddress || "—"}

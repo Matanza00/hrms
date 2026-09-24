@@ -103,7 +103,7 @@ function EmployeeShell() {
           </div>
         </div>
 
-        <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2">
+        <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {nav.map((item) => {
             const active =
               path === item.url || path.startsWith(item.url + "/");
@@ -112,7 +112,7 @@ function EmployeeShell() {
               <Link
                 key={item.url}
                 to={item.url}
-                className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                className={`flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition ${
                   active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -126,7 +126,7 @@ function EmployeeShell() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-5xl px-4 py-6 pb-[max(6rem,calc(env(safe-area-inset-bottom)+5rem))]">
         <Outlet />
       </main>
 
