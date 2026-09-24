@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, Moon, Search, Sun } from "lucide-react";
+import { Bell, LogOut, Moon, Search, Sun } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useEmployees } from "@/hooks/useEmployees";
@@ -28,7 +28,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const employees = Array.isArray(employeesRaw) ? employeesRaw : [];
   const leaves = Array.isArray(leavesRaw) ? leavesRaw : [];
 
-  const { user, employee } = useAuth();
+  const { user, employee, logout } = useAuth();
+  const navigate = useNavigate();
   const accountName = employee?.name || user?.username || "Admin";
   const accountRole = user?.role === "Admin" ? "Administrator" : "Employee";
 
@@ -178,6 +179,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </span>
                 </div>
               </Link>
+
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label="Sign out"
+                className="ml-1 h-11 px-3 sm:h-8"
+                onClick={() => {
+                  logout();
+                  navigate({ to: "/login" });
+                }}
+              >
+                <LogOut className="h-3.5 w-3.5 sm:mr-1.5" />
+                <span className="hidden sm:inline">Sign out</span>
+              </Button>
             </div>
           </header>
 
