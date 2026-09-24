@@ -11,6 +11,7 @@ import { useEmployees } from "@/hooks/useEmployees";
 import { useQuery } from "@tanstack/react-query";
 import { getLeaveRequests } from "@/lib/api/leaves";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [dark, setDark] = useState(false);
@@ -27,8 +28,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const employees = Array.isArray(employeesRaw) ? employeesRaw : [];
   const leaves = Array.isArray(leavesRaw) ? leavesRaw : [];
 
-  const adminEmployee =
-    employees.find((e) => e.status === "Permanent") || employees[0];
+  const { user, employee } = useAuth();
+  const accountName = employee?.name || user?.username || "Admin";
+  const accountRole = user?.role === "Admin" ? "Administrator" : "Employee";
 
   const pendingLeaves = leaves.filter((l) => l.status === "Pending").length;
 
@@ -165,16 +167,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {initials(adminEmployee?.name || "Admin")}
+                    {initials(accountName)}
                   </AvatarFallback>
                 </Avatar>
 
                 <div className="hidden sm:flex flex-col leading-tight">
-                  <span className="text-xs font-medium">
-                    {adminEmployee?.name || "Admin"}
-                  </span>
+                  <span className="text-xs font-medium">{accountName}</span>
                   <span className="text-[10px] text-muted-foreground">
-                    Management
+                    {accountRole}
                   </span>
                 </div>
               </Link>

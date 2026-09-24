@@ -6,17 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useEmployees } from "@/hooks/useEmployees";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export const Route = createFileRoute("/_app/profile")({
   component: ProfilePage,
 });
 
-function initials(name?: string) {
+function initials(name?: string | null) {
   if (!name) return "AD";
 
   return name
-    .split(" ")
+    .split(/[\s._-]+/)
     .filter(Boolean)
     .map((s) => s[0])
     .join("")
@@ -25,19 +25,15 @@ function initials(name?: string) {
 }
 
 function ProfilePage() {
-  const { data: employees = [], isLoading, error } = useEmployees();
+  // The signed-in account, never a guess. `employee` is the record this login
+  // is linked to; the admin login is linked to nobody, so there is no name,
+  // email or address to show — showing someone else's would be a lie.
+  const { user, employee, status } = useAuth();
 
-  // Since app has one admin login, profile is management/admin profile.
-  const adminEmployee =
-    employees.find((e) => e.status === "Permanent") || employees[0];
-
-  if (isLoading) {
+  if (status === "loading") {
     return (
       <div>
-        <PageHeader
-          title="My profile"
-          description="Manage personal info, security and notifications."
-        />
+        <PageHeader title="My profile" description="Your account and sign-in details." />
         <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
           Loading profile...
         </div>
@@ -45,44 +41,26 @@ function ProfilePage() {
     );
   }
 
-  if (error) {
-    return (
-      <div>
-        <PageHeader
-          title="My profile"
-          description="Manage personal info, security and notifications."
-        />
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
-          {error instanceof Error ? error.message : "Something went wrong"}
-        </div>
-      </div>
-    );
-  }
+  const displayName = employee?.name || user?.username || "Admin";
+  const roleLabel = user?.role === "Admin" ? "Administrator" : "Employee";
 
   return (
     <div>
-      <PageHeader
-        title="My profile"
-        description="Manage personal info, security and notifications."
-      />
+      <PageHeader title="My profile" description="Your account and sign-in details." />
 
-      <div className="rounded-2xl border bg-card p-6 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="mb-6 flex flex-col gap-4 rounded-2xl border bg-card p-6 sm:flex-row sm:items-center">
         <Avatar className="h-16 w-16">
-          <AvatarFallback className="text-base bg-primary text-primary-foreground">
-            {initials(adminEmployee?.name || "Admin")}
+          <AvatarFallback className="bg-primary text-base text-primary-foreground">
+            {initials(displayName)}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex-1">
-          <h2 className="text-lg font-semibold">
-            {adminEmployee?.name || "Admin"}
-          </h2>
+          <h2 className="text-lg font-semibold">{displayName}</h2>
           <p className="text-sm text-muted-foreground">
-            {adminEmployee
-              ? `${adminEmployee.designation || "Management"} · ${
-                  adminEmployee.department || "Admin"
-                }`
-              : "Management · Admin"}
+            {employee
+              ? `${employee.designation || roleLabel} · ${employee.department || "Admin"}`
+              : `${roleLabel} · signed in as ${user?.username ?? "—"}`}
           </p>
         </div>
 
@@ -96,121 +74,82 @@ function ProfilePage() {
           <TabsTrigger value="personal">Personal</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="personal" className="mt-4">
-          <div className="rounded-2xl border bg-card p-6 grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 rounded-2xl border bg-card p-6 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Full name</Label>
-              <Input value={adminEmployee?.name || "Admin"} readOnly />
+              <Label className="text-xs">Username</Label>
+              <Input value={user?.username ?? ""} readOnly />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs">Email</Label>
-              <Input value={adminEmployee?.email || ""} readOnly />
+              <Label className="text-xs">Role</Label>
+              <Input value={roleLabel} readOnly />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs">Phone</Label>
-              <Input value={adminEmployee?.phone || ""} readOnly />
-            </div>
+            {employee ? (
+              <>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Full name</Label>
+                  <Input value={employee.name || ""} readOnly />
+                </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs">Employee code</Label>
-              <Input value={adminEmployee?.employeeCode || "ADMIN"} readOnly />
-            </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Employee code</Label>
+                  <Input value={employee.employeeCode || ""} readOnly />
+                </div>
 
-            <div className="sm:col-span-2 space-y-1.5">
-              <Label className="text-xs">Address</Label>
-              <Input value={adminEmployee?.address || ""} readOnly />
-            </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Email</Label>
+                  <Input value={employee.email || ""} readOnly />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Phone</Label>
+                  <Input value={employee.phone || ""} readOnly />
+                </div>
+              </>
+            ) : (
+              <div className="rounded-xl border bg-muted/30 p-4 text-sm text-muted-foreground sm:col-span-2">
+                This login is not attached to an employee record, so it has no personal details of
+                its own. Staff details live on the Employees page.
+              </div>
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="security" className="mt-4">
-          <div className="rounded-2xl border bg-card p-6 grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Current password</Label>
-              <Input type="password" disabled />
-            </div>
-
-            <div className="space-y-1.5" />
-
-            <div className="space-y-1.5">
-              <Label className="text-xs">New password</Label>
-              <Input type="password" disabled />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs">Confirm new password</Label>
-              <Input type="password" disabled />
-            </div>
-
-            <div className="sm:col-span-2 flex items-center justify-between rounded-xl border p-4 opacity-70">
-              <div>
-                <p className="text-sm font-medium">Two-factor authentication</p>
-                <p className="text-xs text-muted-foreground">
-                  Security settings will be connected after login module.
-                </p>
-              </div>
-              <Switch disabled />
-            </div>
+          <div className="rounded-2xl border bg-card p-6">
+            <p className="text-sm font-medium">Password</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Changing your password from this page isn&apos;t wired up yet.
+            </p>
           </div>
         </TabsContent>
 
         <TabsContent value="notifications" className="mt-4">
-          <div className="rounded-2xl border bg-card p-6 space-y-3">
-            {[
-              "Email notifications",
-              "Leave approval alerts",
-              "Payroll reminders",
-              "Attendance summaries",
-            ].map((n) => (
-              <div
-                key={n}
-                className="flex items-center justify-between border-b last:border-0 pb-3 last:pb-0"
-              >
-                <span className="text-sm">{n}</span>
-                <Switch defaultChecked />
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="activity" className="mt-4">
           <div className="rounded-2xl border bg-card p-6">
-            <ul className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Notifications aren&apos;t sent yet, so there is nothing to configure. The switches
+              below are placeholders.
+            </p>
+            <div className="mt-4 space-y-3 opacity-60">
               {[
-                {
-                  action: "Opened HRMS dashboard",
-                  time: "Today",
-                  ip: "Local browser",
-                },
-                {
-                  action: "Connected Google Sheets backend",
-                  time: "Recently",
-                  ip: "Apps Script",
-                },
-                {
-                  action: "Payroll module enabled",
-                  time: "Recently",
-                  ip: "System",
-                },
-              ].map((l, i) => (
-                <li
-                  key={i}
-                  className="flex items-start justify-between text-sm border-b last:border-0 pb-3 last:pb-0"
+                "Email notifications",
+                "Leave approval alerts",
+                "Payroll reminders",
+                "Attendance summaries",
+              ].map((n) => (
+                <div
+                  key={n}
+                  className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"
                 >
-                  <div>
-                    <p className="font-medium">{l.action}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {l.time} · {l.ip}
-                    </p>
-                  </div>
-                </li>
+                  <span className="text-sm">{n}</span>
+                  <Switch disabled />
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

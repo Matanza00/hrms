@@ -15,6 +15,7 @@ export type AuthEmployee = {
   employeeCode: string;
   name: string;
   email?: string;
+  phone?: string;
   department?: string;
   designation?: string;
   [key: string]: unknown;
@@ -29,14 +30,9 @@ export type AuthSession = {
 export const login = (loginId: string, password: string) =>
   apiPost<AuthSession>("login", { loginId, password });
 
-export const fetchMe = (token: string) =>
-  apiPost<AuthSession>("me", { token });
+export const fetchMe = (token: string) => apiPost<AuthSession>("me", { token });
 
-export const changePassword = (
-  token: string,
-  currentPassword: string,
-  newPassword: string
-) =>
+export const changePassword = (token: string, currentPassword: string, newPassword: string) =>
   apiPost<{ message: string }>("changePassword", {
     token,
     currentPassword,
