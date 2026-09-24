@@ -12,6 +12,7 @@ import type { Ctx, Handler } from "./_shared/context.ts";
 import * as auth from "./handlers/auth.ts";
 import * as employees from "./handlers/employees.ts";
 import * as attendance from "./handlers/attendance.ts";
+import * as devices from "./handlers/devices.ts";
 import * as leaves from "./handlers/leaves.ts";
 import * as calendar from "./handlers/calendar.ts";
 import * as settings from "./handlers/settings.ts";
@@ -44,6 +45,13 @@ const routes: Record<string, Handler> = {
   approveAttendanceCorrection: attendance.approveAttendanceCorrection,
   adminUpdateAttendance: attendance.adminUpdateAttendance,
   adminCreateAttendance: attendance.adminCreateAttendance,
+
+  // QR attendance + registered phones
+  scanAttendance: attendance.scanAttendance,
+  employeeDevices: devices.getEmployeeDevices,
+  resetEmployeeDevice: devices.resetEmployeeDevice,
+  attendanceQr: devices.getAttendanceQr,
+  rotateAttendanceQr: devices.rotateAttendanceQr,
 
   // leaves
   leaveRequests: leaves.getLeaveRequests,

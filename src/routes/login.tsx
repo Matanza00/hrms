@@ -12,21 +12,34 @@ import { homePathForRole } from "@/lib/auth/RequireRole";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — LDS HRMS" }] }),
+  // `next` carries an interrupted destination — today only the QR scan page,
+  // which passes its code along in `c` so the scan resumes after signing in.
+  // Both optional, so every existing `to="/login"` link stays valid.
+  validateSearch: (search: Record<string, unknown>): { next?: string; c?: string } => ({
+    next: typeof search.next === "string" ? search.next : undefined,
+    c: typeof search.c === "string" ? search.c : undefined,
+  }),
   component: LoginPage,
 });
 
 function LoginPage() {
   const { status, role, login } = useAuth();
   const navigate = useNavigate();
+  const { next, c } = Route.useSearch();
+  const backToScan = next === "/scan" && !!c;
 
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Already signed in — send to the right panel.
+  // Already signed in — resume the scan, or go to the right panel.
   if (status === "authenticated") {
-    return <Navigate to={homePathForRole(role)} />;
+    return backToScan ? (
+      <Navigate to="/scan" search={{ c }} />
+    ) : (
+      <Navigate to={homePathForRole(role)} />
+    );
   }
 
   async function handleSubmit() {
@@ -37,7 +50,8 @@ function LoginPage() {
 
     try {
       const session = await login(loginId.trim(), password);
-      navigate({ to: homePathForRole(session.user.role) });
+      if (backToScan) navigate({ to: "/scan", search: { c } });
+      else navigate({ to: homePathForRole(session.user.role) });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Login failed");
     } finally {

@@ -79,6 +79,7 @@ function AttendanceLayout() {
     { url: "/attendance", label: "Overview" },
     { url: "/attendance/live", label: "Live Monitoring" },
     { url: "/attendance/corrections", label: "Corrections" },
+    { url: "/attendance/qr", label: "QR & Devices" },
   ];
 
   const isRoot = path === "/attendance";

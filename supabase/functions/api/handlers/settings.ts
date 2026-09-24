@@ -3,10 +3,16 @@ import { requireAdmin, requireCaller } from "../_shared/auth.ts";
 import { ApiError } from "../_shared/errors.ts";
 import { loadSettings } from "../_shared/settings.ts";
 
+// Settings only an admin may read. The QR code is what proves someone stood at
+// the office poster, so handing it to every employee would defeat the scan.
+const ADMIN_ONLY_KEYS = ["attendanceQrCode"];
+
 export async function getSettings(ctx: Ctx) {
-  requireCaller(ctx.caller);
+  const caller = requireCaller(ctx.caller);
   // Returned as the flat { key: value } map the frontend expects.
-  return await loadSettings(ctx.svc);
+  const map = await loadSettings(ctx.svc);
+  if (caller.role !== "Admin") for (const key of ADMIN_ONLY_KEYS) delete map[key];
+  return map;
 }
 
 export async function updateSettings(ctx: Ctx) {

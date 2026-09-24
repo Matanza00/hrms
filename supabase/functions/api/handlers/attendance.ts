@@ -7,6 +7,7 @@ import { camelizeRow } from "../_shared/case.ts";
 import { withEmployeeName, withEmployeeNameOne } from "../_shared/rows.ts";
 import { loadSettings, num } from "../_shared/settings.ts";
 import { checkGeofence } from "../_shared/geofence.ts";
+import { assertDeviceAllowed, commitDevice } from "./devices.ts";
 import {
   computeWorkMinutes,
   getBusinessDate,
@@ -39,14 +40,21 @@ export async function getAttendance(ctx: Ctx) {
   return withEmployeeName(data);
 }
 
-export async function checkIn(ctx: Ctx) {
-  const caller = requireCaller(ctx.caller);
-  const { svc } = ctx;
-  const employee = await resolveActingEmployee(svc, caller, str(ctx.data.employeeCode));
+type Employee = { employee_id: string; employee_code: string; name: string };
+
+/**
+ * Start a shift: geofence, business date, holiday guard and lateness, then the
+ * row. Shared by the Check In button and a QR scan so both behave identically.
+ */
+async function createCheckIn(
+  svc: SupabaseClient,
+  employee: Employee,
+  input: Record<string, unknown>,
+) {
   const settings = await loadSettings(svc);
 
   // 1) Geofence (honours toggle, tolerates GPS drift, fails open on misconfig).
-  const geoErr = checkGeofence(settings, ctx.data.latitude, ctx.data.longitude);
+  const geoErr = checkGeofence(settings, input.latitude, input.longitude);
   if (geoErr) throw new ApiError(geoErr, 422);
 
   // 2) Server time + business date of the overnight shift.
@@ -68,9 +76,9 @@ export async function checkIn(ctx: Ctx) {
     check_in: now.toISOString(),
     late_minutes: getLateMinutes(now, officeStart, grace),
     is_late: isLate(now, officeStart, grace),
-    latitude: numOrNull(ctx.data.latitude),
-    longitude: numOrNull(ctx.data.longitude),
-    ip_address: str(ctx.data.ipAddress) || null,
+    latitude: numOrNull(input.latitude),
+    longitude: numOrNull(input.longitude),
+    ip_address: str(input.ipAddress) || null,
     attendance_status: "Present",
   };
 
@@ -82,7 +90,78 @@ export async function checkIn(ctx: Ctx) {
     }
     throw new ApiError(error.message, 500);
   }
-  return withEmployeeNameOne(data);
+  return data;
+}
+
+/** Close an open shift and recompute its break/working/deficit minutes. */
+async function closeShift(svc: SupabaseClient, open: Record<string, unknown>) {
+  const now = new Date().toISOString();
+  const settings = await loadSettings(svc);
+  const derived = computeWorkMinutes(
+    { checkIn: open.check_in, checkOut: now, breakStart: open.break_start, breakEnd: open.break_end },
+    num(settings.requiredHours, 8),
+  );
+
+  const { data, error } = await svc
+    .from("attendance")
+    .update({
+      check_out: now,
+      break_minutes: derived.breakMinutes,
+      working_minutes: derived.workingMinutes,
+      deficit_minutes: derived.deficitMinutes,
+    })
+    .eq("attendance_id", open.attendance_id)
+    .select(SELECT).single();
+  if (error) throw new ApiError(error.message, 500);
+  return data;
+}
+
+export async function checkIn(ctx: Ctx) {
+  const caller = requireCaller(ctx.caller);
+  const employee = await resolveActingEmployee(ctx.svc, caller, str(ctx.data.employeeCode));
+  return withEmployeeNameOne(await createCheckIn(ctx.svc, employee, ctx.data));
+}
+
+/**
+ * Mark attendance by scanning the office QR poster. One QR does both ends of
+ * the shift: it checks out when a shift is open, otherwise it checks in.
+ */
+export async function scanAttendance(ctx: Ctx) {
+  const caller = requireCaller(ctx.caller);
+  const { svc } = ctx;
+  const employee = await resolveActingEmployee(svc, caller);
+
+  // 1) The scan must carry the code currently on the office poster.
+  const settings = await loadSettings(svc);
+  const expected = String(settings.attendanceQrCode ?? "").trim();
+  const supplied = str(ctx.data.qrCode).trim();
+  if (!expected) throw new ApiError("Attendance QR is not set up yet. Ask an admin.", 422);
+  if (!supplied || supplied !== expected) {
+    throw new ApiError("This QR code is out of date. Scan the poster in the office.", 422);
+  }
+
+  // 2) This phone must be the employee's registered one (or their first).
+  const token = str(ctx.data.deviceToken);
+  if (!token) throw new ApiError("deviceToken is required");
+  const check = await assertDeviceAllowed(svc, employee.employee_id, token);
+
+  // 3) Open shift -> close it; otherwise start one. This throws on a holiday or
+  //    a finished shift, which is why the phone is only recorded afterwards.
+  const open = await getOpenAttendance(svc, employee.employee_id);
+  const row = open
+    ? await closeShift(svc, open)
+    : await createCheckIn(svc, employee, ctx.data);
+
+  const registered = await commitDevice(
+    svc, employee.employee_id, token, str(ctx.data.deviceLabel), check,
+  );
+
+  return {
+    action: open ? "checkOut" : "checkIn",
+    deviceRegistered: registered,
+    employeeName: employee.name,
+    attendance: withEmployeeNameOne(row),
+  };
 }
 
 export async function breakStart(ctx: Ctx) {
@@ -130,25 +209,7 @@ export async function checkOut(ctx: Ctx) {
   const open = await getOpenAttendance(ctx.svc, employee.employee_id);
   if (!open) throw new ApiError("No open shift to check out from", 409);
 
-  const now = new Date().toISOString();
-  const settings = await loadSettings(ctx.svc);
-  const derived = computeWorkMinutes(
-    { checkIn: open.check_in, checkOut: now, breakStart: open.break_start, breakEnd: open.break_end },
-    num(settings.requiredHours, 8),
-  );
-
-  const { data, error } = await ctx.svc
-    .from("attendance")
-    .update({
-      check_out: now,
-      break_minutes: derived.breakMinutes,
-      working_minutes: derived.workingMinutes,
-      deficit_minutes: derived.deficitMinutes,
-    })
-    .eq("attendance_id", open.attendance_id)
-    .select(SELECT).single();
-  if (error) throw new ApiError(error.message, 500);
-  return withEmployeeNameOne(data);
+  return withEmployeeNameOne(await closeShift(ctx.svc, open));
 }
 
 /* --------------------------- Correction requests --------------------------- */

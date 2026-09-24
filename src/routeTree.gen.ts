@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ScanRouteImport } from './routes/scan'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EmployeeRouteImport } from './routes/employee'
 import { Route as AppRouteImport } from './routes/_app'
@@ -36,6 +37,7 @@ import { Route as AppEmployeesIndexRouteImport } from './routes/_app.employees.i
 import { Route as AppPayrollPayslipsRouteImport } from './routes/_app.payroll.payslips'
 import { Route as AppLeavesRequestRouteImport } from './routes/_app.leaves.request'
 import { Route as AppEmployeesCreateRouteImport } from './routes/_app.employees.create'
+import { Route as AppAttendanceQrRouteImport } from './routes/_app.attendance.qr'
 import { Route as AppAttendanceLiveRouteImport } from './routes/_app.attendance.live'
 import { Route as AppAttendanceCorrectionsRouteImport } from './routes/_app.attendance.corrections'
 import { Route as AppAccountsRevenueRouteImport } from './routes/_app.accounts.revenue'
@@ -45,6 +47,11 @@ import { Route as AppAccountsExpensesRouteImport } from './routes/_app.accounts.
 import { Route as AppEmployeesIdIndexRouteImport } from './routes/_app.employees.$id.index'
 import { Route as AppEmployeesIdEditRouteImport } from './routes/_app.employees.$id.edit'
 
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -179,6 +186,11 @@ const AppEmployeesCreateRoute = AppEmployeesCreateRouteImport.update({
   path: '/employees/create',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAttendanceQrRoute = AppAttendanceQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => AppAttendanceRoute,
+} as any)
 const AppAttendanceLiveRoute = AppAttendanceLiveRouteImport.update({
   id: '/live',
   path: '/live',
@@ -226,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/employee': typeof EmployeeRouteWithChildren
   '/login': typeof LoginRoute
+  '/scan': typeof ScanRoute
   '/accounts': typeof AppAccountsRouteWithChildren
   '/attendance': typeof AppAttendanceRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
@@ -251,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/accounts/revenue': typeof AppAccountsRevenueRoute
   '/attendance/corrections': typeof AppAttendanceCorrectionsRoute
   '/attendance/live': typeof AppAttendanceLiveRoute
+  '/attendance/qr': typeof AppAttendanceQrRoute
   '/employees/create': typeof AppEmployeesCreateRoute
   '/leaves/request': typeof AppLeavesRequestRoute
   '/payroll/payslips': typeof AppPayrollPayslipsRoute
@@ -261,6 +275,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/scan': typeof ScanRoute
   '/accounts': typeof AppAccountsRouteWithChildren
   '/attendance': typeof AppAttendanceRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
@@ -286,6 +301,7 @@ export interface FileRoutesByTo {
   '/accounts/revenue': typeof AppAccountsRevenueRoute
   '/attendance/corrections': typeof AppAttendanceCorrectionsRoute
   '/attendance/live': typeof AppAttendanceLiveRoute
+  '/attendance/qr': typeof AppAttendanceQrRoute
   '/employees/create': typeof AppEmployeesCreateRoute
   '/leaves/request': typeof AppLeavesRequestRoute
   '/payroll/payslips': typeof AppPayrollPayslipsRoute
@@ -299,6 +315,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/employee': typeof EmployeeRouteWithChildren
   '/login': typeof LoginRoute
+  '/scan': typeof ScanRoute
   '/_app/accounts': typeof AppAccountsRouteWithChildren
   '/_app/attendance': typeof AppAttendanceRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
@@ -324,6 +341,7 @@ export interface FileRoutesById {
   '/_app/accounts/revenue': typeof AppAccountsRevenueRoute
   '/_app/attendance/corrections': typeof AppAttendanceCorrectionsRoute
   '/_app/attendance/live': typeof AppAttendanceLiveRoute
+  '/_app/attendance/qr': typeof AppAttendanceQrRoute
   '/_app/employees/create': typeof AppEmployeesCreateRoute
   '/_app/leaves/request': typeof AppLeavesRequestRoute
   '/_app/payroll/payslips': typeof AppPayrollPayslipsRoute
@@ -337,6 +355,7 @@ export interface FileRouteTypes {
     | '/'
     | '/employee'
     | '/login'
+    | '/scan'
     | '/accounts'
     | '/attendance'
     | '/dashboard'
@@ -362,6 +381,7 @@ export interface FileRouteTypes {
     | '/accounts/revenue'
     | '/attendance/corrections'
     | '/attendance/live'
+    | '/attendance/qr'
     | '/employees/create'
     | '/leaves/request'
     | '/payroll/payslips'
@@ -372,6 +392,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/scan'
     | '/accounts'
     | '/attendance'
     | '/dashboard'
@@ -397,6 +418,7 @@ export interface FileRouteTypes {
     | '/accounts/revenue'
     | '/attendance/corrections'
     | '/attendance/live'
+    | '/attendance/qr'
     | '/employees/create'
     | '/leaves/request'
     | '/payroll/payslips'
@@ -409,6 +431,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/employee'
     | '/login'
+    | '/scan'
     | '/_app/accounts'
     | '/_app/attendance'
     | '/_app/dashboard'
@@ -434,6 +457,7 @@ export interface FileRouteTypes {
     | '/_app/accounts/revenue'
     | '/_app/attendance/corrections'
     | '/_app/attendance/live'
+    | '/_app/attendance/qr'
     | '/_app/employees/create'
     | '/_app/leaves/request'
     | '/_app/payroll/payslips'
@@ -447,10 +471,18 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   EmployeeRoute: typeof EmployeeRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ScanRoute: typeof ScanRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -640,6 +672,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEmployeesCreateRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/attendance/qr': {
+      id: '/_app/attendance/qr'
+      path: '/qr'
+      fullPath: '/attendance/qr'
+      preLoaderRoute: typeof AppAttendanceQrRouteImport
+      parentRoute: typeof AppAttendanceRoute
+    }
     '/_app/attendance/live': {
       id: '/_app/attendance/live'
       path: '/live'
@@ -720,11 +759,13 @@ const AppAccountsRouteWithChildren = AppAccountsRoute._addFileChildren(
 interface AppAttendanceRouteChildren {
   AppAttendanceCorrectionsRoute: typeof AppAttendanceCorrectionsRoute
   AppAttendanceLiveRoute: typeof AppAttendanceLiveRoute
+  AppAttendanceQrRoute: typeof AppAttendanceQrRoute
 }
 
 const AppAttendanceRouteChildren: AppAttendanceRouteChildren = {
   AppAttendanceCorrectionsRoute: AppAttendanceCorrectionsRoute,
   AppAttendanceLiveRoute: AppAttendanceLiveRoute,
+  AppAttendanceQrRoute: AppAttendanceQrRoute,
 }
 
 const AppAttendanceRouteWithChildren = AppAttendanceRoute._addFileChildren(
@@ -824,6 +865,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   EmployeeRoute: EmployeeRouteWithChildren,
   LoginRoute: LoginRoute,
+  ScanRoute: ScanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
