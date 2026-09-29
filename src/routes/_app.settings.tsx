@@ -9,13 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSettings, updateSettings, type SettingsMap } from "@/lib/api/settings";
 import { useEffect, useState } from "react";
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl border bg-card p-6">
       <h3 className="text-sm font-semibold mb-4">{title}</h3>
@@ -24,13 +18,7 @@ function Section({
   );
 }
 
-function F({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function F({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs">{label}</Label>
@@ -72,6 +60,7 @@ const defaultSettings: SettingsMap = {
 
   payCycle: "Monthly",
   payDay: 1,
+  workingDaysPerMonth: 26,
 
   saturdayOff: true,
   sundayOff: true,
@@ -234,9 +223,7 @@ function SettingsPage() {
               <Input
                 type="number"
                 value={getValue("officeRadiusMeters")}
-                onChange={(e) =>
-                  setField("officeRadiusMeters", Number(e.target.value))
-                }
+                onChange={(e) => setField("officeRadiusMeters", Number(e.target.value))}
               />
             </F>
           </Section>
@@ -280,9 +267,7 @@ function SettingsPage() {
               <Input
                 type="number"
                 value={getValue("officeSpanHours")}
-                onChange={(e) =>
-                  setField("officeSpanHours", Number(e.target.value))
-                }
+                onChange={(e) => setField("officeSpanHours", Number(e.target.value))}
               />
             </F>
 
@@ -298,9 +283,7 @@ function SettingsPage() {
               <Input
                 type="number"
                 value={getValue("deficitHalfDayHours")}
-                onChange={(e) =>
-                  setField("deficitHalfDayHours", Number(e.target.value))
-                }
+                onChange={(e) => setField("deficitHalfDayHours", Number(e.target.value))}
               />
             </F>
 
@@ -308,9 +291,7 @@ function SettingsPage() {
               <Input
                 type="number"
                 value={getValue("deficitFullDayHours")}
-                onChange={(e) =>
-                  setField("deficitFullDayHours", Number(e.target.value))
-                }
+                onChange={(e) => setField("deficitFullDayHours", Number(e.target.value))}
               />
             </F>
 
@@ -318,9 +299,7 @@ function SettingsPage() {
               <Input
                 type="number"
                 value={getValue("lateHalfDayCount")}
-                onChange={(e) =>
-                  setField("lateHalfDayCount", Number(e.target.value))
-                }
+                onChange={(e) => setField("lateHalfDayCount", Number(e.target.value))}
               />
             </F>
 
@@ -328,18 +307,14 @@ function SettingsPage() {
               <Input
                 type="number"
                 value={getValue("lateFullDayCount")}
-                onChange={(e) =>
-                  setField("lateFullDayCount", Number(e.target.value))
-                }
+                onChange={(e) => setField("lateFullDayCount", Number(e.target.value))}
               />
             </F>
 
             <div className="sm:col-span-2 flex items-center justify-between rounded-xl border p-4">
               <div>
                 <p className="text-sm font-medium">Geofencing</p>
-                <p className="text-xs text-muted-foreground">
-                  Restrict check-in to office radius
-                </p>
+                <p className="text-xs text-muted-foreground">Restrict check-in to office radius</p>
               </div>
 
               <Switch
@@ -393,6 +368,25 @@ function SettingsPage() {
                 value={getValue("payDay")}
                 onChange={(e) => setField("payDay", Number(e.target.value))}
               />
+            </F>
+
+            <F label="Working days per month">
+              <Input
+                type="number"
+                min={1}
+                max={31}
+                value={getValue("workingDaysPerMonth")}
+                onChange={(e) =>
+                  // Zero would make a day of salary worth nothing and silently
+                  // wipe out every deduction, so never store it.
+                  setField("workingDaysPerMonth", Math.max(1, Number(e.target.value) || 26))
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                One day of salary is the monthly gross divided by this number, so it sets what a
+                late or deficit deduction costs. 26 treats the month as a six-day week; September
+                itself had 22 working days.
+              </p>
             </F>
           </Section>
         </TabsContent>
