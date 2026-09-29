@@ -3,7 +3,8 @@ import { getLeaveRequests, type LeaveRequest } from "@/lib/api/leaves";
 import { getAttendance, type AttendanceRecord } from "@/lib/api/attendance";
 import { getHolidays, type Holiday } from "@/lib/api/holidays";
 import { getSettings, type SettingsMap } from "@/lib/api/settings";
-import { isInMonth } from "@/lib/businessDate";
+import { isInMonth, workingDaysInMonth } from "@/lib/businessDate";
+import { monthlyHoursBalance } from "@/lib/hoursBalance";
 
 /** Leave types that draw down a quota. "Unpaid" is excluded on purpose. */
 const QUOTA_TYPES = ["Annual", "Casual", "Sick"] as const;
@@ -28,46 +29,6 @@ function isPending(status?: string) {
   return String(status || "").toLowerCase() === "pending";
 }
 
-function truthy(value: unknown) {
-  return value === true || value === "TRUE" || value === "true";
-}
-
-/** Count working days in the given month, honouring weekend + holiday settings. */
-function workingDaysInMonth(
-  year: number,
-  month: number,
-  settings: SettingsMap,
-  holidays: Holiday[],
-  upToToday: boolean
-) {
-  const saturdayOff = truthy(settings.saturdayOff ?? true);
-  const sundayOff = truthy(settings.sundayOff ?? true);
-
-  const holidaySet = new Set(
-    holidays
-      .map((h) => new Date(h.holidayDate))
-      .filter((d) => !Number.isNaN(d.getTime()) && d.getFullYear() === year && d.getMonth() === month)
-      .map((d) => d.getDate())
-  );
-
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-  const lastDay =
-    upToToday && today.getFullYear() === year && today.getMonth() === month
-      ? today.getDate()
-      : daysInMonth;
-
-  let count = 0;
-  for (let day = 1; day <= lastDay; day++) {
-    const dow = new Date(year, month, day).getDay();
-    if (dow === 6 && saturdayOff) continue;
-    if (dow === 0 && sundayOff) continue;
-    if (holidaySet.has(day)) continue;
-    count++;
-  }
-  return count;
-}
-
 export type LeaveTypeStat = {
   type: QuotaType;
   quota: number;
@@ -89,6 +50,7 @@ export type EmployeeStats = {
     monthTarget: number;
     remaining: number;
     deficit: number;
+    surplus: number;
     requiredPerDay: number;
   };
   holidays: {
@@ -140,14 +102,23 @@ export function useEmployeeStats(employeeId: string | null): EmployeeStats {
   // rather than re-parsing it into the device's time zone.
   const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
   const monthAttendance = myAttendance.filter((a) =>
-    isInMonth(a.attendanceDate || a.checkIn, monthKey)
+    isInMonth(a.attendanceDate || a.checkIn, monthKey),
   );
 
   const monthWorked = monthAttendance.reduce((sum, a) => sum + num(a.workingMinutes) / 60, 0);
   const requiredPerDay = num(settings.requiredHours, 8);
-  const workingDays = workingDaysInMonth(year, month, settings, allHolidays, false);
+  const workingDays = workingDaysInMonth(year, month, settings, allHolidays);
   const monthTarget = workingDays * requiredPerDay;
-  const deficit = monthAttendance.reduce((sum, a) => sum + num(a.deficitMinutes) / 60, 0);
+
+  // Netted across the month: hours worked beyond the requirement on one day
+  // cover a short day on another, which summing the per-row deficit cannot do.
+  const balance = monthlyHoursBalance(myAttendance, {
+    month: monthKey,
+    settings,
+    holidays: allHolidays,
+    requiredPerDay,
+    now,
+  });
 
   // ---- Holidays -------------------------------------------------------------
   const startOfToday = new Date(year, month, now.getDate()).getTime();
@@ -171,7 +142,8 @@ export function useEmployeeStats(employeeId: string | null): EmployeeStats {
       monthWorked: Math.round(monthWorked * 10) / 10,
       monthTarget: Math.round(monthTarget * 10) / 10,
       remaining: Math.max(0, Math.round((monthTarget - monthWorked) * 10) / 10),
-      deficit: Math.round(deficit * 10) / 10,
+      deficit: balance.deficitHours,
+      surplus: balance.surplusHours,
       requiredPerDay,
     },
     holidays: {

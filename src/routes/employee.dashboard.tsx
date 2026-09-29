@@ -1,12 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  CalendarCheck,
-  CalendarClock,
-  Clock,
-  Hourglass,
-  PartyPopper,
-  Timer,
-} from "lucide-react";
+import { CalendarCheck, CalendarClock, Clock, Hourglass, PartyPopper, Timer } from "lucide-react";
 import { StatCard } from "@/components/shared/StatCard";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useEmployeeStats } from "@/hooks/useEmployeeStats";
@@ -97,11 +90,7 @@ function EmployeeDashboard() {
         <StatCard
           label="Next Holiday"
           value={
-            stats.isLoading
-              ? "…"
-              : holidays.next
-                ? whenLabel(holidays.next.holidayDate)
-                : "None"
+            stats.isLoading ? "…" : holidays.next ? whenLabel(holidays.next.holidayDate) : "None"
           }
           hint={holidays.next ? holidays.next.title : "nothing scheduled"}
           icon={PartyPopper}
@@ -143,8 +132,8 @@ function EmployeeDashboard() {
 
             {leaves.pending > 0 && (
               <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                You have <span className="font-medium">{leaves.pending}</span> day(s) of
-                leave pending approval.
+                You have <span className="font-medium">{leaves.pending}</span> day(s) of leave
+                pending approval.
               </p>
             )}
           </div>
@@ -171,12 +160,19 @@ function EmployeeDashboard() {
                 <p className="text-[11px] text-muted-foreground">Remaining</p>
               </div>
             </div>
-            {hours.deficit > 0 && (
+            {/* Netted over the month, so extra hours on a long day cover a
+                short one. Being ahead is worth saying out loud. */}
+            {hours.deficit > 0 ? (
               <p className="mt-3 text-xs text-muted-foreground">
-                Accumulated deficit this month:{" "}
-                <span className="font-medium text-foreground">{hours.deficit}h</span>
+                Short by <span className="font-medium text-foreground">{hours.deficit}h</span>{" "}
+                against the days worked so far this month.
               </p>
-            )}
+            ) : hours.surplus > 0 ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                Ahead by <span className="font-medium text-foreground">{hours.surplus}h</span>{" "}
+                against the days worked so far this month.
+              </p>
+            ) : null}
           </div>
 
           <div className="rounded-2xl border bg-card p-5">

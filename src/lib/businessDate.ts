@@ -7,6 +7,9 @@
  * Mirrors supabase/functions/api/_shared/businessDate.ts, which decides the
  * attendanceDate rows are actually stored under.
  */
+import type { Holiday } from "@/lib/api/holidays";
+import type { SettingsMap } from "@/lib/api/settings";
+
 export const OFFICE_TZ = "Asia/Karachi";
 export const DAY_ROLLOVER_HOUR = 12;
 
@@ -47,4 +50,50 @@ export function currentBusinessMonth(now: Date = new Date()): string {
 export function isInMonth(value: string | undefined, month: string) {
   if (!value) return false;
   return String(value).slice(0, 7) === month;
+}
+
+function truthy(value: unknown) {
+  return value === true || value === "TRUE" || value === "true";
+}
+
+/**
+ * Count working days in a month, honouring the weekend and holiday settings.
+ *
+ * `throughDay` (1-31) stops the count early, which is how "days elapsed so far"
+ * is asked for; leaving it out counts the whole month. `excludeDays` drops
+ * individual days of the month from the count.
+ */
+export function workingDaysInMonth(
+  year: number,
+  month: number,
+  settings: SettingsMap,
+  holidays: Holiday[],
+  throughDay?: number,
+  excludeDays?: Set<number>,
+) {
+  const saturdayOff = truthy(settings.saturdayOff ?? true);
+  const sundayOff = truthy(settings.sundayOff ?? true);
+
+  const holidaySet = new Set(
+    holidays
+      .map((h) => new Date(h.holidayDate))
+      .filter(
+        (d) => !Number.isNaN(d.getTime()) && d.getFullYear() === year && d.getMonth() === month,
+      )
+      .map((d) => d.getDate()),
+  );
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const lastDay = Math.min(throughDay ?? daysInMonth, daysInMonth);
+
+  let count = 0;
+  for (let day = 1; day <= lastDay; day++) {
+    const dow = new Date(year, month, day).getDay();
+    if (dow === 6 && saturdayOff) continue;
+    if (dow === 0 && sundayOff) continue;
+    if (holidaySet.has(day)) continue;
+    if (excludeDays?.has(day)) continue;
+    count++;
+  }
+  return count;
 }

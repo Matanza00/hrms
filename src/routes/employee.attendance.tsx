@@ -13,6 +13,9 @@ import {
 import type { AttendanceRecord } from "@/lib/api/attendance";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { isCurrentShift, OFFICE_TZ } from "@/lib/businessDate";
+import { dayBalanceMinutes } from "@/lib/hoursBalance";
+import { useQuery } from "@tanstack/react-query";
+import { getSettings } from "@/lib/api/settings";
 import { useCurrentBusinessDate } from "@/hooks/useBusinessDate";
 
 export const Route = createFileRoute("/employee/attendance")({
@@ -45,9 +48,9 @@ function currentPosition(): Promise<{ latitude: number; longitude: number }> {
       (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
       () =>
         reject(
-          new Error("We could not get your location. Allow location for this site and try again.")
+          new Error("We could not get your location. Allow location for this site and try again."),
         ),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   });
 }
@@ -56,6 +59,8 @@ function EmployeeAttendance() {
   const { employeeId, employeeCode } = useAuth();
 
   const { data: raw = [] } = useAttendance();
+  const { data: settings = {} } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const requiredPerDay = Number(settings.requiredHours) || 8;
   const checkIn = useCheckIn();
   const breakStart = useBreakStart();
   const breakEnd = useBreakEnd();
@@ -65,16 +70,13 @@ function EmployeeAttendance() {
 
   // Surface server rejections (already checked in, holiday, geofence, ...)
   // instead of the button silently doing nothing.
-  const onError = (err: Error) =>
-    setActionError(err.message || "Something went wrong");
+  const onError = (err: Error) => setActionError(err.message || "Something went wrong");
 
   // Scope strictly to the logged-in employee.
-  const records = Array.isArray(raw)
-    ? raw.filter((a) => a.employeeId === employeeId)
-    : [];
+  const records = Array.isArray(raw) ? raw.filter((a) => a.employeeId === employeeId) : [];
 
   const todayRecord = records.find((a) =>
-    isCurrentShift(a.attendanceDate || a.checkIn, businessDate)
+    isCurrentShift(a.attendanceDate || a.checkIn, businessDate),
   );
 
   async function handleCheckIn() {
@@ -102,9 +104,7 @@ function EmployeeAttendance() {
   return (
     <div>
       <h1 className="text-3xl font-bold">My Attendance</h1>
-      <p className="text-muted-foreground">
-        Check in, breaks, checkout and history.
-      </p>
+      <p className="text-muted-foreground">Check in, breaks, checkout and history.</p>
 
       <div className="mt-6 rounded-2xl border bg-card p-5">
         <h3 className="mb-4 text-sm font-semibold">Today's Actions</h3>
@@ -116,20 +116,13 @@ function EmployeeAttendance() {
         )}
 
         <div className="flex flex-wrap gap-2">
-          <Button
-            disabled={!!todayRecord?.checkIn || checkIn.isPending}
-            onClick={handleCheckIn}
-          >
+          <Button disabled={!!todayRecord?.checkIn || checkIn.isPending} onClick={handleCheckIn}>
             Check In
           </Button>
 
           <Button
             variant="outline"
-            disabled={
-              !todayRecord?.checkIn ||
-              !!todayRecord?.breakStart ||
-              breakStart.isPending
-            }
+            disabled={!todayRecord?.checkIn || !!todayRecord?.breakStart || breakStart.isPending}
             onClick={() => {
               if (!employeeCode) return;
               setActionError("");
@@ -141,11 +134,7 @@ function EmployeeAttendance() {
 
           <Button
             variant="outline"
-            disabled={
-              !todayRecord?.breakStart ||
-              !!todayRecord?.breakEnd ||
-              breakEnd.isPending
-            }
+            disabled={!todayRecord?.breakStart || !!todayRecord?.breakEnd || breakEnd.isPending}
             onClick={() => {
               if (!employeeCode) return;
               setActionError("");
@@ -157,11 +146,7 @@ function EmployeeAttendance() {
 
           <Button
             variant="outline"
-            disabled={
-              !todayRecord?.checkIn ||
-              !!todayRecord?.checkOut ||
-              checkOut.isPending
-            }
+            disabled={!todayRecord?.checkIn || !!todayRecord?.checkOut || checkOut.isPending}
             onClick={handleCheckOut}
           >
             Check Out
@@ -199,14 +184,18 @@ function EmployeeAttendance() {
             {
               key: "workingMinutes",
               header: "Hours",
-              render: (r) =>
-                `${(Number(r.workingMinutes || 0) / 60).toFixed(2)}h`,
+              render: (r) => `${(Number(r.workingMinutes || 0) / 60).toFixed(2)}h`,
             },
             {
+              // Short or over for the day; the month nets these out.
               key: "deficitMinutes",
-              header: "Deficit",
-              render: (r) =>
-                `${(Number(r.deficitMinutes || 0) / 60).toFixed(2)}h`,
+              header: "Balance",
+              render: (r) => {
+                const balance = dayBalanceMinutes(r, requiredPerDay);
+                if (balance === null) return "—";
+                const hours = (Math.abs(balance) / 60).toFixed(2);
+                return balance < 0 ? `-${hours}h` : `+${hours}h`;
+              },
             },
             {
               key: "status",

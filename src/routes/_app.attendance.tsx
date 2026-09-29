@@ -1,9 +1,4 @@
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  useRouterState,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { DataTable } from "@/components/shared/DataTable";
@@ -24,10 +19,36 @@ import { useAttendance } from "@/hooks/useAttendance";
 import type { AttendanceRecord } from "@/lib/api/attendance";
 import { useEmployees } from "@/hooks/useEmployees";
 import { AttendanceEditDialog } from "@/components/attendance/AttendanceEditDialog";
+import { useQuery } from "@tanstack/react-query";
+import { getHolidays } from "@/lib/api/holidays";
+import { getSettings } from "@/lib/api/settings";
+import { currentBusinessMonth } from "@/lib/businessDate";
+import { dayBalanceMinutes, monthlyHoursBalance } from "@/lib/hoursBalance";
 
 export const Route = createFileRoute("/_app/attendance")({
   component: AttendanceLayout,
 });
+
+/**
+ * A day's balance against the requirement: "-2.00h" when short, "+1.50h" when
+ * over. The stored deficit is clamped at zero, so it would show a ten-hour day
+ * as "0.00h" and hide the extra time that covers a short day elsewhere.
+ */
+function DayBalance({
+  record,
+  requiredPerDay,
+}: {
+  record: AttendanceRecord;
+  requiredPerDay: number;
+}) {
+  const balance = dayBalanceMinutes(record, requiredPerDay);
+  if (balance === null) return <span className="text-muted-foreground">—</span>;
+
+  const hours = (Math.abs(balance) / 60).toFixed(2);
+  if (balance < 0) return <span className="tabular-nums text-foreground">-{hours}h</span>;
+  if (balance > 0) return <span className="tabular-nums text-muted-foreground">+{hours}h</span>;
+  return <span className="tabular-nums text-muted-foreground">0.00h</span>;
+}
 
 function minutesToHours(minutes?: number) {
   return (Number(minutes || 0) / 60).toFixed(2);
@@ -126,15 +147,15 @@ function AttendanceOverview() {
   const { data: attendanceRecords = [], isLoading, error } = useAttendance();
 
   // Newest first — latest check-ins/check-outs at the top.
-  const sortedRecords = [...attendanceRecords].sort(
-    (a, b) => recordTime(b) - recordTime(a)
-  );
+  const sortedRecords = [...attendanceRecords].sort((a, b) => recordTime(b) - recordTime(a));
 
   const { data: employeesRaw = [] } = useEmployees();
 
-  const employees = Array.isArray(employeesRaw)
-    ? employeesRaw
-    : [];
+  const employees = Array.isArray(employeesRaw) ? employeesRaw : [];
+
+  const { data: settings = {} } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const { data: holidaysRaw = [] } = useQuery({ queryKey: ["holidays"], queryFn: getHolidays });
+  const holidays = Array.isArray(holidaysRaw) ? holidaysRaw : [];
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<AttendanceRecord | null>(null);
@@ -150,9 +171,7 @@ function AttendanceOverview() {
   }
 
   function getEmployeeName(employeeId?: string) {
-    const employee = employees.find(
-      (e) => e.employeeId === employeeId
-    );
+    const employee = employees.find((e) => e.employeeId === employeeId);
 
     return employee?.name || employeeId || "Unknown";
   }
@@ -172,31 +191,33 @@ function AttendanceOverview() {
       </div>
     );
   }
-  
 
-  const present = attendanceRecords.filter(
-    (r) => r.attendanceStatus === "Present"
-  ).length;
+  const present = attendanceRecords.filter((r) => r.attendanceStatus === "Present").length;
 
-  const absent = attendanceRecords.filter(
-    (r) => r.attendanceStatus === "Absent"
-  ).length;
+  const absent = attendanceRecords.filter((r) => r.attendanceStatus === "Absent").length;
 
-  const halfDay = attendanceRecords.filter(
-    (r) => r.attendanceStatus === "Half Day"
-  ).length;
+  const halfDay = attendanceRecords.filter((r) => r.attendanceStatus === "Half Day").length;
 
   const late = attendanceRecords.filter((r) => isLate(r.isLate)).length;
 
-  const totalDeficitMinutes = attendanceRecords.reduce(
-    (sum, r) => sum + Number(r.deficitMinutes || 0),
-    0
+  const month = currentBusinessMonth();
+  const requiredPerDay = Number(settings.requiredHours) || 8;
+
+  const byEmployee = new Map<string, AttendanceRecord[]>();
+  for (const r of attendanceRecords) {
+    if (!byEmployee.has(r.employeeId)) byEmployee.set(r.employeeId, []);
+    byEmployee.get(r.employeeId)!.push(r);
+  }
+
+  const monthDeficitHours = [...byEmployee.values()].reduce(
+    (sum, records) =>
+      sum +
+      monthlyHoursBalance(records, { month, settings, holidays, requiredPerDay }).deficitHours,
+    0,
   );
 
   const attendanceRate =
-    attendanceRecords.length > 0
-      ? Math.round((present / attendanceRecords.length) * 100)
-      : 0;
+    attendanceRecords.length > 0 ? Math.round((present / attendanceRecords.length) * 100) : 0;
 
   return (
     <>
@@ -205,8 +226,8 @@ function AttendanceOverview() {
         <StatCard label="Absent" value={absent} icon={UserX} tone="danger" />
         <StatCard label="Late" value={late} icon={Clock} tone="warning" />
         <StatCard
-          label="Deficit Hours"
-          value={`${minutesToHours(totalDeficitMinutes)}h`}
+          label="Deficit Hours (this month)"
+          value={`${monthDeficitHours.toFixed(2)}h`}
           icon={AlertTriangle}
           tone="warning"
         />
@@ -253,18 +274,14 @@ function AttendanceOverview() {
               key: "checkIn",
               header: "Check In",
               render: (r) => (
-                <span className="whitespace-nowrap tabular-nums">
-                  {formatTime(r.checkIn)}
-                </span>
+                <span className="whitespace-nowrap tabular-nums">{formatTime(r.checkIn)}</span>
               ),
             },
             {
               key: "checkOut",
               header: "Check Out",
               render: (r) => (
-                <span className="whitespace-nowrap tabular-nums">
-                  {formatTime(r.checkOut)}
-                </span>
+                <span className="whitespace-nowrap tabular-nums">{formatTime(r.checkOut)}</span>
               ),
             },
             {
@@ -282,19 +299,13 @@ function AttendanceOverview() {
               key: "workingMinutes",
               header: "Hours",
               render: (r) => (
-                <span className="tabular-nums">
-                  {minutesToHours(r.workingMinutes)}
-                </span>
+                <span className="tabular-nums">{minutesToHours(r.workingMinutes)}</span>
               ),
             },
             {
               key: "deficitMinutes",
-              header: "Deficit",
-              render: (r) => (
-                <span className="tabular-nums">
-                  {minutesToHours(r.deficitMinutes)}
-                </span>
-              ),
+              header: "Balance",
+              render: (r) => <DayBalance record={r} requiredPerDay={requiredPerDay} />,
             },
             {
               key: "late",
@@ -315,10 +326,7 @@ function AttendanceOverview() {
               key: "location",
               header: "Location",
               hideOnMobile: true,
-              render: (r) =>
-                r.latitude && r.longitude
-                  ? `${r.latitude}, ${r.longitude}`
-                  : "—",
+              render: (r) => (r.latitude && r.longitude ? `${r.latitude}, ${r.longitude}` : "—"),
             },
             {
               key: "ipAddress",
@@ -335,12 +343,7 @@ function AttendanceOverview() {
               header: "",
               className: "text-right",
               render: (r) => (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7"
-                  onClick={() => openEdit(r)}
-                >
+                <Button size="sm" variant="outline" className="h-7" onClick={() => openEdit(r)}>
                   <Pencil className="mr-1 h-3 w-3" />
                   Edit
                 </Button>
