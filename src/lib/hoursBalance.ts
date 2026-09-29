@@ -120,6 +120,23 @@ export function monthlyHoursBalance(
   };
 }
 
+/**
+ * Minutes as "7h 42m".
+ *
+ * A decimal reads as a clock time to anyone who isn't expecting it: 7.70 hours
+ * is 7h 42m, but it looks like 7 hours and 70 minutes, which would be 8h 10m.
+ * Hours and minutes cannot be misread. Decimals stay in the arithmetic, which
+ * is what payroll needs.
+ */
+export function formatHoursMinutes(minutes: number): string {
+  const total = Math.round(Math.abs(minutes));
+  const hours = Math.floor(total / 60);
+  const mins = total % 60;
+  if (hours && mins) return `${hours}h ${mins}m`;
+  if (hours) return `${hours}h`;
+  return `${mins}m`;
+}
+
 /** A single shift's balance in minutes: negative when short, positive when over. */
 export function dayBalanceMinutes(record: AttendanceRecord, requiredPerDay: number): number | null {
   if (!record.checkOut) return null;

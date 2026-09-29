@@ -23,7 +23,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getHolidays } from "@/lib/api/holidays";
 import { getSettings } from "@/lib/api/settings";
 import { currentBusinessMonth } from "@/lib/businessDate";
-import { dayBalanceMinutes, monthlyHoursBalance } from "@/lib/hoursBalance";
+import { dayBalanceMinutes, formatHoursMinutes, monthlyHoursBalance } from "@/lib/hoursBalance";
 
 export const Route = createFileRoute("/_app/attendance")({
   component: AttendanceLayout,
@@ -44,14 +44,10 @@ function DayBalance({
   const balance = dayBalanceMinutes(record, requiredPerDay);
   if (balance === null) return <span className="text-muted-foreground">—</span>;
 
-  const hours = (Math.abs(balance) / 60).toFixed(2);
-  if (balance < 0) return <span className="tabular-nums text-foreground">-{hours}h</span>;
-  if (balance > 0) return <span className="tabular-nums text-muted-foreground">+{hours}h</span>;
-  return <span className="tabular-nums text-muted-foreground">0.00h</span>;
-}
-
-function minutesToHours(minutes?: number) {
-  return (Number(minutes || 0) / 60).toFixed(2);
+  const amount = formatHoursMinutes(balance);
+  if (balance < 0) return <span className="tabular-nums text-foreground">-{amount}</span>;
+  if (balance > 0) return <span className="tabular-nums text-muted-foreground">+{amount}</span>;
+  return <span className="tabular-nums text-muted-foreground">0m</span>;
 }
 
 function formatDate(value?: string) {
@@ -227,7 +223,7 @@ function AttendanceOverview() {
         <StatCard label="Late" value={late} icon={Clock} tone="warning" />
         <StatCard
           label="Deficit Hours (this month)"
-          value={`${monthDeficitHours.toFixed(2)}h`}
+          value={formatHoursMinutes(monthDeficitHours * 60)}
           icon={AlertTriangle}
           tone="warning"
         />
@@ -299,7 +295,13 @@ function AttendanceOverview() {
               key: "workingMinutes",
               header: "Hours",
               render: (r) => (
-                <span className="tabular-nums">{minutesToHours(r.workingMinutes)}</span>
+                <span className="tabular-nums">
+                  {r.checkOut ? (
+                    formatHoursMinutes(r.workingMinutes ?? 0)
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </span>
               ),
             },
             {

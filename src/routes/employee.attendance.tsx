@@ -13,7 +13,7 @@ import {
 import type { AttendanceRecord } from "@/lib/api/attendance";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { isCurrentShift, OFFICE_TZ } from "@/lib/businessDate";
-import { dayBalanceMinutes } from "@/lib/hoursBalance";
+import { dayBalanceMinutes, formatHoursMinutes } from "@/lib/hoursBalance";
 import { useQuery } from "@tanstack/react-query";
 import { getSettings } from "@/lib/api/settings";
 import { useCurrentBusinessDate } from "@/hooks/useBusinessDate";
@@ -184,7 +184,7 @@ function EmployeeAttendance() {
             {
               key: "workingMinutes",
               header: "Hours",
-              render: (r) => `${(Number(r.workingMinutes || 0) / 60).toFixed(2)}h`,
+              render: (r) => (r.checkOut ? formatHoursMinutes(Number(r.workingMinutes || 0)) : "—"),
             },
             {
               // Short or over for the day; the month nets these out.
@@ -193,8 +193,9 @@ function EmployeeAttendance() {
               render: (r) => {
                 const balance = dayBalanceMinutes(r, requiredPerDay);
                 if (balance === null) return "—";
-                const hours = (Math.abs(balance) / 60).toFixed(2);
-                return balance < 0 ? `-${hours}h` : `+${hours}h`;
+                if (balance === 0) return "0m";
+                const amount = formatHoursMinutes(balance);
+                return balance < 0 ? `-${amount}` : `+${amount}`;
               },
             },
             {
