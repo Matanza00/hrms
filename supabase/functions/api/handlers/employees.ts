@@ -50,11 +50,19 @@ export async function getEmployee(ctx: Ctx) {
   return camelizeRow(data);
 }
 
+// The employee code becomes the Login ID, and the Login ID becomes the email
+// address the account is created under. A space makes that address invalid and
+// Auth rejects it, so the code has to stay within what an address allows.
+const CODE_PATTERN = /^[A-Za-z0-9._-]+$/;
+const CODE_MESSAGE =
+  "Employee code can only contain letters, numbers, dots, dashes and underscores — no spaces. It becomes the employee's Login ID.";
+
 export async function createEmployee(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const patch = pickWritable(ctx.data);
   if (!patch.employee_code) throw new ApiError("employeeCode is required");
   if (!patch.name) throw new ApiError("name is required");
+  if (!CODE_PATTERN.test(String(patch.employee_code))) throw new ApiError(CODE_MESSAGE);
 
   const { data, error } = await ctx.svc.from("employees").insert(patch).select("*").single();
   if (error) {
@@ -106,6 +114,9 @@ export async function updateEmployee(ctx: Ctx) {
   if (!employeeId) throw new ApiError("employeeId is required");
 
   const patch = pickWritable(payload);
+  if (patch.employee_code !== undefined && !CODE_PATTERN.test(String(patch.employee_code))) {
+    throw new ApiError(CODE_MESSAGE);
+  }
   const { data, error } = await ctx.svc
     .from("employees").update(patch).eq("employee_id", employeeId).select("*").maybeSingle();
   if (error) throw new ApiError(error.message, 500);

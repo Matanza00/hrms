@@ -121,6 +121,15 @@ function EmployeeCreate() {
         return;
       }
 
+      // The code becomes their Login ID and, from that, the email address the
+      // account is created under, so it cannot hold spaces.
+      if (!/^[A-Za-z0-9._-]+$/.test(form.employeeCode.trim())) {
+        setError(
+          "Employee code can only contain letters, numbers, dots, dashes and underscores — no spaces. It becomes their Login ID."
+        );
+        return;
+      }
+
       if (!form.name.trim()) {
         setError("Full name is required.");
         return;
@@ -251,7 +260,7 @@ function EmployeeCreate() {
 
         <Section
           title="Employment information"
-          description="A login is created automatically: the Login ID is the employee code and the password is admin12345."
+          description="A login is created automatically: the Login ID is the employee code and the password is admin12345. The code cannot contain spaces."
         >
           <F label="Employee code">
             <Input
