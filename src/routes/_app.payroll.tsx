@@ -254,7 +254,13 @@ function PayrollOverview() {
               key: "netSalary",
               header: "Net",
               render: (r) => (
-                <span className="font-semibold tabular-nums">
+                <span
+                  className={`font-semibold tabular-nums ${
+                    r.status === "Cancelled"
+                      ? "text-muted-foreground line-through"
+                      : ""
+                  }`}
+                >
                   {formatPKR(r.netSalary)}
                 </span>
               ),

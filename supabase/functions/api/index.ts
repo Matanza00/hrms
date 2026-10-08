@@ -19,6 +19,7 @@ import * as calendar from "./handlers/calendar.ts";
 import * as settings from "./handlers/settings.ts";
 import * as payroll from "./handlers/payroll.ts";
 import * as accounts from "./handlers/accounts.ts";
+import * as documents from "./handlers/documents.ts";
 import * as feedback from "./handlers/feedback.ts";
 
 // action name (as the frontend sends it) -> handler
@@ -102,6 +103,11 @@ const routes: Record<string, Handler> = {
   deleteRecurringExpense: accounts.deleteRecurringExpense,
   reserveLedger: accounts.getReserveLedger,
   accountsOverview: accounts.getAccountsOverview,
+
+  // documents
+  employeeDocuments: documents.getEmployeeDocuments,
+  uploadEmployeeDocument: documents.uploadEmployeeDocument,
+  deleteEmployeeDocument: documents.deleteEmployeeDocument,
 
   // feedback
   feedback: feedback.getFeedback,

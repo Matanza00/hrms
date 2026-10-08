@@ -4,13 +4,12 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, LogOut, Moon, Search, Sun } from "lucide-react";
+import { LogOut, Moon, Search, Sun } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useQuery } from "@tanstack/react-query";
-import { getLeaveRequests } from "@/lib/api/leaves";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { CommandPalette, useCommandPalette } from "./CommandPalette";
+import { NotificationBell } from "./NotificationBell";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [dark, setDark] = useState(false);
@@ -18,19 +17,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { open: paletteOpen, setOpen: setPaletteOpen, toggle: togglePalette } =
     useCommandPalette();
 
-  const { data: leavesRaw = [] } = useQuery({
-    queryKey: ["leaveRequests"],
-    queryFn: getLeaveRequests,
-  });
-
-  const leaves = Array.isArray(leavesRaw) ? leavesRaw : [];
-
   const { user, employee, logout } = useAuth();
   const navigate = useNavigate();
   const accountName = employee?.name || user?.username || "Admin";
   const accountRole = user?.role === "Admin" ? "Administrator" : "Employee";
-
-  const pendingLeaves = leaves.filter((l) => l.status === "Pending").length;
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -103,21 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               </Button>
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 relative"
-                asChild
-              >
-                <Link to="/leaves">
-                  <Bell className="h-4 w-4" />
-                  {pendingLeaves > 0 && (
-                    <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[oklch(0.62_0.23_27)] px-1 text-[9px] font-semibold text-white">
-                      {pendingLeaves}
-                    </span>
-                  )}
-                </Link>
-              </Button>
+              <NotificationBell />
 
               <Link
                 to="/profile"

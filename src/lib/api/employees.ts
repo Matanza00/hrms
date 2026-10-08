@@ -11,7 +11,13 @@ export type Employee = {
   joiningDate: string;
   permanentDate: string;
   endDate?: string;
-  status: "Permanent" | "Contract" | "Intern" | "Probation";
+  status:
+    | "Permanent"
+    | "Contract"
+    | "Intern"
+    | "Probation"
+    | "Notice Period"
+    | "Resigned";
   department: string;
   designation: string;
   basicSalary: number;

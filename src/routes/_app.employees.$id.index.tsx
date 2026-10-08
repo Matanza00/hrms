@@ -10,10 +10,11 @@ import {
   MapPin,
   Calendar,
   Pencil,
-  FileText,
-  BadgeCheck,
+  ArrowLeft,
 } from "lucide-react";
 import { useEmployee } from "@/hooks/useEmployees";
+import { EmployeeActivity } from "@/components/employees/EmployeeActivity";
+import { EmployeeDocuments } from "@/components/employees/EmployeeDocuments";
 
 export const Route = createFileRoute("/_app/employees/$id/")({
   component: EmployeeProfile,
@@ -98,6 +99,13 @@ function EmployeeProfile() {
 
   return (
     <div>
+      <Button variant="ghost" size="sm" asChild className="mb-2 -ml-2">
+        <Link to="/employees">
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+          Back to employees
+        </Link>
+      </Button>
+
       <PageHeader
         eyebrow="Employees"
         title={emp.name}
@@ -239,55 +247,19 @@ function EmployeeProfile() {
             </TabsContent>
 
             <TabsContent value="documents" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {["CNIC", "Educational Certificates", "Medical Documents"].map(
-                    (d) => (
-                      <div
-                        key={d}
-                        className="flex items-center justify-between rounded-xl border p-3"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="grid h-9 w-9 place-items-center rounded-lg bg-muted">
-                            <FileText className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{d}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Google Drive upload pending
-                            </p>
-                          </div>
-                        </div>
-                        <BadgeCheck className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
+              <EmployeeDocuments employeeId={emp.employeeId} />
             </TabsContent>
 
             <TabsContent value="attendance" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6 text-sm">
-                <p className="text-muted-foreground">
-                  Attendance records API will be connected next.
-                </p>
-              </div>
+              <EmployeeActivity kind="attendance" employeeId={emp.employeeId} />
             </TabsContent>
 
             <TabsContent value="leaves" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6 text-sm">
-                <p className="text-muted-foreground">
-                  Leave records API will be connected next.
-                </p>
-              </div>
+              <EmployeeActivity kind="leaves" employeeId={emp.employeeId} />
             </TabsContent>
 
             <TabsContent value="payroll" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6 text-sm">
-                <p className="text-muted-foreground">
-                  Payroll records API will be connected next.
-                </p>
-              </div>
+              <EmployeeActivity kind="payroll" employeeId={emp.employeeId} />
             </TabsContent>
           </Tabs>
         </div>

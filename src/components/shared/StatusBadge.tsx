@@ -16,9 +16,15 @@ const variants: Record<string, string> = {
   on_leave: "bg-[oklch(0.62_0.19_259/0.15)] text-[oklch(0.5_0.19_259)] dark:text-[oklch(0.78_0.19_259)]",
   leave: "bg-[oklch(0.62_0.19_259/0.15)] text-[oklch(0.5_0.19_259)] dark:text-[oklch(0.78_0.19_259)]",
 
+  // Notice period — a distinct purple so "serving notice" reads apart from
+  // active/pending/left.
+  notice_period: "bg-[oklch(0.62_0.19_295/0.15)] text-[oklch(0.5_0.19_295)] dark:text-[oklch(0.8_0.19_295)]",
+
   rejected: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
   absent: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
   terminated: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
+  cancelled: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
+  resigned: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
 };
 
 export function StatusBadge({ status, label }: { status: string; label?: string }) {

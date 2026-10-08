@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useEmployee, useUpdateEmployee } from "@/hooks/useEmployees";
 import { useEffect, useState } from "react";
 
@@ -55,6 +62,7 @@ function EditEmployee() {
           phone: form.phone,
           designation: form.designation,
           department: form.department,
+          status: form.status,
           basicSalary: Number(form.basicSalary || 0),
           fuelAllowance: Number(form.fuelAllowance || 0),
           opdAllowance: Number(form.opdAllowance || 0),
@@ -159,6 +167,29 @@ function EditEmployee() {
             onChange={(e) => handleChange("department", e.target.value)}
             className="mt-1.5"
           />
+        </div>
+
+        <div>
+          <Label className="text-xs">Employment status</Label>
+          <Select
+            value={form.status || ""}
+            onValueChange={(value) => handleChange("status", value)}
+          >
+            <SelectTrigger className="mt-1.5">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Permanent">Permanent</SelectItem>
+              <SelectItem value="Contract">Contract</SelectItem>
+              <SelectItem value="Probation">Probation</SelectItem>
+              <SelectItem value="Intern">Intern</SelectItem>
+              <SelectItem value="Notice Period">Notice Period</SelectItem>
+              <SelectItem value="Resigned">Resigned</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Set to “Notice Period” when an employee resigns and is serving notice.
+          </p>
         </div>
 
         <div>

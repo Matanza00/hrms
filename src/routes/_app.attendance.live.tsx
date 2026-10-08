@@ -143,8 +143,15 @@ function Live() {
     year: "numeric",
   });
 
+  // Currently on break = break started and not yet ended.
+  const onBreakNow = (a: (typeof todays)[number]) =>
+    !!a.breakStart && !a.breakEnd;
+
+  // Checked in = in the office right now: has a check-in, no check-out, and is
+  // not on a break. This must NOT exclude people who have *finished* a break
+  // (both break times set) — otherwise they vanish from the board entirely.
   const checkedIn = todays
-    .filter((a) => a.checkIn && !a.checkOut && !a.breakStart)
+    .filter((a) => a.checkIn && !a.checkOut && !onBreakNow(a))
     .map((a) => ({
       name: a.employeeName || a.employeeId,
       time: `In at ${formatTime(a.checkIn)}`,
@@ -155,7 +162,7 @@ function Live() {
     }));
 
   const onBreak = todays
-    .filter((a) => a.checkIn && !a.checkOut && a.breakStart && !a.breakEnd)
+    .filter((a) => a.checkIn && !a.checkOut && onBreakNow(a))
     .map((a) => ({
       name: a.employeeName || a.employeeId,
       time: `Break started ${formatTime(a.breakStart)}`,

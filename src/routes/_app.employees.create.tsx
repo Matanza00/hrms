@@ -69,7 +69,13 @@ type EmployeeForm = {
   address: string;
   department: string;
   designation: string;
-  status: "Permanent" | "Contract" | "Probation" | "Intern";
+  status:
+    | "Permanent"
+    | "Contract"
+    | "Probation"
+    | "Intern"
+    | "Notice Period"
+    | "Resigned";
   joiningDate: string;
   permanentDate: string;
   basicSalary: string;
@@ -307,10 +313,7 @@ function EmployeeCreate() {
             <Select
               value={form.status}
               onValueChange={(value) =>
-                updateField(
-                  "status",
-                  value as "Permanent" | "Contract" | "Probation" | "Intern"
-                )
+                updateField("status", value as EmployeeForm["status"])
               }
             >
               <SelectTrigger>
@@ -321,6 +324,8 @@ function EmployeeCreate() {
                 <SelectItem value="Contract">Contract</SelectItem>
                 <SelectItem value="Probation">Probation</SelectItem>
                 <SelectItem value="Intern">Intern</SelectItem>
+                <SelectItem value="Notice Period">Notice Period</SelectItem>
+                <SelectItem value="Resigned">Resigned</SelectItem>
               </SelectContent>
             </Select>
           </F>
