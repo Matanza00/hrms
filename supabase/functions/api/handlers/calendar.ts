@@ -26,6 +26,31 @@ export async function createHoliday(ctx: Ctx) {
   return camelizeRow(data);
 }
 
+export async function updateHoliday(ctx: Ctx) {
+  requireAdmin(ctx.caller);
+  const holidayId = str(ctx.data.holidayId);
+  if (!holidayId) throw new ApiError("holidayId is required");
+  const f = ctx.data;
+  const patch: Record<string, unknown> = {};
+  if (f.title !== undefined) patch.title = str(f.title);
+  if (f.holidayDate !== undefined) patch.holiday_date = str(f.holidayDate);
+  if (f.holidayType !== undefined) patch.holiday_type = str(f.holidayType) || "Public";
+  const { data, error } = await ctx.svc
+    .from("holidays").update(patch).eq("holiday_id", holidayId).select("*").maybeSingle();
+  if (error) throw new ApiError(error.message, 500);
+  if (!data) throw new ApiError("Holiday not found", 404);
+  return camelizeRow(data);
+}
+
+export async function deleteHoliday(ctx: Ctx) {
+  requireAdmin(ctx.caller);
+  const holidayId = str(ctx.data.holidayId);
+  if (!holidayId) throw new ApiError("holidayId is required");
+  const { error } = await ctx.svc.from("holidays").delete().eq("holiday_id", holidayId);
+  if (error) throw new ApiError(error.message, 500);
+  return { deleted: true, holidayId };
+}
+
 export async function getSpecialWorkingDays(ctx: Ctx) {
   requireCaller(ctx.caller);
   const { data, error } = await ctx.svc

@@ -19,6 +19,7 @@ import * as calendar from "./handlers/calendar.ts";
 import * as settings from "./handlers/settings.ts";
 import * as payroll from "./handlers/payroll.ts";
 import * as accounts from "./handlers/accounts.ts";
+import * as documents from "./handlers/documents.ts";
 import * as feedback from "./handlers/feedback.ts";
 
 // action name (as the frontend sends it) -> handler
@@ -46,6 +47,7 @@ const routes: Record<string, Handler> = {
   approveAttendanceCorrection: attendance.approveAttendanceCorrection,
   adminUpdateAttendance: attendance.adminUpdateAttendance,
   adminCreateAttendance: attendance.adminCreateAttendance,
+  deleteAttendance: attendance.deleteAttendance,
 
   // QR attendance + registered phones
   scanAttendance: attendance.scanAttendance,
@@ -70,6 +72,8 @@ const routes: Record<string, Handler> = {
   // calendar
   holidays: calendar.getHolidays,
   createHoliday: calendar.createHoliday,
+  updateHoliday: calendar.updateHoliday,
+  deleteHoliday: calendar.deleteHoliday,
   specialWorkingDays: calendar.getSpecialWorkingDays,
   createSpecialWorkingDay: calendar.createSpecialWorkingDay,
 
@@ -86,10 +90,24 @@ const routes: Record<string, Handler> = {
   // accounts
   revenue: accounts.getRevenue,
   createRevenue: accounts.createRevenue,
+  updateRevenue: accounts.updateRevenue,
+  setRevenueStatus: accounts.setRevenueStatus,
+  deleteRevenue: accounts.deleteRevenue,
   expenses: accounts.getExpenses,
   createExpense: accounts.createExpense,
+  updateExpense: accounts.updateExpense,
+  deleteExpense: accounts.deleteExpense,
+  recurringExpenses: accounts.getRecurringExpenses,
+  createRecurringExpense: accounts.createRecurringExpense,
+  updateRecurringExpense: accounts.updateRecurringExpense,
+  deleteRecurringExpense: accounts.deleteRecurringExpense,
   reserveLedger: accounts.getReserveLedger,
   accountsOverview: accounts.getAccountsOverview,
+
+  // documents
+  employeeDocuments: documents.getEmployeeDocuments,
+  uploadEmployeeDocument: documents.uploadEmployeeDocument,
+  deleteEmployeeDocument: documents.deleteEmployeeDocument,
 
   // feedback
   feedback: feedback.getFeedback,

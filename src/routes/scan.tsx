@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/shared/Logo";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { describeDevice, getDeviceToken } from "@/lib/device";
 import { scanAttendance, type ScanResult } from "@/lib/api/devices";
@@ -47,9 +48,7 @@ function Panel({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-screen-safe place-items-center bg-background px-4 py-8">
       <div className="w-full max-w-sm rounded-2xl border bg-card p-6 text-center shadow-sm">
-        <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground">
-          <span className="text-base font-bold">LDS</span>
-        </div>
+        <Logo className="mx-auto h-12 w-12 rounded-2xl" />
         {children}
       </div>
     </div>

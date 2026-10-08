@@ -24,6 +24,23 @@ export const createRevenue = (data: {
   description?: string;
 }) => apiPost<Revenue>("createRevenue", data);
 
+export const updateRevenue = (data: {
+  revenueId: string;
+  revenueDate?: string;
+  amount?: number;
+  category?: string;
+  client?: string;
+  source?: string;
+  description?: string;
+  status?: string;
+}) => apiPost<Revenue>("updateRevenue", data);
+
+export const setRevenueStatus = (data: { revenueId: string; status: string }) =>
+  apiPost<Revenue>("setRevenueStatus", data);
+
+export const deleteRevenue = (revenueId: string) =>
+  apiPost<{ deleted: boolean }>("deleteRevenue", { revenueId });
+
 export type AccountsSummary = {
   totalRevenue: number;
   totalExpenses: number;
@@ -75,6 +92,9 @@ export type Expense = {
   description?: string;
   createdBy?: string;
   createdAt?: string;
+  /** Set when this expense was auto-posted from a recurring template. */
+  recurringId?: string | null;
+  sourcePeriod?: string | null;
 };
 
 export const getExpenses = () =>
@@ -86,3 +106,53 @@ export const createExpense = (data: {
   category: string;
   description?: string;
 }) => apiPost<Expense>("createExpense", data);
+
+export const updateExpense = (data: {
+  expenseId: string;
+  expenseDate?: string;
+  amount?: number;
+  category?: string;
+  description?: string;
+}) => apiPost<Expense>("updateExpense", data);
+
+export const deleteExpense = (expenseId: string) =>
+  apiPost<{ deleted: boolean }>("deleteExpense", { expenseId });
+
+/* ------------------------------ Recurring expenses ------------------------- */
+
+export type RecurringExpense = {
+  recurringId: string;
+  amount: number;
+  category: string;
+  description?: string;
+  dayOfMonth: number;
+  startMonth: string; // "YYYY-MM"
+  active: boolean;
+  createdBy?: string;
+  createdAt?: string;
+};
+
+export const getRecurringExpenses = () =>
+  apiGet<RecurringExpense[]>("recurringExpenses");
+
+export const createRecurringExpense = (data: {
+  amount: number;
+  category: string;
+  description?: string;
+  dayOfMonth: number;
+  startMonth: string;
+  active?: boolean;
+}) => apiPost<RecurringExpense>("createRecurringExpense", data);
+
+export const updateRecurringExpense = (data: {
+  recurringId: string;
+  amount?: number;
+  category?: string;
+  description?: string;
+  dayOfMonth?: number;
+  startMonth?: string;
+  active?: boolean;
+}) => apiPost<RecurringExpense>("updateRecurringExpense", data);
+
+export const deleteRecurringExpense = (recurringId: string) =>
+  apiPost<{ deleted: boolean }>("deleteRecurringExpense", { recurringId });

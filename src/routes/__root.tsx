@@ -93,6 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
     ],
     links: [
+<<<<<<< HEAD
       // Geist for the interface and Geist Mono for figures. Fetched ahead of the
       // stylesheet so the first paint already has them; the stack in styles.css
       // falls back to the system font if the request never lands.
@@ -103,6 +104,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap",
       },
       { rel: "stylesheet", href: appCss },
+=======
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "icon", type: "image/png", href: "/LDS.png" },
+      { rel: "apple-touch-icon", href: "/LDS.png" },
+>>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
     ],
   }),
   shellComponent: RootShell,

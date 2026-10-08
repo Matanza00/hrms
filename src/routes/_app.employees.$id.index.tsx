@@ -10,6 +10,7 @@ import {
   MapPin,
   Calendar,
   Pencil,
+<<<<<<< HEAD
   FileText,
   BadgeCheck,
   Clock,
@@ -25,6 +26,13 @@ import { dayBalanceMinutes, formatHoursMinutes, monthlyHoursBalance } from "@/li
 import { DataTable } from "@/components/shared/DataTable";
 import { StatCard } from "@/components/shared/StatCard";
 import { Skeleton } from "@/components/ui/skeleton";
+=======
+  ArrowLeft,
+} from "lucide-react";
+import { useEmployee } from "@/hooks/useEmployees";
+import { EmployeeActivity } from "@/components/employees/EmployeeActivity";
+import { EmployeeDocuments } from "@/components/employees/EmployeeDocuments";
+>>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
 
 export const Route = createFileRoute("/_app/employees/$id/")({
   component: EmployeeProfile,
@@ -251,6 +259,13 @@ function EmployeeProfile() {
 
   return (
     <div>
+      <Button variant="ghost" size="sm" asChild className="mb-2 -ml-2">
+        <Link to="/employees">
+          <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+          Back to employees
+        </Link>
+      </Button>
+
       <PageHeader
         eyebrow="Employees"
         title={emp.name}
@@ -392,6 +407,7 @@ function EmployeeProfile() {
             </TabsContent>
 
             <TabsContent value="documents" className="mt-4">
+<<<<<<< HEAD
               <div className="rounded-2xl border bg-card shadow-xs p-6">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {["CNIC", "Educational Certificates", "Medical Documents"].map(
@@ -437,6 +453,21 @@ function EmployeeProfile() {
                   Payroll records API will be connected next.
                 </p>
               </div>
+=======
+              <EmployeeDocuments employeeId={emp.employeeId} />
+            </TabsContent>
+
+            <TabsContent value="attendance" className="mt-4">
+              <EmployeeActivity kind="attendance" employeeId={emp.employeeId} />
+            </TabsContent>
+
+            <TabsContent value="leaves" className="mt-4">
+              <EmployeeActivity kind="leaves" employeeId={emp.employeeId} />
+            </TabsContent>
+
+            <TabsContent value="payroll" className="mt-4">
+              <EmployeeActivity kind="payroll" employeeId={emp.employeeId} />
+>>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
             </TabsContent>
           </Tabs>
         </div>

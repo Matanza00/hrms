@@ -7,8 +7,18 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,9 +28,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, CalendarHeart } from "lucide-react";
+import { Plus, Pencil, Trash2, CalendarHeart } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createHoliday, getHolidays, type Holiday } from "@/lib/api/holidays";
+import {
+  createHoliday,
+  deleteHoliday,
+  getHolidays,
+  updateHoliday,
+  type Holiday,
+} from "@/lib/api/holidays";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_app/holidays")({
@@ -39,6 +55,15 @@ function formatDate(value?: string) {
     month: "short",
     day: "numeric",
   });
+}
+
+function toDateInput(value?: string) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
 }
 
 function formatCardDay(value?: string) {
@@ -67,15 +92,14 @@ function formatCardMeta(value?: string) {
   });
 }
 
+const emptyForm = { title: "", holidayDate: "", holidayType: "" };
+
 function HolidaysPage() {
   const qc = useQueryClient();
 
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    holidayDate: "",
-    holidayType: "",
-  });
+  const [editing, setEditing] = useState<Holiday | null>(null);
+  const [form, setForm] = useState({ ...emptyForm });
   const [error, setError] = useState("");
 
   const {
@@ -87,18 +111,54 @@ function HolidaysPage() {
     queryFn: getHolidays,
   });
 
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["holidays"] });
+
   const createMutation = useMutation({
     mutationFn: createHoliday,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["holidays"] });
-      setOpen(false);
-      setForm({
-        title: "",
-        holidayDate: "",
-        holidayType: "",
-      });
+      invalidate();
+      closeDialog();
     },
   });
+
+  const updateMutation = useMutation({
+    mutationFn: updateHoliday,
+    onSuccess: () => {
+      invalidate();
+      closeDialog();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteHoliday,
+    onSuccess: invalidate,
+  });
+
+  const saving = createMutation.isPending || updateMutation.isPending;
+
+  function openCreate() {
+    setEditing(null);
+    setForm({ ...emptyForm });
+    setError("");
+    setOpen(true);
+  }
+
+  function openEdit(h: Holiday) {
+    setEditing(h);
+    setForm({
+      title: h.title || "",
+      holidayDate: toDateInput(h.holidayDate),
+      holidayType: h.holidayType || "",
+    });
+    setError("");
+    setOpen(true);
+  }
+
+  function closeDialog() {
+    setOpen(false);
+    setEditing(null);
+    setForm({ ...emptyForm });
+  }
 
   async function handleSave() {
     try {
@@ -108,22 +168,29 @@ function HolidaysPage() {
         setError("Holiday name is required.");
         return;
       }
-
       if (!form.holidayDate) {
         setError("Holiday date is required.");
         return;
       }
-
       if (!form.holidayType) {
         setError("Holiday type is required.");
         return;
       }
 
-      await createMutation.mutateAsync({
-        title: form.title.trim(),
-        holidayDate: form.holidayDate,
-        holidayType: form.holidayType,
-      });
+      if (editing) {
+        await updateMutation.mutateAsync({
+          holidayId: editing.holidayId,
+          title: form.title.trim(),
+          holidayDate: form.holidayDate,
+          holidayType: form.holidayType,
+        });
+      } else {
+        await createMutation.mutateAsync({
+          title: form.title.trim(),
+          holidayDate: form.holidayDate,
+          holidayType: form.holidayType,
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save holiday.");
     }
@@ -164,8 +231,7 @@ function HolidaysPage() {
     })
     .sort(
       (a, b) =>
-        new Date(a.holidayDate).getTime() -
-        new Date(b.holidayDate).getTime()
+        new Date(a.holidayDate).getTime() - new Date(b.holidayDate).getTime(),
     )
     .slice(0, 4);
 
@@ -175,6 +241,7 @@ function HolidaysPage() {
         title="Holidays"
         description="Public, religious and company holidays for the year."
         actions={
+<<<<<<< HEAD
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
@@ -242,8 +309,73 @@ function HolidaysPage() {
               </Button>
             </DialogContent>
           </Dialog>
+=======
+          <Button size="sm" onClick={openCreate}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Add holiday
+          </Button>
+>>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
         }
       />
+
+      <Dialog open={open} onOpenChange={(o) => (o ? setOpen(true) : closeDialog())}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editing ? "Edit holiday" : "Add holiday"}</DialogTitle>
+          </DialogHeader>
+
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2 space-y-1.5">
+              <Label className="text-xs">Name</Label>
+              <Input
+                value={form.title}
+                onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">Date</Label>
+              <Input
+                type="date"
+                value={form.holidayDate}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, holidayDate: e.target.value }))
+                }
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">Type</Label>
+              <Select
+                value={form.holidayType}
+                onValueChange={(value) =>
+                  setForm((p) => ({ ...p, holidayType: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="Public">Public</SelectItem>
+                  <SelectItem value="Religious">Religious</SelectItem>
+                  <SelectItem value="Company">Company</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : editing ? "Save changes" : "Save"}
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       <h3 className="text-sm font-semibold mb-3">Upcoming</h3>
 
@@ -302,6 +434,50 @@ function HolidaysPage() {
               <span className="capitalize rounded-full bg-muted px-2 py-0.5 text-[11px]">
                 {r.holidayType || "—"}
               </span>
+            ),
+          },
+          {
+            key: "actions",
+            header: "",
+            className: "text-right",
+            render: (r) => (
+              <div className="flex justify-end gap-1.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7"
+                  onClick={() => openEdit(r)}
+                >
+                  <Pencil className="mr-1 h-3 w-3" />
+                  Edit
+                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="h-7 text-red-600">
+                      <Trash2 className="mr-1 h-3 w-3" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete holiday?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This removes “{r.title}” ({formatDate(r.holidayDate)})
+                        from the calendar.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deleteMutation.mutate(r.holidayId)}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             ),
           },
         ]}

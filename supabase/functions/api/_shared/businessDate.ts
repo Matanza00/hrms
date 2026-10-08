@@ -50,6 +50,21 @@ export function isLate(checkIn: Date, officeStartTime: string, graceMinutes: num
   return getLateMinutes(checkIn, officeStartTime, graceMinutes) > 0;
 }
 
+/**
+ * True when the check-in's Karachi wall-clock is at/after the half-day cutoff
+ * (e.g. "21:00"). Such a check-in no longer counts as merely "late" — it is a
+ * half day. After-midnight check-ins (hour < noon) wrap past the cutoff too, so
+ * a 1 AM check-in is also a half day.
+ */
+export function isAfterHalfDayCutoff(checkIn: Date, cutoffTime: string): boolean {
+  const cutoff = parseHmToMinutes(cutoffTime);
+  if (cutoff == null) return false;
+  const p = karachiParts(checkIn);
+  let ciMins = p.hour * 60 + p.minute;
+  if (p.hour < 12) ciMins += 24 * 60;
+  return ciMins >= cutoff;
+}
+
 function minutesBetween(a?: unknown, b?: unknown): number {
   if (!a || !b) return 0;
   const da = new Date(a as string);

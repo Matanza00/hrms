@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, Sparkles } from "lucide-react";
+import { Logo } from "@/components/shared/Logo";
+import { Printer, Download, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getPayroll, type PayrollRecord } from "@/lib/api/payroll";
 import { useEmployees } from "@/hooks/useEmployees";
@@ -91,8 +92,21 @@ function PayslipsPage() {
 
   if (!payroll) {
     return (
+<<<<<<< HEAD
       <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
         No payroll record found. Generate payroll first.
+=======
+      <div className="max-w-3xl space-y-3">
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/payroll">
+            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+            Back to payroll
+          </Link>
+        </Button>
+        <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+          No payroll record found. Generate payroll first.
+        </div>
+>>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
       </div>
     );
   }
@@ -106,27 +120,31 @@ function PayslipsPage() {
 
   return (
     <div className="max-w-3xl">
-      <div className="mb-3 flex justify-end gap-2 print:hidden">
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
-          <Printer className="mr-1.5 h-3.5 w-3.5" />
-          Print
+      <div className="mb-3 flex items-center justify-between gap-2 print:hidden">
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/payroll">
+            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+            Back to payroll
+          </Link>
         </Button>
 
-        <Button size="sm" onClick={() => window.print()}>
-          <Download className="mr-1.5 h-3.5 w-3.5" />
-          Download PDF
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer className="mr-1.5 h-3.5 w-3.5" />
+            Print
+          </Button>
+
+          <Button size="sm" onClick={() => window.print()}>
+            <Download className="mr-1.5 h-3.5 w-3.5" />
+            Download PDF
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-2xl border bg-card p-8 shadow-sm print:shadow-none">
         <header className="flex items-center justify-between border-b pb-6">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary text-primary-foreground">
-              {/* <Sparkles className="h-5 w-5" /> */} <span className="text-lg font-bold">LDS</span>
-            </div>
-            {/* <div className="grid h-11 w-11 place-items-center rounded-xl ">
-              <img src="assets/images/LDS.png" alt="Legit Design Studio" className="h-5 w-5" />
-            </div>  */}
+            <Logo className="h-12 w-12 rounded-xl" />
 
             <div>
               <p className="text-lg font-semibold">Legit Design Studio</p>

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { homePathForRole } from "@/lib/auth/RequireRole";
+import { Logo } from "@/components/shared/Logo";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — LDS HRMS" }] }),
@@ -59,9 +60,7 @@ function LoginPage() {
     <div className="grid min-h-screen-safe place-items-center bg-background px-4 py-8">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-            <span className="text-xl font-bold">LDS</span>
-          </div>
+          <Logo className="h-14 w-14 rounded-2xl shadow-sm" />
           <h1 className="mt-4 text-lg font-semibold tracking-tight">Sign in to LDS HRMS</h1>
           <p className="text-xs text-muted-foreground">Use your employee code or admin username.</p>
         </div>

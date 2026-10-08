@@ -12,6 +12,7 @@ import {
   computeWorkMinutes,
   getBusinessDate,
   getLateMinutes,
+  isAfterHalfDayCutoff,
   isLate,
 } from "../_shared/businessDate.ts";
 
@@ -72,16 +73,21 @@ async function createCheckIn(
   const officeStart = settings.officeStartTime || settings.shiftStartTime || "18:00";
   const grace = num(settings.graceMinutes, 0);
 
+  // After the half-day cutoff (default 21:00) a check-in is a HALF DAY, not
+  // "late". Before it, the usual late/grace rules apply.
+  const halfDayStart = settings.halfDayStartTime || "21:00";
+  const afterHalfDay = isAfterHalfDayCutoff(now, halfDayStart);
+
   const row = {
     employee_id: employee.employee_id,
     attendance_date: attendanceDate,
     check_in: now.toISOString(),
-    late_minutes: getLateMinutes(now, officeStart, grace),
-    is_late: isLate(now, officeStart, grace),
+    late_minutes: afterHalfDay ? 0 : getLateMinutes(now, officeStart, grace),
+    is_late: afterHalfDay ? false : isLate(now, officeStart, grace),
     latitude: numOrNull(input.latitude),
     longitude: numOrNull(input.longitude),
     ip_address: ip || null,
-    attendance_status: "Present",
+    attendance_status: afterHalfDay ? "Half Day" : "Present",
   };
 
   const { data, error } = await svc.from("attendance").insert(row).select(SELECT).single();
@@ -287,13 +293,17 @@ async function derivedPatch(svc: SupabaseClient, fields: Record<string, unknown>
   const requiredHours = num(settings.requiredHours, 8);
   const officeStart = settings.officeStartTime || settings.shiftStartTime || "18:00";
   const grace = num(settings.graceMinutes, 0);
+  const halfDayStart = settings.halfDayStartTime || "21:00";
   const work = computeWorkMinutes(fields, requiredHours);
-  const late = fields.checkIn
-    ? {
-        late_minutes: getLateMinutes(new Date(fields.checkIn as string), officeStart, grace),
-        is_late: isLate(new Date(fields.checkIn as string), officeStart, grace),
-      }
-    : {};
+  let late: Record<string, unknown> = {};
+  if (fields.checkIn) {
+    const ci = new Date(fields.checkIn as string);
+    const afterHalfDay = isAfterHalfDayCutoff(ci, halfDayStart);
+    late = {
+      late_minutes: afterHalfDay ? 0 : getLateMinutes(ci, officeStart, grace),
+      is_late: afterHalfDay ? false : isLate(ci, officeStart, grace),
+    };
+  }
   return {
     break_minutes: work.breakMinutes,
     working_minutes: work.workingMinutes,
@@ -355,4 +365,13 @@ export async function adminCreateAttendance(ctx: Ctx) {
     throw new ApiError(error.message, 500);
   }
   return withEmployeeNameOne(data);
+}
+
+export async function deleteAttendance(ctx: Ctx) {
+  requireAdmin(ctx.caller);
+  const attendanceId = str(ctx.data.attendanceId);
+  if (!attendanceId) throw new ApiError("attendanceId is required");
+  const { error } = await ctx.svc.from("attendance").delete().eq("attendance_id", attendanceId);
+  if (error) throw new ApiError(error.message, 500);
+  return { deleted: true, attendanceId };
 }
