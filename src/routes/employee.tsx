@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Logo } from "@/components/shared/Logo";
 import { RequireRole } from "@/lib/auth/RequireRole";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
@@ -73,9 +74,7 @@ function EmployeeShell() {
       <header className="sticky top-0 z-10 border-b bg-card/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <span className="text-sm font-bold">LDS</span>
-            </div>
+            <Logo className="h-9 w-9 rounded-lg" />
             <span className="text-sm font-semibold tracking-tight">
               Employee Portal
             </span>

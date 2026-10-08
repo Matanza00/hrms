@@ -29,6 +29,8 @@ export function openPrintableReport(opts: {
     dateStyle: "medium",
     timeStyle: "short",
   });
+  // Absolute URL so the logo loads inside the opened print window.
+  const logoUrl = `${window.location.origin}/LDS.png`;
 
   const thead = columns
     .map((c, i) => `<th class="${numeric.has(i) ? "num" : ""}">${esc(c)}</th>`)
@@ -58,7 +60,7 @@ export function openPrintableReport(opts: {
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #111; margin: 32px; }
   header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 20px; }
   .brand { display: flex; align-items: center; gap: 12px; }
-  .logo { width: 44px; height: 44px; border-radius: 10px; background: #111; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 16px; }
+  .logo { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; }
   .org { font-size: 15px; font-weight: 600; }
   .org small { display:block; font-weight: 400; color:#666; font-size: 11px; }
   .meta { text-align: right; }
@@ -76,7 +78,7 @@ export function openPrintableReport(opts: {
 <body>
   <header>
     <div class="brand">
-      <div class="logo">LDS</div>
+      <img class="logo" src="${esc(logoUrl)}" alt="LDS" />
       <div class="org">Legit Design Studio<small>HRMS &amp; Accounts</small></div>
     </div>
     <div class="meta">

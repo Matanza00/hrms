@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/shared/Logo";
 import { Printer, Download, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getPayroll, type PayrollRecord } from "@/lib/api/payroll";
@@ -138,12 +139,7 @@ function PayslipsPage() {
       <div className="rounded-2xl border bg-card p-8 shadow-sm print:shadow-none">
         <header className="flex items-center justify-between border-b pb-6">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary text-primary-foreground">
-              {/* <Sparkles className="h-5 w-5" /> */} <span className="text-lg font-bold">LDS</span>
-            </div>
-            {/* <div className="grid h-11 w-11 place-items-center rounded-xl ">
-              <img src="assets/images/LDS.png" alt="Legit Design Studio" className="h-5 w-5" />
-            </div>  */}
+            <Logo className="h-12 w-12 rounded-xl" />
 
             <div>
               <p className="text-lg font-semibold">Legit Design Studio</p>
