@@ -18,13 +18,43 @@ import {
 
 const SELECT = "*, employees(name)";
 
+/** The business date right now, honouring the configured rollover hour. */
+async function businessDateNow(svc: SupabaseClient) {
+  const settings = await loadSettings(svc);
+  return getBusinessDate(new Date(), num(settings.dayRolloverHour, 12));
+}
+
+/**
+ * The shift that is open *today*.
+ *
+ * Scoped to the current business date, which still covers the overnight case:
+ * a 2 AM check-out falls before the rollover hour, so it belongs to the
+ * previous evening's date and matches that row.
+ *
+ * What it deliberately will not return is a shift from days ago. Someone who
+ * forgets to check out leaves a row open indefinitely, and closing it on their
+ * next scan recorded the whole gap as time worked — one forgotten check-out
+ * turned into 287 hours on a single day. An abandoned shift is left alone for
+ * an admin to correct, and the scan starts today's shift instead.
+ */
 async function getOpenAttendance(svc: SupabaseClient, employeeId: string) {
-  // The still-open shift: latest row for this employee with no check-out. This
-  // finds the previous-calendar-day row when someone checks out after midnight.
   const { data } = await svc
     .from("attendance")
     .select("*")
     .eq("employee_id", employeeId)
+    .eq("attendance_date", await businessDateNow(svc))
+    .is("check_out", null)
+    .maybeSingle();
+  return data;
+}
+
+/** An older shift left open, for telling someone why they cannot close it. */
+async function getAbandonedShift(svc: SupabaseClient, employeeId: string) {
+  const { data } = await svc
+    .from("attendance")
+    .select("attendance_id, attendance_date, check_in")
+    .eq("employee_id", employeeId)
+    .lt("attendance_date", await businessDateNow(svc))
     .is("check_out", null)
     .order("attendance_date", { ascending: false })
     .limit(1)
@@ -229,7 +259,18 @@ export async function checkOut(ctx: Ctx) {
   const caller = requireCaller(ctx.caller);
   const employee = await resolveActingEmployee(ctx.svc, caller, str(ctx.data.employeeCode));
   const open = await getOpenAttendance(ctx.svc, employee.employee_id);
-  if (!open) throw new ApiError("No open shift to check out from", 409);
+  if (!open) {
+    // Say which day was left open, rather than "no open shift" to someone who
+    // knows perfectly well they are mid-shift.
+    const abandoned = await getAbandonedShift(ctx.svc, employee.employee_id);
+    if (abandoned) {
+      throw new ApiError(
+        `Your shift on ${abandoned.attendance_date} was never checked out, so it can no longer be closed from here. Ask an admin to correct that day.`,
+        409,
+      );
+    }
+    throw new ApiError("No open shift to check out from", 409);
+  }
 
   return withEmployeeNameOne(await closeShift(ctx.svc, open, ctx.data, ctx.req));
 }

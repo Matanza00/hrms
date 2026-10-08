@@ -529,7 +529,7 @@ function RevenuePage() {
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="h-7 text-red-600">
+                    <Button size="sm" variant="outline" className="h-7 text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
                       <Trash2 className="mr-1 h-3 w-3" />
                       Delete
                     </Button>
