@@ -81,7 +81,7 @@ function Corrections() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
         Loading correction requests...
       </div>
     );
@@ -89,7 +89,7 @@ function Corrections() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );

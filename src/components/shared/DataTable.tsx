@@ -23,7 +23,7 @@ interface Props<T> {
 export function DataTable<T>({ columns, data, empty, rowKey }: Props<T>) {
   if (data.length === 0) {
     return (
-      <div className="rounded-2xl border bg-card p-8 text-center text-sm text-muted-foreground sm:p-10">
+      <div className="rounded-2xl border bg-card shadow-xs p-8 text-center text-sm text-muted-foreground sm:p-10">
         {empty ?? "No records found"}
       </div>
     );
@@ -45,7 +45,7 @@ export function DataTable<T>({ columns, data, empty, rowKey }: Props<T>) {
         {data.map((row) => (
           <div
             key={rowKey(row)}
-            className="rounded-2xl border bg-card p-4 [&_button]:min-h-11 [&_button]:px-4"
+            className="rounded-2xl border bg-card shadow-xs p-4 [&_button]:min-h-11 [&_button]:px-4"
           >
             <div className="text-sm font-semibold">{cell(row, first)}</div>
             <dl className="mt-3 space-y-2">
@@ -69,7 +69,7 @@ export function DataTable<T>({ columns, data, empty, rowKey }: Props<T>) {
       </div>
 
       {/* Tablets and up: the real table. */}
-      <div className="hidden overflow-hidden rounded-2xl border bg-card sm:block">
+      <div className="hidden overflow-hidden rounded-2xl border bg-card shadow-xs sm:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

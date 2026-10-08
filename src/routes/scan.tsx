@@ -141,7 +141,7 @@ function ScanPage() {
     return (
       <Panel>
         <h1 className="mt-4 text-base font-semibold">Not marked</h1>
-        <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mt-2 rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
           {scan.error instanceof Error ? scan.error.message : "Something went wrong"}
         </p>
         <Button

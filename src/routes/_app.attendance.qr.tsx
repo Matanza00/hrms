@@ -147,16 +147,22 @@ function AttendanceQr() {
   const ips = Array.isArray(ipsQuery.data) ? ipsQuery.data : [];
   const myIp = myIpQuery.data?.ip ?? "";
 
+  // The /24 this computer sits in. An ISP reconnect usually changes only the
+  // last number, so registering the block outlasts the address itself.
+  const myBlock = /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/.test(myIp)
+    ? `${myIp.split(".").slice(0, 3).join(".")}.0/24`
+    : "";
+
   return (
     <div className="space-y-6">
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-4 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
           {error instanceof Error ? error.message : "Something went wrong"}
         </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <div className="rounded-2xl border bg-card p-6 text-center">
+        <div className="rounded-2xl border bg-card shadow-xs p-6 text-center">
           <h3 className="text-sm font-semibold">Office QR poster</h3>
           <p className="mt-1 text-xs text-muted-foreground">
             Print this and put it up in the office.
@@ -214,7 +220,7 @@ function AttendanceQr() {
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-card p-6">
+        <div className="rounded-2xl border bg-card shadow-xs p-6">
           <div className="mb-4 flex items-center gap-2">
             <Smartphone className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-semibold">Registered phones</h3>
@@ -269,7 +275,7 @@ function AttendanceQr() {
         </div>
       </div>
 
-      <div className="rounded-2xl border bg-card p-6">
+      <div className="rounded-2xl border bg-card shadow-xs p-6">
         <div className="mb-4 flex items-center gap-2">
           <Laptop className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-semibold">Desktop networks</h3>
@@ -284,6 +290,16 @@ function AttendanceQr() {
           This computer is reaching the server from{" "}
           <span className="font-mono font-medium">{myIp || "…"}</span>. If the office computers
           share this internet connection, that is the address to register.
+          {myBlock && (
+            <>
+              {" "}
+              Most connections are handed a new address whenever the router reconnects, and only the
+              last number changes. Registering the block{" "}
+              <span className="font-mono font-medium">{myBlock}</span> instead keeps working through
+              those changes, at the cost of also admitting anyone else your provider puts in the
+              same block.
+            </>
+          )}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
@@ -304,22 +320,33 @@ function AttendanceQr() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">IP address</Label>
+            <Label className="text-xs">IP address or block</Label>
             <Input
               value={ipAddress}
               onChange={(e) => setIpAddress(e.target.value)}
-              placeholder="e.g. 103.12.34.56"
+              placeholder="e.g. 103.12.34.56 or 119.73.96.0/24"
               inputMode="decimal"
             />
-            {myIp && ipAddress !== myIp && (
-              <button
-                type="button"
-                onClick={() => setIpAddress(myIp)}
-                className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
-              >
-                Use this computer&apos;s address
-              </button>
-            )}
+            <div className="flex flex-wrap gap-x-3">
+              {myIp && ipAddress !== myIp && (
+                <button
+                  type="button"
+                  onClick={() => setIpAddress(myIp)}
+                  className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                >
+                  Use this computer&apos;s address
+                </button>
+              )}
+              {myBlock && ipAddress !== myBlock && (
+                <button
+                  type="button"
+                  onClick={() => setIpAddress(myBlock)}
+                  className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                >
+                  Use its whole block ({myBlock})
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-1.5">

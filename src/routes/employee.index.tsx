@@ -58,7 +58,7 @@ function EmployeeDashboard() {
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-2xl border bg-card shadow-xs p-5">
           <h3 className="mb-3 text-sm font-semibold">Today's Attendance</h3>
           <div className="space-y-2 text-sm">
             <p>Check In: {todayAttendance?.checkIn || "—"}</p>
@@ -71,7 +71,7 @@ function EmployeeDashboard() {
           </Button>
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-2xl border bg-card shadow-xs p-5">
           <h3 className="mb-3 text-sm font-semibold">Recent Leaves</h3>
           <ul className="space-y-3">
             {myLeaves.slice(-5).map((l) => (
@@ -83,7 +83,7 @@ function EmployeeDashboard() {
           </ul>
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-2xl border bg-card shadow-xs p-5">
           <h3 className="mb-3 text-sm font-semibold">Latest Payroll</h3>
           <p className="text-sm text-muted-foreground">Net Salary</p>
           <p className="text-2xl font-semibold">{formatPKR(latestPayroll?.netSalary)}</p>

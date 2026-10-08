@@ -29,7 +29,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border bg-card p-6">
+    <div className="rounded-2xl border bg-card shadow-xs p-6">
       <div className="mb-4">
         <h3 className="text-sm font-semibold">{title}</h3>
         {description && (
@@ -191,7 +191,7 @@ function EmployeeCreate() {
       />
 
       {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div role="alert" className="mb-4 rounded-xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
           {error}
         </div>
       )}

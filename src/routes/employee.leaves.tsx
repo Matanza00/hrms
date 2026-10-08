@@ -61,21 +61,21 @@ function EmployeeLeaves() {
 
       {/* Leave balance summary */}
       <div className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-4">
-        <div className="rounded-2xl border bg-card p-4">
+        <div className="rounded-2xl border bg-card shadow-xs p-4">
           <p className="text-xs text-muted-foreground">Total Leaves</p>
           <p className="text-2xl font-semibold tabular-nums">{stats.leaves.entitlement}</p>
         </div>
-        <div className="rounded-2xl border bg-card p-4">
+        <div className="rounded-2xl border bg-card shadow-xs p-4">
           <p className="text-xs text-muted-foreground">Taken</p>
           <p className="text-2xl font-semibold tabular-nums">{stats.leaves.taken}</p>
         </div>
-        <div className="rounded-2xl border bg-card p-4">
+        <div className="rounded-2xl border bg-card shadow-xs p-4">
           <p className="text-xs text-muted-foreground">Remaining</p>
           <p className="text-2xl font-semibold tabular-nums text-primary">
             {stats.leaves.remaining}
           </p>
         </div>
-        <div className="rounded-2xl border bg-card p-4">
+        <div className="rounded-2xl border bg-card shadow-xs p-4">
           <p className="text-xs text-muted-foreground">Pending</p>
           <p className="text-2xl font-semibold tabular-nums">{stats.leaves.pending}</p>
         </div>
@@ -86,7 +86,7 @@ function EmployeeLeaves() {
         {stats.leaves.byType.map((t) => (
           <div
             key={t.type}
-            className="flex items-center justify-between rounded-xl border bg-card px-4 py-3"
+            className="flex items-center justify-between rounded-xl border bg-card shadow-xs px-4 py-3"
           >
             <span className="text-sm font-medium">{t.type}</span>
             <span className="text-sm text-muted-foreground tabular-nums">
@@ -97,7 +97,7 @@ function EmployeeLeaves() {
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border bg-card p-5">
+      <div className="mt-6 rounded-2xl border bg-card shadow-xs p-5">
         <h3 className="mb-4 text-sm font-semibold">Apply Leave</h3>
         <div className="grid gap-4 md:grid-cols-2">
           <div><Label className="text-xs">Type</Label><Select value={form.leaveType} onValueChange={(v) => setForm((p) => ({ ...p, leaveType: v }))}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Annual">Annual</SelectItem><SelectItem value="Casual">Casual</SelectItem><SelectItem value="Sick">Sick</SelectItem><SelectItem value="Unpaid">Unpaid</SelectItem></SelectContent></Select></div>

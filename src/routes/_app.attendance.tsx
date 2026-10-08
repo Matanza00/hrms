@@ -114,7 +114,7 @@ function AttendanceLayout() {
         }
       />
 
-      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border bg-card p-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:inline-flex [&::-webkit-scrollbar]:hidden">
+      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border bg-card shadow-xs p-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:inline-flex [&::-webkit-scrollbar]:hidden">
         {tabs.map((t) => {
           const active = path === t.url;
 
@@ -174,7 +174,7 @@ function AttendanceOverview() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
         Loading attendance...
       </div>
     );
@@ -182,7 +182,7 @@ function AttendanceOverview() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );

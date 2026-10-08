@@ -136,7 +136,7 @@ function HolidaysPage() {
           title="Holidays"
           description="Public, religious and company holidays for the year."
         />
-        <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+        <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
           Loading holidays...
         </div>
       </div>
@@ -150,7 +150,7 @@ function HolidaysPage() {
           title="Holidays"
           description="Public, religious and company holidays for the year."
         />
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
           {String(loadError.message)}
         </div>
       </div>
@@ -189,7 +189,7 @@ function HolidaysPage() {
               </DialogHeader>
 
               {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <div role="alert" className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
                   {error}
                 </div>
               )}
@@ -248,13 +248,13 @@ function HolidaysPage() {
       <h3 className="text-sm font-semibold mb-3">Upcoming</h3>
 
       {upcoming.length === 0 ? (
-        <div className="mb-8 rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+        <div className="mb-8 rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
           No upcoming holidays.
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           {upcoming.map((h) => (
-            <div key={h.holidayId} className="rounded-2xl border bg-card p-5">
+            <div key={h.holidayId} className="rounded-2xl border bg-card shadow-xs p-5">
               <div className="flex items-center gap-3">
                 <div className="grid h-11 w-11 place-items-center rounded-xl bg-[oklch(0.62_0.19_259/0.12)] text-[oklch(0.5_0.19_259)]">
                   <CalendarHeart className="h-5 w-5" />

@@ -16,7 +16,7 @@ export const Route = createFileRoute("/employee/applications")({
         </Link>
 
         {["Reimbursement", "Advance Salary", "Loan Request", "Asset Request", "Resignation"].map((a) => (
-          <div key={a} className="rounded-2xl border bg-card p-5">
+          <div key={a} className="rounded-2xl border bg-card shadow-xs p-5">
             <p className="font-medium">{a}</p>
             <p className="text-xs text-muted-foreground">Form coming next</p>
           </div>

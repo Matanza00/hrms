@@ -12,12 +12,165 @@ import {
   Pencil,
   FileText,
   BadgeCheck,
+  Clock,
 } from "lucide-react";
 import { useEmployee } from "@/hooks/useEmployees";
+import { useQuery } from "@tanstack/react-query";
+import { useAttendance } from "@/hooks/useAttendance";
+import type { AttendanceRecord } from "@/lib/api/attendance";
+import { getSettings } from "@/lib/api/settings";
+import { getHolidays } from "@/lib/api/holidays";
+import { currentBusinessMonth, isInMonth } from "@/lib/businessDate";
+import { dayBalanceMinutes, formatHoursMinutes, monthlyHoursBalance } from "@/lib/hoursBalance";
+import { DataTable } from "@/components/shared/DataTable";
+import { StatCard } from "@/components/shared/StatCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_app/employees/$id/")({
   component: EmployeeProfile,
 });
+
+function formatTime(value?: string) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit", hour12: true });
+}
+
+/** Millis for sorting; falls back to the check-in time when no date. */
+function recordTime(r: AttendanceRecord) {
+  const t = new Date(r.attendanceDate || r.checkIn || "").getTime();
+  return Number.isNaN(t) ? 0 : t;
+}
+
+/**
+ * This employee's shifts, newest first, with the month's standing above them.
+ *
+ * The figures come from the same helpers the Attendance page uses, so a day
+ * reads identically whether it is looked at here or there.
+ */
+function EmployeeAttendanceTab({ employeeId }: { employeeId: string }) {
+  const { data: records = [], isLoading, error } = useAttendance();
+  const { data: settings = {} } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const { data: holidays = [] } = useQuery({ queryKey: ["holidays"], queryFn: getHolidays });
+
+  const requiredPerDay = Number(settings.requiredHours) || 8;
+  const month = currentBusinessMonth();
+
+  const mine = records
+    .filter((r) => r.employeeId === employeeId)
+    .sort((a, b) => recordTime(b) - recordTime(a));
+
+  const balance = monthlyHoursBalance(mine, { month, settings, holidays, requiredPerDay });
+  const presentThisMonth = mine.filter(
+    (r) => isInMonth(r.attendanceDate || r.checkIn, month) && r.checkIn,
+  ).length;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-[4.5rem] rounded-2xl" />
+          ))}
+        </div>
+        <Skeleton className="h-64 rounded-2xl" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
+        Attendance could not be loaded. {(error as Error).message}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <StatCard label="Days marked" value={presentThisMonth} hint="this month" icon={Calendar} />
+        <StatCard
+          label="Hours worked"
+          value={formatHoursMinutes(balance.workedHours * 60)}
+          hint={`of ${formatHoursMinutes(balance.expectedHours * 60)} expected`}
+          icon={Clock}
+        />
+        <StatCard
+          label={balance.deficitHours > 0 ? "Hours owed" : "Hours ahead"}
+          value={formatHoursMinutes(
+            (balance.deficitHours > 0 ? balance.deficitHours : balance.surplusHours) * 60,
+          )}
+          hint="against this month"
+          tone={balance.deficitHours > 0 ? "warning" : "success"}
+        />
+      </div>
+
+      <DataTable
+        data={mine}
+        rowKey={(r) => r.attendanceId}
+        empty="No attendance recorded for this employee yet."
+        columns={[
+          {
+            key: "attendanceDate",
+            header: "Date",
+            render: (r) => (
+              <span className="whitespace-nowrap">{formatDate(r.attendanceDate || r.checkIn)}</span>
+            ),
+          },
+          {
+            key: "checkIn",
+            header: "Check In",
+            render: (r) => (
+              <span className="whitespace-nowrap tabular-nums">{formatTime(r.checkIn)}</span>
+            ),
+          },
+          {
+            key: "checkOut",
+            header: "Check Out",
+            render: (r) => (
+              <span className="whitespace-nowrap tabular-nums">{formatTime(r.checkOut)}</span>
+            ),
+          },
+          {
+            key: "workingMinutes",
+            header: "Hours",
+            render: (r) => (
+              <span className="tabular-nums">
+                {r.checkOut ? (
+                  formatHoursMinutes(r.workingMinutes ?? 0)
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </span>
+            ),
+          },
+          {
+            key: "balance",
+            header: "Balance",
+            render: (r) => {
+              const day = dayBalanceMinutes(r, requiredPerDay);
+              if (day === null) return <span className="text-muted-foreground">—</span>;
+              const amount = formatHoursMinutes(day);
+              if (day < 0) return <span className="tabular-nums">-{amount}</span>;
+              return (
+                <span className="tabular-nums text-muted-foreground">
+                  {day > 0 ? `+${amount}` : "0m"}
+                </span>
+              );
+            },
+          },
+          {
+            key: "status",
+            header: "Status",
+            render: (r) => <StatusBadge status={r.attendanceStatus} />,
+          },
+        ]}
+      />
+    </div>
+  );
+}
 
 function formatPKR(value: number | string | undefined) {
   const amount = Number(value || 0);
@@ -84,7 +237,7 @@ function EmployeeProfile() {
   }
 
   if (error) {
-    return <p className="text-sm text-red-500">{error instanceof Error ? error.message : "Something went wrong"}</p>;
+    return <p className="text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">{error instanceof Error ? error.message : "Something went wrong"}</p>;
   }
 
   if (!emp) {
@@ -114,7 +267,7 @@ function EmployeeProfile() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-1 space-y-4">
-          <div className="rounded-2xl border bg-card p-6">
+          <div className="rounded-2xl border bg-card shadow-xs p-6">
             <div className="flex flex-col items-center text-center">
               <Avatar className="h-20 w-20">
                 <AvatarFallback className="text-lg bg-primary text-primary-foreground">
@@ -155,7 +308,7 @@ function EmployeeProfile() {
             </div>
           </div>
 
-          <div className="rounded-2xl border bg-card p-6">
+          <div className="rounded-2xl border bg-card shadow-xs p-6">
             <h4 className="text-sm font-semibold mb-3">Salary breakdown</h4>
 
             <div className="space-y-2 text-sm">
@@ -202,7 +355,7 @@ function EmployeeProfile() {
             </TabsList>
 
             <TabsContent value="personal" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6 grid gap-5 sm:grid-cols-2">
+              <div className="rounded-2xl border bg-card shadow-xs p-6 grid gap-5 sm:grid-cols-2">
                 <Field label="Full Name" value={emp.name} />
                 <Field label="CNIC" value={emp.cnic} />
                 <Field label="Date of Birth" value={formatDate(emp.dob)} />
@@ -214,7 +367,7 @@ function EmployeeProfile() {
             </TabsContent>
 
             <TabsContent value="employment" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6 grid gap-5 sm:grid-cols-2">
+              <div className="rounded-2xl border bg-card shadow-xs p-6 grid gap-5 sm:grid-cols-2">
                 <Field label="Employee Code" value={emp.employeeCode} />
                 <Field label="Department" value={emp.department} />
                 <Field label="Designation" value={emp.designation} />
@@ -239,7 +392,7 @@ function EmployeeProfile() {
             </TabsContent>
 
             <TabsContent value="documents" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6">
+              <div className="rounded-2xl border bg-card shadow-xs p-6">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {["CNIC", "Educational Certificates", "Medical Documents"].map(
                     (d) => (
@@ -267,15 +420,11 @@ function EmployeeProfile() {
             </TabsContent>
 
             <TabsContent value="attendance" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6 text-sm">
-                <p className="text-muted-foreground">
-                  Attendance records API will be connected next.
-                </p>
-              </div>
+              <EmployeeAttendanceTab employeeId={emp.employeeId} />
             </TabsContent>
 
             <TabsContent value="leaves" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6 text-sm">
+              <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm">
                 <p className="text-muted-foreground">
                   Leave records API will be connected next.
                 </p>
@@ -283,7 +432,7 @@ function EmployeeProfile() {
             </TabsContent>
 
             <TabsContent value="payroll" className="mt-4">
-              <div className="rounded-2xl border bg-card p-6 text-sm">
+              <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm">
                 <p className="text-muted-foreground">
                   Payroll records API will be connected next.
                 </p>

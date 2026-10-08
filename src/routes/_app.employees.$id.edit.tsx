@@ -78,7 +78,7 @@ function EditEmployee() {
   if (isLoading) return <p>Loading employee...</p>;
 
   if (error) {
-    return <p className="text-red-500">{error instanceof Error ? error.message : "Something went wrong"}</p>;
+    return <p className="text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">{error instanceof Error ? error.message : "Something went wrong"}</p>;
   }
 
   if (!emp) {
@@ -109,9 +109,9 @@ function EditEmployee() {
         }
       />
 
-      <div className="rounded-2xl border bg-card p-6 max-w-3xl grid gap-4 sm:grid-cols-2">
+      <div className="rounded-2xl border bg-card shadow-xs p-6 max-w-3xl grid gap-4 sm:grid-cols-2">
         {saveError && (
-          <div className="sm:col-span-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div role="alert" className="sm:col-span-2 rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
             {saveError}
           </div>
         )}

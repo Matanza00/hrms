@@ -9,52 +9,51 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ScanRouteImport } from './routes/scan'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as EmployeeRouteImport } from './routes/employee'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as EmployeeIndexRouteImport } from './routes/employee.index'
-import { Route as EmployeeProfileRouteImport } from './routes/employee.profile'
-import { Route as EmployeePayrollRouteImport } from './routes/employee.payroll'
-import { Route as EmployeeLeavesRouteImport } from './routes/employee.leaves'
-import { Route as EmployeeDocumentsRouteImport } from './routes/employee.documents'
-import { Route as EmployeeDashboardRouteImport } from './routes/employee.dashboard'
-import { Route as EmployeeCorrectionsRouteImport } from './routes/employee.corrections'
-import { Route as EmployeeAttendanceRouteImport } from './routes/employee.attendance'
-import { Route as EmployeeApplicationsRouteImport } from './routes/employee.applications'
-import { Route as AppSpecialWorkingDaysRouteImport } from './routes/_app.special-working-days'
-import { Route as AppSettingsRouteImport } from './routes/_app.settings'
-import { Route as AppReportsRouteImport } from './routes/_app.reports'
-import { Route as AppProfileRouteImport } from './routes/_app.profile'
-import { Route as AppPayrollRouteImport } from './routes/_app.payroll'
-import { Route as AppLeavesRouteImport } from './routes/_app.leaves'
-import { Route as AppHolidaysRouteImport } from './routes/_app.holidays'
-import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
-import { Route as AppAttendanceRouteImport } from './routes/_app.attendance'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as EmployeeRouteImport } from './routes/employee'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ScanRouteImport } from './routes/scan'
 import { Route as AppAccountsRouteImport } from './routes/_app.accounts'
-import { Route as AppEmployeesIndexRouteImport } from './routes/_app.employees.index'
-import { Route as AppPayrollPayslipsRouteImport } from './routes/_app.payroll.payslips'
-import { Route as AppLeavesRequestRouteImport } from './routes/_app.leaves.request'
-import { Route as AppEmployeesCreateRouteImport } from './routes/_app.employees.create'
-import { Route as AppAttendanceQrRouteImport } from './routes/_app.attendance.qr'
-import { Route as AppAttendanceLiveRouteImport } from './routes/_app.attendance.live'
-import { Route as AppAttendanceCorrectionsRouteImport } from './routes/_app.attendance.corrections'
-import { Route as AppAccountsRevenueRouteImport } from './routes/_app.accounts.revenue'
-import { Route as AppAccountsReserveRouteImport } from './routes/_app.accounts.reserve'
-import { Route as AppAccountsProfitDistributionRouteImport } from './routes/_app.accounts.profit-distribution'
+import { Route as AppAttendanceRouteImport } from './routes/_app.attendance'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppHolidaysRouteImport } from './routes/_app.holidays'
+import { Route as AppLeavesRouteImport } from './routes/_app.leaves'
+import { Route as AppPayrollRouteImport } from './routes/_app.payroll'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppReportsRouteImport } from './routes/_app.reports'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppSpecialWorkingDaysRouteImport } from './routes/_app.special-working-days'
+import { Route as EmployeeIndexRouteImport } from './routes/employee.index'
+import { Route as EmployeeApplicationsRouteImport } from './routes/employee.applications'
+import { Route as EmployeeAttendanceRouteImport } from './routes/employee.attendance'
+import { Route as EmployeeCorrectionsRouteImport } from './routes/employee.corrections'
+import { Route as EmployeeDashboardRouteImport } from './routes/employee.dashboard'
+import { Route as EmployeeDocumentsRouteImport } from './routes/employee.documents'
+import { Route as EmployeeLeavesRouteImport } from './routes/employee.leaves'
+import { Route as EmployeePayrollRouteImport } from './routes/employee.payroll'
+import { Route as EmployeeProfileRouteImport } from './routes/employee.profile'
 import { Route as AppAccountsExpensesRouteImport } from './routes/_app.accounts.expenses'
+import { Route as AppAccountsProfitDistributionRouteImport } from './routes/_app.accounts.profit-distribution'
+import { Route as AppAccountsReserveRouteImport } from './routes/_app.accounts.reserve'
+import { Route as AppAccountsRevenueRouteImport } from './routes/_app.accounts.revenue'
+import { Route as AppAttendanceCorrectionsRouteImport } from './routes/_app.attendance.corrections'
+import { Route as AppAttendanceLiveRouteImport } from './routes/_app.attendance.live'
+import { Route as AppAttendanceQrRouteImport } from './routes/_app.attendance.qr'
+import { Route as AppEmployeesIndexRouteImport } from './routes/_app.employees.index'
+import { Route as AppEmployeesCreateRouteImport } from './routes/_app.employees.create'
+import { Route as AppLeavesRequestRouteImport } from './routes/_app.leaves.request'
+import { Route as AppPayrollPayslipsRouteImport } from './routes/_app.payroll.payslips'
 import { Route as AppEmployeesIdIndexRouteImport } from './routes/_app.employees.$id.index'
 import { Route as AppEmployeesIdEditRouteImport } from './routes/_app.employees.$id.edit'
 
-const ScanRoute = ScanRouteImport.update({
-  id: '/scan',
-  path: '/scan',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmployeeRoute = EmployeeRouteImport.update({
@@ -62,98 +61,19 @@ const EmployeeRoute = EmployeeRouteImport.update({
   path: '/employee',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmployeeIndexRoute = EmployeeIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => EmployeeRoute,
-} as any)
-const EmployeeProfileRoute = EmployeeProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => EmployeeRoute,
-} as any)
-const EmployeePayrollRoute = EmployeePayrollRouteImport.update({
-  id: '/payroll',
-  path: '/payroll',
-  getParentRoute: () => EmployeeRoute,
-} as any)
-const EmployeeLeavesRoute = EmployeeLeavesRouteImport.update({
-  id: '/leaves',
-  path: '/leaves',
-  getParentRoute: () => EmployeeRoute,
-} as any)
-const EmployeeDocumentsRoute = EmployeeDocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
-  getParentRoute: () => EmployeeRoute,
-} as any)
-const EmployeeDashboardRoute = EmployeeDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => EmployeeRoute,
-} as any)
-const EmployeeCorrectionsRoute = EmployeeCorrectionsRouteImport.update({
-  id: '/corrections',
-  path: '/corrections',
-  getParentRoute: () => EmployeeRoute,
-} as any)
-const EmployeeAttendanceRoute = EmployeeAttendanceRouteImport.update({
-  id: '/attendance',
-  path: '/attendance',
-  getParentRoute: () => EmployeeRoute,
-} as any)
-const EmployeeApplicationsRoute = EmployeeApplicationsRouteImport.update({
-  id: '/applications',
-  path: '/applications',
-  getParentRoute: () => EmployeeRoute,
-} as any)
-const AppSpecialWorkingDaysRoute = AppSpecialWorkingDaysRouteImport.update({
-  id: '/special-working-days',
-  path: '/special-working-days',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppReportsRoute = AppReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProfileRoute = AppProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPayrollRoute = AppPayrollRouteImport.update({
-  id: '/payroll',
-  path: '/payroll',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLeavesRoute = AppLeavesRouteImport.update({
-  id: '/leaves',
-  path: '/leaves',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppHolidaysRoute = AppHolidaysRouteImport.update({
-  id: '/holidays',
-  path: '/holidays',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AppAccountsRoute = AppAccountsRouteImport.update({
+  id: '/accounts',
+  path: '/accounts',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAttendanceRoute = AppAttendanceRouteImport.update({
@@ -161,55 +81,94 @@ const AppAttendanceRoute = AppAttendanceRouteImport.update({
   path: '/attendance',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAccountsRoute = AppAccountsRouteImport.update({
-  id: '/accounts',
-  path: '/accounts',
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
-const AppEmployeesIndexRoute = AppEmployeesIndexRouteImport.update({
-  id: '/employees/',
-  path: '/employees/',
+const AppHolidaysRoute = AppHolidaysRouteImport.update({
+  id: '/holidays',
+  path: '/holidays',
   getParentRoute: () => AppRoute,
 } as any)
-const AppPayrollPayslipsRoute = AppPayrollPayslipsRouteImport.update({
-  id: '/payslips',
-  path: '/payslips',
-  getParentRoute: () => AppPayrollRoute,
-} as any)
-const AppLeavesRequestRoute = AppLeavesRequestRouteImport.update({
-  id: '/request',
-  path: '/request',
-  getParentRoute: () => AppLeavesRoute,
-} as any)
-const AppEmployeesCreateRoute = AppEmployeesCreateRouteImport.update({
-  id: '/employees/create',
-  path: '/employees/create',
+const AppLeavesRoute = AppLeavesRouteImport.update({
+  id: '/leaves',
+  path: '/leaves',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAttendanceQrRoute = AppAttendanceQrRouteImport.update({
-  id: '/qr',
-  path: '/qr',
-  getParentRoute: () => AppAttendanceRoute,
+const AppPayrollRoute = AppPayrollRouteImport.update({
+  id: '/payroll',
+  path: '/payroll',
+  getParentRoute: () => AppRoute,
 } as any)
-const AppAttendanceLiveRoute = AppAttendanceLiveRouteImport.update({
-  id: '/live',
-  path: '/live',
-  getParentRoute: () => AppAttendanceRoute,
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
 } as any)
-const AppAttendanceCorrectionsRoute =
-  AppAttendanceCorrectionsRouteImport.update({
-    id: '/corrections',
-    path: '/corrections',
-    getParentRoute: () => AppAttendanceRoute,
-  } as any)
-const AppAccountsRevenueRoute = AppAccountsRevenueRouteImport.update({
-  id: '/revenue',
-  path: '/revenue',
-  getParentRoute: () => AppAccountsRoute,
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
 } as any)
-const AppAccountsReserveRoute = AppAccountsReserveRouteImport.update({
-  id: '/reserve',
-  path: '/reserve',
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSpecialWorkingDaysRoute = AppSpecialWorkingDaysRouteImport.update({
+  id: '/special-working-days',
+  path: '/special-working-days',
+  getParentRoute: () => AppRoute,
+} as any)
+const EmployeeIndexRoute = EmployeeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const EmployeeApplicationsRoute = EmployeeApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const EmployeeAttendanceRoute = EmployeeAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const EmployeeCorrectionsRoute = EmployeeCorrectionsRouteImport.update({
+  id: '/corrections',
+  path: '/corrections',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const EmployeeDashboardRoute = EmployeeDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const EmployeeDocumentsRoute = EmployeeDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const EmployeeLeavesRoute = EmployeeLeavesRouteImport.update({
+  id: '/leaves',
+  path: '/leaves',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const EmployeePayrollRoute = EmployeePayrollRouteImport.update({
+  id: '/payroll',
+  path: '/payroll',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const EmployeeProfileRoute = EmployeeProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => EmployeeRoute,
+} as any)
+const AppAccountsExpensesRoute = AppAccountsExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
   getParentRoute: () => AppAccountsRoute,
 } as any)
 const AppAccountsProfitDistributionRoute =
@@ -218,10 +177,51 @@ const AppAccountsProfitDistributionRoute =
     path: '/profit-distribution',
     getParentRoute: () => AppAccountsRoute,
   } as any)
-const AppAccountsExpensesRoute = AppAccountsExpensesRouteImport.update({
-  id: '/expenses',
-  path: '/expenses',
+const AppAccountsReserveRoute = AppAccountsReserveRouteImport.update({
+  id: '/reserve',
+  path: '/reserve',
   getParentRoute: () => AppAccountsRoute,
+} as any)
+const AppAccountsRevenueRoute = AppAccountsRevenueRouteImport.update({
+  id: '/revenue',
+  path: '/revenue',
+  getParentRoute: () => AppAccountsRoute,
+} as any)
+const AppAttendanceCorrectionsRoute =
+  AppAttendanceCorrectionsRouteImport.update({
+    id: '/corrections',
+    path: '/corrections',
+    getParentRoute: () => AppAttendanceRoute,
+  } as any)
+const AppAttendanceLiveRoute = AppAttendanceLiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => AppAttendanceRoute,
+} as any)
+const AppAttendanceQrRoute = AppAttendanceQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => AppAttendanceRoute,
+} as any)
+const AppEmployeesIndexRoute = AppEmployeesIndexRouteImport.update({
+  id: '/employees/',
+  path: '/employees/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmployeesCreateRoute = AppEmployeesCreateRouteImport.update({
+  id: '/employees/create',
+  path: '/employees/create',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeavesRequestRoute = AppLeavesRequestRouteImport.update({
+  id: '/request',
+  path: '/request',
+  getParentRoute: () => AppLeavesRoute,
+} as any)
+const AppPayrollPayslipsRoute = AppPayrollPayslipsRouteImport.update({
+  id: '/payslips',
+  path: '/payslips',
+  getParentRoute: () => AppPayrollRoute,
 } as any)
 const AppEmployeesIdIndexRoute = AppEmployeesIdIndexRouteImport.update({
   id: '/employees/$id/',
@@ -476,25 +476,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/scan': {
-      id: '/scan'
-      path: '/scan'
-      fullPath: '/scan'
-      preLoaderRoute: typeof ScanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/employee': {
-      id: '/employee'
-      path: '/employee'
-      fullPath: '/employee'
-      preLoaderRoute: typeof EmployeeRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -504,130 +490,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/employee': {
+      id: '/employee'
+      path: '/employee'
+      fullPath: '/employee'
+      preLoaderRoute: typeof EmployeeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/employee/': {
-      id: '/employee/'
-      path: '/'
-      fullPath: '/employee/'
-      preLoaderRoute: typeof EmployeeIndexRouteImport
-      parentRoute: typeof EmployeeRoute
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/employee/profile': {
-      id: '/employee/profile'
-      path: '/profile'
-      fullPath: '/employee/profile'
-      preLoaderRoute: typeof EmployeeProfileRouteImport
-      parentRoute: typeof EmployeeRoute
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/employee/payroll': {
-      id: '/employee/payroll'
-      path: '/payroll'
-      fullPath: '/employee/payroll'
-      preLoaderRoute: typeof EmployeePayrollRouteImport
-      parentRoute: typeof EmployeeRoute
-    }
-    '/employee/leaves': {
-      id: '/employee/leaves'
-      path: '/leaves'
-      fullPath: '/employee/leaves'
-      preLoaderRoute: typeof EmployeeLeavesRouteImport
-      parentRoute: typeof EmployeeRoute
-    }
-    '/employee/documents': {
-      id: '/employee/documents'
-      path: '/documents'
-      fullPath: '/employee/documents'
-      preLoaderRoute: typeof EmployeeDocumentsRouteImport
-      parentRoute: typeof EmployeeRoute
-    }
-    '/employee/dashboard': {
-      id: '/employee/dashboard'
-      path: '/dashboard'
-      fullPath: '/employee/dashboard'
-      preLoaderRoute: typeof EmployeeDashboardRouteImport
-      parentRoute: typeof EmployeeRoute
-    }
-    '/employee/corrections': {
-      id: '/employee/corrections'
-      path: '/corrections'
-      fullPath: '/employee/corrections'
-      preLoaderRoute: typeof EmployeeCorrectionsRouteImport
-      parentRoute: typeof EmployeeRoute
-    }
-    '/employee/attendance': {
-      id: '/employee/attendance'
-      path: '/attendance'
-      fullPath: '/employee/attendance'
-      preLoaderRoute: typeof EmployeeAttendanceRouteImport
-      parentRoute: typeof EmployeeRoute
-    }
-    '/employee/applications': {
-      id: '/employee/applications'
-      path: '/applications'
-      fullPath: '/employee/applications'
-      preLoaderRoute: typeof EmployeeApplicationsRouteImport
-      parentRoute: typeof EmployeeRoute
-    }
-    '/_app/special-working-days': {
-      id: '/_app/special-working-days'
-      path: '/special-working-days'
-      fullPath: '/special-working-days'
-      preLoaderRoute: typeof AppSpecialWorkingDaysRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/reports': {
-      id: '/_app/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AppReportsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/profile': {
-      id: '/_app/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AppProfileRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/payroll': {
-      id: '/_app/payroll'
-      path: '/payroll'
-      fullPath: '/payroll'
-      preLoaderRoute: typeof AppPayrollRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/leaves': {
-      id: '/_app/leaves'
-      path: '/leaves'
-      fullPath: '/leaves'
-      preLoaderRoute: typeof AppLeavesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/holidays': {
-      id: '/_app/holidays'
-      path: '/holidays'
-      fullPath: '/holidays'
-      preLoaderRoute: typeof AppHolidaysRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
+    '/_app/accounts': {
+      id: '/_app/accounts'
+      path: '/accounts'
+      fullPath: '/accounts'
+      preLoaderRoute: typeof AppAccountsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/attendance': {
@@ -637,74 +525,130 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAttendanceRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/accounts': {
-      id: '/_app/accounts'
-      path: '/accounts'
-      fullPath: '/accounts'
-      preLoaderRoute: typeof AppAccountsRouteImport
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/employees/': {
-      id: '/_app/employees/'
-      path: '/employees'
-      fullPath: '/employees/'
-      preLoaderRoute: typeof AppEmployeesIndexRouteImport
+    '/_app/holidays': {
+      id: '/_app/holidays'
+      path: '/holidays'
+      fullPath: '/holidays'
+      preLoaderRoute: typeof AppHolidaysRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/payroll/payslips': {
-      id: '/_app/payroll/payslips'
-      path: '/payslips'
-      fullPath: '/payroll/payslips'
-      preLoaderRoute: typeof AppPayrollPayslipsRouteImport
-      parentRoute: typeof AppPayrollRoute
-    }
-    '/_app/leaves/request': {
-      id: '/_app/leaves/request'
-      path: '/request'
-      fullPath: '/leaves/request'
-      preLoaderRoute: typeof AppLeavesRequestRouteImport
-      parentRoute: typeof AppLeavesRoute
-    }
-    '/_app/employees/create': {
-      id: '/_app/employees/create'
-      path: '/employees/create'
-      fullPath: '/employees/create'
-      preLoaderRoute: typeof AppEmployeesCreateRouteImport
+    '/_app/leaves': {
+      id: '/_app/leaves'
+      path: '/leaves'
+      fullPath: '/leaves'
+      preLoaderRoute: typeof AppLeavesRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/attendance/qr': {
-      id: '/_app/attendance/qr'
-      path: '/qr'
-      fullPath: '/attendance/qr'
-      preLoaderRoute: typeof AppAttendanceQrRouteImport
-      parentRoute: typeof AppAttendanceRoute
+    '/_app/payroll': {
+      id: '/_app/payroll'
+      path: '/payroll'
+      fullPath: '/payroll'
+      preLoaderRoute: typeof AppPayrollRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_app/attendance/live': {
-      id: '/_app/attendance/live'
-      path: '/live'
-      fullPath: '/attendance/live'
-      preLoaderRoute: typeof AppAttendanceLiveRouteImport
-      parentRoute: typeof AppAttendanceRoute
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/_app/attendance/corrections': {
-      id: '/_app/attendance/corrections'
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/special-working-days': {
+      id: '/_app/special-working-days'
+      path: '/special-working-days'
+      fullPath: '/special-working-days'
+      preLoaderRoute: typeof AppSpecialWorkingDaysRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/employee/': {
+      id: '/employee/'
+      path: '/'
+      fullPath: '/employee/'
+      preLoaderRoute: typeof EmployeeIndexRouteImport
+      parentRoute: typeof EmployeeRoute
+    }
+    '/employee/applications': {
+      id: '/employee/applications'
+      path: '/applications'
+      fullPath: '/employee/applications'
+      preLoaderRoute: typeof EmployeeApplicationsRouteImport
+      parentRoute: typeof EmployeeRoute
+    }
+    '/employee/attendance': {
+      id: '/employee/attendance'
+      path: '/attendance'
+      fullPath: '/employee/attendance'
+      preLoaderRoute: typeof EmployeeAttendanceRouteImport
+      parentRoute: typeof EmployeeRoute
+    }
+    '/employee/corrections': {
+      id: '/employee/corrections'
       path: '/corrections'
-      fullPath: '/attendance/corrections'
-      preLoaderRoute: typeof AppAttendanceCorrectionsRouteImport
-      parentRoute: typeof AppAttendanceRoute
+      fullPath: '/employee/corrections'
+      preLoaderRoute: typeof EmployeeCorrectionsRouteImport
+      parentRoute: typeof EmployeeRoute
     }
-    '/_app/accounts/revenue': {
-      id: '/_app/accounts/revenue'
-      path: '/revenue'
-      fullPath: '/accounts/revenue'
-      preLoaderRoute: typeof AppAccountsRevenueRouteImport
-      parentRoute: typeof AppAccountsRoute
+    '/employee/dashboard': {
+      id: '/employee/dashboard'
+      path: '/dashboard'
+      fullPath: '/employee/dashboard'
+      preLoaderRoute: typeof EmployeeDashboardRouteImport
+      parentRoute: typeof EmployeeRoute
     }
-    '/_app/accounts/reserve': {
-      id: '/_app/accounts/reserve'
-      path: '/reserve'
-      fullPath: '/accounts/reserve'
-      preLoaderRoute: typeof AppAccountsReserveRouteImport
+    '/employee/documents': {
+      id: '/employee/documents'
+      path: '/documents'
+      fullPath: '/employee/documents'
+      preLoaderRoute: typeof EmployeeDocumentsRouteImport
+      parentRoute: typeof EmployeeRoute
+    }
+    '/employee/leaves': {
+      id: '/employee/leaves'
+      path: '/leaves'
+      fullPath: '/employee/leaves'
+      preLoaderRoute: typeof EmployeeLeavesRouteImport
+      parentRoute: typeof EmployeeRoute
+    }
+    '/employee/payroll': {
+      id: '/employee/payroll'
+      path: '/payroll'
+      fullPath: '/employee/payroll'
+      preLoaderRoute: typeof EmployeePayrollRouteImport
+      parentRoute: typeof EmployeeRoute
+    }
+    '/employee/profile': {
+      id: '/employee/profile'
+      path: '/profile'
+      fullPath: '/employee/profile'
+      preLoaderRoute: typeof EmployeeProfileRouteImport
+      parentRoute: typeof EmployeeRoute
+    }
+    '/_app/accounts/expenses': {
+      id: '/_app/accounts/expenses'
+      path: '/expenses'
+      fullPath: '/accounts/expenses'
+      preLoaderRoute: typeof AppAccountsExpensesRouteImport
       parentRoute: typeof AppAccountsRoute
     }
     '/_app/accounts/profit-distribution': {
@@ -714,12 +658,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccountsProfitDistributionRouteImport
       parentRoute: typeof AppAccountsRoute
     }
-    '/_app/accounts/expenses': {
-      id: '/_app/accounts/expenses'
-      path: '/expenses'
-      fullPath: '/accounts/expenses'
-      preLoaderRoute: typeof AppAccountsExpensesRouteImport
+    '/_app/accounts/reserve': {
+      id: '/_app/accounts/reserve'
+      path: '/reserve'
+      fullPath: '/accounts/reserve'
+      preLoaderRoute: typeof AppAccountsReserveRouteImport
       parentRoute: typeof AppAccountsRoute
+    }
+    '/_app/accounts/revenue': {
+      id: '/_app/accounts/revenue'
+      path: '/revenue'
+      fullPath: '/accounts/revenue'
+      preLoaderRoute: typeof AppAccountsRevenueRouteImport
+      parentRoute: typeof AppAccountsRoute
+    }
+    '/_app/attendance/corrections': {
+      id: '/_app/attendance/corrections'
+      path: '/corrections'
+      fullPath: '/attendance/corrections'
+      preLoaderRoute: typeof AppAttendanceCorrectionsRouteImport
+      parentRoute: typeof AppAttendanceRoute
+    }
+    '/_app/attendance/live': {
+      id: '/_app/attendance/live'
+      path: '/live'
+      fullPath: '/attendance/live'
+      preLoaderRoute: typeof AppAttendanceLiveRouteImport
+      parentRoute: typeof AppAttendanceRoute
+    }
+    '/_app/attendance/qr': {
+      id: '/_app/attendance/qr'
+      path: '/qr'
+      fullPath: '/attendance/qr'
+      preLoaderRoute: typeof AppAttendanceQrRouteImport
+      parentRoute: typeof AppAttendanceRoute
+    }
+    '/_app/employees/': {
+      id: '/_app/employees/'
+      path: '/employees'
+      fullPath: '/employees/'
+      preLoaderRoute: typeof AppEmployeesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/employees/create': {
+      id: '/_app/employees/create'
+      path: '/employees/create'
+      fullPath: '/employees/create'
+      preLoaderRoute: typeof AppEmployeesCreateRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/leaves/request': {
+      id: '/_app/leaves/request'
+      path: '/request'
+      fullPath: '/leaves/request'
+      preLoaderRoute: typeof AppLeavesRequestRouteImport
+      parentRoute: typeof AppLeavesRoute
+    }
+    '/_app/payroll/payslips': {
+      id: '/_app/payroll/payslips'
+      path: '/payslips'
+      fullPath: '/payroll/payslips'
+      preLoaderRoute: typeof AppPayrollPayslipsRouteImport
+      parentRoute: typeof AppPayrollRoute
     }
     '/_app/employees/$id/': {
       id: '/_app/employees/$id/'

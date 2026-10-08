@@ -159,11 +159,11 @@ function EmployeeCorrections() {
         correction and an admin will review it.
       </p>
 
-      <div className="mt-6 rounded-2xl border bg-card p-5">
+      <div className="mt-6 rounded-2xl border bg-card shadow-xs p-5">
         <h3 className="mb-4 text-sm font-semibold">New correction request</h3>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div role="alert" className="mb-4 rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
             {error}
           </div>
         )}

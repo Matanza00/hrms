@@ -44,7 +44,7 @@ function ProfitDistributionPage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
         Loading profit distribution...
       </div>
     );
@@ -52,7 +52,7 @@ function ProfitDistributionPage() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );
@@ -79,7 +79,7 @@ function ProfitDistributionPage() {
 
   if (activeDistribution.length === 0) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
         No profit distribution available yet. Add revenue and expenses first.
       </div>
     );
@@ -91,7 +91,7 @@ function ProfitDistributionPage() {
         {activeDistribution.map((p) => (
           <div
             key={p.name}
-            className="relative overflow-hidden rounded-2xl border bg-card p-5"
+            className="relative overflow-hidden rounded-2xl border bg-card shadow-xs p-5"
           >
             <div
               className="absolute inset-x-0 top-0 h-1"

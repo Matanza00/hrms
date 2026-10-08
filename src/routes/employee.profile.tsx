@@ -17,7 +17,7 @@ function EmployeeProfile() {
       <h1 className="text-3xl font-bold">My Profile</h1>
       <p className="text-muted-foreground">Personal and employment details.</p>
 
-      <div className="mt-6 grid gap-4 rounded-2xl border bg-card p-6 md:grid-cols-2">
+      <div className="mt-6 grid gap-4 rounded-2xl border bg-card shadow-xs p-6 md:grid-cols-2">
         <p><b>Name:</b> {emp?.name || "—"}</p>
         <p><b>Employee Code:</b> {emp?.employeeCode || "—"}</p>
         <p><b>Email:</b> {emp?.email || "—"}</p>

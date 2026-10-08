@@ -61,7 +61,7 @@ function ReservePage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
         Loading reserve ledger...
       </div>
     );
@@ -69,7 +69,7 @@ function ReservePage() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );
@@ -206,8 +206,8 @@ function ReservePage() {
                 <span
                   className={`inline-flex items-center gap-1 text-xs ${
                     type === "credit"
-                      ? "text-[oklch(0.55_0.18_152)]"
-                      : "text-[oklch(0.55_0.23_27)]"
+                      ? "text-[oklch(0.48_0.18_152)]"
+                      : "text-[oklch(0.5_0.23_27)]"
                   }`}
                 >
                   {type === "credit" ? (
@@ -230,8 +230,8 @@ function ReservePage() {
                 <span
                   className={`tabular-nums font-medium ${
                     type === "credit"
-                      ? "text-[oklch(0.55_0.18_152)]"
-                      : "text-[oklch(0.55_0.23_27)]"
+                      ? "text-[oklch(0.48_0.18_152)]"
+                      : "text-[oklch(0.5_0.23_27)]"
                   }`}
                 >
                   {type === "credit" ? "+" : "-"}

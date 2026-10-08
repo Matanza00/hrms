@@ -52,7 +52,9 @@ function EmployeeDashboard() {
       </div>
 
       {/* KPI grid */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      {/* Six across only once there is room for the labels; below that they
+          truncate to "Remainin…" and the card stops saying anything. */}
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         <StatCard
           label="Remaining Leaves"
           value={stats.isLoading ? "…" : leaves.remaining}
@@ -100,7 +102,7 @@ function EmployeeDashboard() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Leave breakdown by type */}
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-2xl border bg-card shadow-xs p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <CalendarCheck className="h-4 w-4 text-muted-foreground" />
             Leave Balance
@@ -141,7 +143,7 @@ function EmployeeDashboard() {
 
         {/* Hours + upcoming holidays */}
         <div className="space-y-4">
-          <div className="rounded-2xl border bg-card p-5">
+          <div className="rounded-2xl border bg-card shadow-xs p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <Timer className="h-4 w-4 text-muted-foreground" />
               This Month's Hours
@@ -175,7 +177,7 @@ function EmployeeDashboard() {
             ) : null}
           </div>
 
-          <div className="rounded-2xl border bg-card p-5">
+          <div className="rounded-2xl border bg-card shadow-xs p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <PartyPopper className="h-4 w-4 text-muted-foreground" />
               Upcoming Holidays

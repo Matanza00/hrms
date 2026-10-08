@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border bg-card p-6">
+    <div className="rounded-2xl border bg-card shadow-xs p-6">
       <h3 className="text-sm font-semibold mb-4">{title}</h3>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </div>
@@ -123,7 +123,7 @@ function SettingsPage() {
           title="Settings"
           description="Configure office, attendance, payroll and leave rules."
         />
-        <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+        <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
           Loading settings...
         </div>
       </div>
@@ -137,7 +137,7 @@ function SettingsPage() {
           title="Settings"
           description="Configure office, attendance, payroll and leave rules."
         />
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
           {error instanceof Error ? error.message : "Something went wrong"}
         </div>
       </div>

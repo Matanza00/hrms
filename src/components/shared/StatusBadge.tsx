@@ -7,18 +7,18 @@ const variants: Record<string, string> = {
   present: "bg-[oklch(0.7_0.18_152/0.15)] text-[oklch(0.45_0.18_152)] dark:text-[oklch(0.82_0.18_152)]",
   received: "bg-[oklch(0.7_0.18_152/0.15)] text-[oklch(0.45_0.18_152)] dark:text-[oklch(0.82_0.18_152)]",
 
-  pending: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.55_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
-  processing: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.55_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
-  late: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.55_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
-  probation: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.55_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
-  invoiced: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.55_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
-  half_day: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.55_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
+  pending: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.5_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
+  processing: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.5_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
+  late: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.5_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
+  probation: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.5_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
+  invoiced: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.5_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
+  half_day: "bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.5_0.16_75)] dark:text-[oklch(0.85_0.16_75)]",
   on_leave: "bg-[oklch(0.62_0.19_259/0.15)] text-[oklch(0.5_0.19_259)] dark:text-[oklch(0.78_0.19_259)]",
   leave: "bg-[oklch(0.62_0.19_259/0.15)] text-[oklch(0.5_0.19_259)] dark:text-[oklch(0.78_0.19_259)]",
 
-  rejected: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
-  absent: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
-  terminated: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
+  rejected: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
+  absent: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
+  terminated: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]",
 };
 
 export function StatusBadge({ status, label }: { status: string; label?: string }) {

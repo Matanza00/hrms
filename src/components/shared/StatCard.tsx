@@ -13,9 +13,9 @@ interface Props {
 
 const toneClasses: Record<NonNullable<Props["tone"]>, string> = {
   default: "bg-muted text-foreground",
-  success: "bg-[oklch(0.7_0.18_152/0.12)] text-[oklch(0.55_0.18_152)] dark:text-[oklch(0.78_0.18_152)]",
-  warning: "bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.6_0.16_75)] dark:text-[oklch(0.82_0.16_75)]",
-  danger: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.72_0.23_27)]",
+  success: "bg-[oklch(0.7_0.18_152/0.12)] text-[oklch(0.48_0.18_152)] dark:text-[oklch(0.78_0.18_152)]",
+  warning: "bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.5_0.16_75)] dark:text-[oklch(0.82_0.16_75)]",
+  danger: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.72_0.23_27)]",
   accent: "bg-[oklch(0.62_0.19_259/0.12)] text-[oklch(0.5_0.19_259)] dark:text-[oklch(0.72_0.19_259)]",
 };
 
@@ -25,8 +25,14 @@ export function StatCard({ label, value, icon: Icon, trend, hint, tone = "defaul
     <div className="group relative overflow-hidden rounded-2xl border bg-card p-4 sm:p-5 transition-all hover:shadow-sm hover:-translate-y-0.5">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1 space-y-1.5">
-          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate">{label}</p>
-          <p className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight truncate tabular-nums">{value}</p>
+          {/* The label wraps rather than truncating: a card headed "Remainin…"
+              tells the reader nothing. The figure itself stays on one line. */}
+          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground text-pretty">
+            {label}
+          </p>
+          <p className="truncate text-lg font-semibold tabular-nums tracking-tight sm:text-xl md:text-2xl">
+            {value}
+          </p>
         </div>
         {Icon && (
           <div className={cn("grid h-8 w-8 sm:h-9 sm:w-9 shrink-0 place-items-center rounded-lg sm:rounded-xl", toneClasses[tone])}>
@@ -39,7 +45,7 @@ export function StatCard({ label, value, icon: Icon, trend, hint, tone = "defaul
           <span className={cn(
             "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-medium",
             up ? "bg-[oklch(0.7_0.18_152/0.15)] text-[oklch(0.5_0.18_152)] dark:text-[oklch(0.78_0.18_152)]"
-               : "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)] dark:text-[oklch(0.72_0.23_27)]"
+               : "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.72_0.23_27)]"
           )}>
             {up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
             {Math.abs(trend)}%

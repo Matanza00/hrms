@@ -84,7 +84,7 @@ function ReportsPage() {
         description="Central reporting hub for HRMS, payroll and accounts."
       />
 
-      <div className="mb-5 rounded-2xl border bg-card p-5">
+      <div className="mb-5 rounded-2xl border bg-card shadow-xs p-5">
         <div className="flex items-start gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-accent/10 text-accent">
             <FileText className="h-4.5 w-4.5" />

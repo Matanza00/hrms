@@ -61,7 +61,7 @@ function Column({
   items: LiveItem[];
 }) {
   return (
-    <div className="rounded-2xl border bg-card p-5">
+    <div className="rounded-2xl border bg-card shadow-xs p-5">
       <div className="mb-4 flex items-center gap-2">
         <div className={`grid h-8 w-8 place-items-center rounded-lg ${color}`}>
           <Icon className="h-4 w-4" />
@@ -112,7 +112,7 @@ function Live() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
         Loading live attendance...
       </div>
     );
@@ -120,7 +120,7 @@ function Live() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );
@@ -174,7 +174,7 @@ function Live() {
       <Column
         title="On Break"
         icon={Coffee}
-        color="bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.55_0.16_75)]"
+        color="bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.5_0.16_75)]"
         items={onBreak}
       />
 
@@ -188,7 +188,7 @@ function Live() {
       <Column
         title="Late Arrivals"
         icon={AlertTriangle}
-        color="bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.55_0.23_27)]"
+        color="bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.5_0.23_27)]"
         items={late}
       />
     </div>

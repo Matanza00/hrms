@@ -34,7 +34,7 @@ function ProfilePage() {
     return (
       <div>
         <PageHeader title="My profile" description="Your account and sign-in details." />
-        <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+        <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
           Loading profile...
         </div>
       </div>
@@ -48,7 +48,7 @@ function ProfilePage() {
     <div>
       <PageHeader title="My profile" description="Your account and sign-in details." />
 
-      <div className="mb-6 flex flex-col gap-4 rounded-2xl border bg-card p-6 sm:flex-row sm:items-center">
+      <div className="mb-6 flex flex-col gap-4 rounded-2xl border bg-card shadow-xs p-6 sm:flex-row sm:items-center">
         <Avatar className="h-16 w-16">
           <AvatarFallback className="bg-primary text-base text-primary-foreground">
             {initials(displayName)}
@@ -77,7 +77,7 @@ function ProfilePage() {
         </TabsList>
 
         <TabsContent value="personal" className="mt-4">
-          <div className="grid gap-4 rounded-2xl border bg-card p-6 sm:grid-cols-2">
+          <div className="grid gap-4 rounded-2xl border bg-card shadow-xs p-6 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label className="text-xs">Username</Label>
               <Input value={user?.username ?? ""} readOnly />
@@ -120,7 +120,7 @@ function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="security" className="mt-4">
-          <div className="rounded-2xl border bg-card p-6">
+          <div className="rounded-2xl border bg-card shadow-xs p-6">
             <p className="text-sm font-medium">Password</p>
             <p className="mt-1 text-sm text-muted-foreground">
               Changing your password from this page isn&apos;t wired up yet.
@@ -129,7 +129,7 @@ function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="notifications" className="mt-4">
-          <div className="rounded-2xl border bg-card p-6">
+          <div className="rounded-2xl border bg-card shadow-xs p-6">
             <p className="text-sm text-muted-foreground">
               Notifications aren&apos;t sent yet, so there is nothing to configure. The switches
               below are placeholders.

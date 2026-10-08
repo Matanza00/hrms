@@ -9,7 +9,7 @@ export const Route = createFileRoute("/employee/documents")({
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         {["CNIC", "Educational Certificates", "Medical Documents"].map((d) => (
-          <div key={d} className="rounded-2xl border bg-card p-5">
+          <div key={d} className="rounded-2xl border bg-card shadow-xs p-5">
             <FileText className="mb-3 h-5 w-5 text-muted-foreground" />
             <p className="font-medium">{d}</p>
             <p className="text-xs text-muted-foreground">Google Drive upload pending</p>

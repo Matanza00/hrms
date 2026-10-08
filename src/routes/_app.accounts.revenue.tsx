@@ -152,7 +152,7 @@ function RevenuePage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
         Loading revenue...
       </div>
     );
@@ -160,7 +160,7 @@ function RevenuePage() {
 
   if (loadError) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
         {String(loadError.message)}
       </div>
     );
@@ -211,7 +211,7 @@ function RevenuePage() {
           </ChartCard>
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-2xl border bg-card shadow-xs p-5">
           <h3 className="text-sm font-semibold mb-3">Quick stats</h3>
 
           <div className="space-y-3 text-sm">
@@ -254,7 +254,7 @@ function RevenuePage() {
             </DialogHeader>
 
             {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div role="alert" className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
                 {error}
               </div>
             )}

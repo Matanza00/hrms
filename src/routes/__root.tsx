@@ -35,12 +35,15 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+// The router hands the thrown value over as `unknown`, because a throw can be
+// anything, so it is narrowed to an Error before being reported.
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const thrown = error instanceof Error ? error : new Error(String(error));
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+    reportLovableError(thrown, { boundary: "tanstack_root_error_component" });
+  }, [thrown]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -89,7 +92,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      // Geist for the interface and Geist Mono for figures. Fetched ahead of the
+      // stylesheet so the first paint already has them; the stack in styles.css
+      // falls back to the system font if the request never lands.
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap",
+      },
+      { rel: "stylesheet", href: appCss },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

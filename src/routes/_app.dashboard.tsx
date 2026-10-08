@@ -224,7 +224,7 @@ function Dashboard() {
     return (
       <div>
         <PageHeader eyebrow="Admin" title="Dashboard" description="Loading live HRMS data..." />
-        <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+        <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
           Loading dashboard...
         </div>
       </div>
@@ -235,7 +235,7 @@ function Dashboard() {
     return (
       <div>
         <PageHeader eyebrow="Admin" title="Dashboard" description="Live HRMS overview." />
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
           {error instanceof Error ? error.message : "Something went wrong"}
         </div>
       </div>
@@ -428,7 +428,7 @@ function Dashboard() {
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-2xl border bg-card shadow-xs p-5">
           <SectionHeader title="Recent Attendance" />
           {attendanceRecords.length === 0 ? (
             <p className="text-sm text-muted-foreground">No attendance records.</p>
@@ -447,7 +447,7 @@ function Dashboard() {
           )}
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-2xl border bg-card shadow-xs p-5">
           <SectionHeader title="Recent Leave Requests" />
           {leaveRequests.length === 0 ? (
             <p className="text-sm text-muted-foreground">No leave requests.</p>
@@ -466,7 +466,7 @@ function Dashboard() {
           )}
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
+        <div className="rounded-2xl border bg-card shadow-xs p-5">
           <SectionHeader title="Recent Expenses" />
           {expenses.length === 0 ? (
             <p className="text-sm text-muted-foreground">No expenses recorded.</p>
