@@ -317,19 +317,14 @@ function ExpensesPage() {
             <DialogTitle>{editing ? "Edit expense" : "Record expense"}</DialogTitle>
           </DialogHeader>
 
-<<<<<<< HEAD
-            {error && (
-              <div role="alert" className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
-                {error}
-              </div>
-            )}
-=======
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div
+              role="alert"
+              className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]"
+            >
               {error}
             </div>
           )}
->>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">

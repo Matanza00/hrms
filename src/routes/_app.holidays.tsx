@@ -241,80 +241,11 @@ function HolidaysPage() {
         title="Holidays"
         description="Public, religious and company holidays for the year."
         actions={
-<<<<<<< HEAD
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Add holiday
-              </Button>
-            </DialogTrigger>
 
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add holiday</DialogTitle>
-              </DialogHeader>
-
-              {error && (
-                <div role="alert" className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
-                  {error}
-                </div>
-              )}
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2 space-y-1.5">
-                  <Label className="text-xs">Name</Label>
-                  <Input
-                    value={form.title}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, title: e.target.value }))
-                    }
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Date</Label>
-                  <Input
-                    type="date"
-                    value={form.holidayDate}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, holidayDate: e.target.value }))
-                    }
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Type</Label>
-                  <Select
-                    value={form.holidayType}
-                    onValueChange={(value) =>
-                      setForm((p) => ({ ...p, holidayType: value }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      <SelectItem value="Public">Public</SelectItem>
-                      <SelectItem value="Religious">Religious</SelectItem>
-                      <SelectItem value="Company">Company</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <Button onClick={handleSave} disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Saving..." : "Save"}
-              </Button>
-            </DialogContent>
-          </Dialog>
-=======
           <Button size="sm" onClick={openCreate}>
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             Add holiday
           </Button>
->>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
         }
       />
 

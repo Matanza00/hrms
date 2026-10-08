@@ -92,10 +92,7 @@ function PayslipsPage() {
 
   if (!payroll) {
     return (
-<<<<<<< HEAD
-      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
-        No payroll record found. Generate payroll first.
-=======
+
       <div className="max-w-3xl space-y-3">
         <Button variant="ghost" size="sm" asChild>
           <Link to="/payroll">
@@ -103,10 +100,9 @@ function PayslipsPage() {
             Back to payroll
           </Link>
         </Button>
-        <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+        <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
           No payroll record found. Generate payroll first.
         </div>
->>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
       </div>
     );
   }

@@ -10,12 +10,12 @@ import {
   MapPin,
   Calendar,
   Pencil,
-<<<<<<< HEAD
-  FileText,
-  BadgeCheck,
   Clock,
+  ArrowLeft,
 } from "lucide-react";
 import { useEmployee } from "@/hooks/useEmployees";
+import { EmployeeActivity } from "@/components/employees/EmployeeActivity";
+import { EmployeeDocuments } from "@/components/employees/EmployeeDocuments";
 import { useQuery } from "@tanstack/react-query";
 import { useAttendance } from "@/hooks/useAttendance";
 import type { AttendanceRecord } from "@/lib/api/attendance";
@@ -26,13 +26,6 @@ import { dayBalanceMinutes, formatHoursMinutes, monthlyHoursBalance } from "@/li
 import { DataTable } from "@/components/shared/DataTable";
 import { StatCard } from "@/components/shared/StatCard";
 import { Skeleton } from "@/components/ui/skeleton";
-=======
-  ArrowLeft,
-} from "lucide-react";
-import { useEmployee } from "@/hooks/useEmployees";
-import { EmployeeActivity } from "@/components/employees/EmployeeActivity";
-import { EmployeeDocuments } from "@/components/employees/EmployeeDocuments";
->>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
 
 export const Route = createFileRoute("/_app/employees/$id/")({
   component: EmployeeProfile,
@@ -407,58 +400,11 @@ function EmployeeProfile() {
             </TabsContent>
 
             <TabsContent value="documents" className="mt-4">
-<<<<<<< HEAD
-              <div className="rounded-2xl border bg-card shadow-xs p-6">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {["CNIC", "Educational Certificates", "Medical Documents"].map(
-                    (d) => (
-                      <div
-                        key={d}
-                        className="flex items-center justify-between rounded-xl border p-3"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="grid h-9 w-9 place-items-center rounded-lg bg-muted">
-                            <FileText className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{d}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Google Drive upload pending
-                            </p>
-                          </div>
-                        </div>
-                        <BadgeCheck className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="attendance" className="mt-4">
-              <EmployeeAttendanceTab employeeId={emp.employeeId} />
-            </TabsContent>
-
-            <TabsContent value="leaves" className="mt-4">
-              <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm">
-                <p className="text-muted-foreground">
-                  Leave records API will be connected next.
-                </p>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="payroll" className="mt-4">
-              <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm">
-                <p className="text-muted-foreground">
-                  Payroll records API will be connected next.
-                </p>
-              </div>
-=======
               <EmployeeDocuments employeeId={emp.employeeId} />
             </TabsContent>
 
             <TabsContent value="attendance" className="mt-4">
-              <EmployeeActivity kind="attendance" employeeId={emp.employeeId} />
+              <EmployeeAttendanceTab employeeId={emp.employeeId} />
             </TabsContent>
 
             <TabsContent value="leaves" className="mt-4">
@@ -467,7 +413,6 @@ function EmployeeProfile() {
 
             <TabsContent value="payroll" className="mt-4">
               <EmployeeActivity kind="payroll" employeeId={emp.employeeId} />
->>>>>>> 9c3a7fc1abebff29637c9d5d466c84a2088a9e79
             </TabsContent>
           </Tabs>
         </div>
