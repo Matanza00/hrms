@@ -22,7 +22,9 @@ const variants: Record<string, string> = {
 };
 
 export function StatusBadge({ status, label }: { status: string; label?: string }) {
-  const cls = variants[status] ?? "bg-muted text-foreground";
+  // Normalise "Received", "Half Day", "On Leave" → the lowercase/underscore keys.
+  const key = String(status ?? "").toLowerCase().replace(/\s+/g, "_");
+  const cls = variants[key] ?? "bg-muted text-foreground";
   return (
     <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium capitalize", cls)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />

@@ -27,6 +27,7 @@ import {
   type PayrollRecord,
 } from "@/lib/api/payroll";
 import { useEmployees } from "@/hooks/useEmployees";
+import { RunPayrollDialog } from "@/components/payroll/RunPayrollDialog";
 
 export const Route = createFileRoute("/_app/payroll")({
   component: PayrollLayout,
@@ -70,9 +71,7 @@ function PayrollLayout() {
               <Link to="/payroll/payslips">Payslips</Link>
             </Button>
 
-            <Button size="sm" disabled>
-              Run payroll
-            </Button>
+            <RunPayrollDialog />
           </>
         }
       />

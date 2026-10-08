@@ -46,6 +46,7 @@ const routes: Record<string, Handler> = {
   approveAttendanceCorrection: attendance.approveAttendanceCorrection,
   adminUpdateAttendance: attendance.adminUpdateAttendance,
   adminCreateAttendance: attendance.adminCreateAttendance,
+  deleteAttendance: attendance.deleteAttendance,
 
   // QR attendance + registered phones
   scanAttendance: attendance.scanAttendance,
@@ -70,6 +71,8 @@ const routes: Record<string, Handler> = {
   // calendar
   holidays: calendar.getHolidays,
   createHoliday: calendar.createHoliday,
+  updateHoliday: calendar.updateHoliday,
+  deleteHoliday: calendar.deleteHoliday,
   specialWorkingDays: calendar.getSpecialWorkingDays,
   createSpecialWorkingDay: calendar.createSpecialWorkingDay,
 
@@ -86,8 +89,17 @@ const routes: Record<string, Handler> = {
   // accounts
   revenue: accounts.getRevenue,
   createRevenue: accounts.createRevenue,
+  updateRevenue: accounts.updateRevenue,
+  setRevenueStatus: accounts.setRevenueStatus,
+  deleteRevenue: accounts.deleteRevenue,
   expenses: accounts.getExpenses,
   createExpense: accounts.createExpense,
+  updateExpense: accounts.updateExpense,
+  deleteExpense: accounts.deleteExpense,
+  recurringExpenses: accounts.getRecurringExpenses,
+  createRecurringExpense: accounts.createRecurringExpense,
+  updateRecurringExpense: accounts.updateRecurringExpense,
+  deleteRecurringExpense: accounts.deleteRecurringExpense,
   reserveLedger: accounts.getReserveLedger,
   accountsOverview: accounts.getAccountsOverview,
 

@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, Sparkles } from "lucide-react";
+import { Printer, Download, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getPayroll, type PayrollRecord } from "@/lib/api/payroll";
 import { useEmployees } from "@/hooks/useEmployees";
@@ -91,8 +91,16 @@ function PayslipsPage() {
 
   if (!payroll) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
-        No payroll record found. Generate payroll first.
+      <div className="max-w-3xl space-y-3">
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/payroll">
+            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+            Back to payroll
+          </Link>
+        </Button>
+        <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+          No payroll record found. Generate payroll first.
+        </div>
       </div>
     );
   }
@@ -106,16 +114,25 @@ function PayslipsPage() {
 
   return (
     <div className="max-w-3xl">
-      <div className="mb-3 flex justify-end gap-2 print:hidden">
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
-          <Printer className="mr-1.5 h-3.5 w-3.5" />
-          Print
+      <div className="mb-3 flex items-center justify-between gap-2 print:hidden">
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/payroll">
+            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+            Back to payroll
+          </Link>
         </Button>
 
-        <Button size="sm" onClick={() => window.print()}>
-          <Download className="mr-1.5 h-3.5 w-3.5" />
-          Download PDF
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer className="mr-1.5 h-3.5 w-3.5" />
+            Print
+          </Button>
+
+          <Button size="sm" onClick={() => window.print()}>
+            <Download className="mr-1.5 h-3.5 w-3.5" />
+            Download PDF
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-2xl border bg-card p-8 shadow-sm print:shadow-none">

@@ -104,3 +104,7 @@ export const adminUpdateAttendance = (
 /** Admin-only: create an attendance record for a past day that has none. */
 export const adminCreateAttendance = (data: AdminAttendanceInput) =>
   apiPost<AttendanceRecord>("adminCreateAttendance", data);
+
+/** Admin-only: permanently delete an attendance record. */
+export const deleteAttendance = (attendanceId: string) =>
+  apiPost<{ deleted: boolean }>("deleteAttendance", { attendanceId });

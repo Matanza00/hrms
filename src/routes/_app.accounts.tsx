@@ -1,6 +1,13 @@
-import { useState } from "react";
-import {  } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   createFileRoute,
   Link,
@@ -15,8 +22,6 @@ import {
   TrendingDown,
   PiggyBank,
   BadgeDollarSign,
-  CalendarDays,
-  BarChart3,
 } from "lucide-react";
 import {
   Area,
@@ -30,6 +35,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import {
   getAccountsOverview,
+  getExpenses,
+  getRevenue,
   type ProfitDistributionItem,
   type RevenueExpenseTrendItem,
 } from "@/lib/api/accounts";
@@ -93,12 +100,103 @@ function AccountsLayout() {
   );
 }
 
+type RangeKey =
+  | "all"
+  | "thisMonth"
+  | "lastMonth"
+  | "last3"
+  | "last6"
+  | "custom";
+
+const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
+  { key: "all", label: "All time" },
+  { key: "thisMonth", label: "This month" },
+  { key: "lastMonth", label: "Last month" },
+  { key: "last3", label: "Last 3 months" },
+  { key: "last6", label: "Last 6 months" },
+  { key: "custom", label: "Custom range" },
+];
+
+function pad(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function ymd(d: Date) {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function prettyDate(iso: string) {
+  const d = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** Inclusive [start, end] YYYY-MM-DD bounds for a preset, or null for all-time. */
+function rangeBounds(
+  key: RangeKey,
+  customStart: string,
+  customEnd: string,
+): { start: string; end: string } | null {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const firstOf = (year: number, month: number) => ymd(new Date(year, month, 1));
+  const lastOf = (year: number, month: number) => ymd(new Date(year, month + 1, 0));
+
+  switch (key) {
+    case "all":
+      return null;
+    case "thisMonth":
+      return { start: firstOf(y, m), end: ymd(now) };
+    case "lastMonth":
+      return { start: firstOf(y, m - 1), end: lastOf(y, m - 1) };
+    case "last3":
+      return { start: firstOf(y, m - 2), end: ymd(now) };
+    case "last6":
+      return { start: firstOf(y, m - 5), end: ymd(now) };
+    case "custom":
+      if (!customStart || !customEnd) return null;
+      return customStart <= customEnd
+        ? { start: customStart, end: customEnd }
+        : { start: customEnd, end: customStart };
+  }
+}
+
 function Overview() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["accountsOverview"],
     queryFn: getAccountsOverview,
   });
-  const [viewMode, setViewMode] = useState<"overall" | "monthly">("overall");
+  const { data: revenues = [] } = useQuery({
+    queryKey: ["revenue"],
+    queryFn: getRevenue,
+  });
+  const { data: expenses = [] } = useQuery({
+    queryKey: ["expenses"],
+    queryFn: getExpenses,
+  });
+
+  const [rangeKey, setRangeKey] = useState<RangeKey>("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+
+  const bounds = rangeBounds(rangeKey, customStart, customEnd);
+
+  const ranged = useMemo(() => {
+    const inRange = (dateStr?: string) => {
+      if (!bounds) return true;
+      const d = String(dateStr || "").slice(0, 10);
+      return d >= bounds.start && d <= bounds.end;
+    };
+    const revenue = revenues
+      .filter((r) => inRange(r.revenueDate))
+      .reduce((s, r) => s + Number(r.amount || 0), 0);
+    const expense = expenses
+      .filter((e) => inRange(e.expenseDate))
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+    return { revenue, expense, profit: revenue - expense };
+  }, [revenues, expenses, bounds]);
 
   if (isLoading) {
     return (
@@ -126,74 +224,95 @@ function Overview() {
   const trend: RevenueExpenseTrendItem[] = data?.trend ?? [];
   const distribution: ProfitDistributionItem[] = data?.distribution ?? [];
 
-  const selectedMonth = new Date().toISOString().slice(0, 7);
+  const isAllTime = rangeKey === "all";
 
-  const currentMonthData = trend.find(
-    (t) => String(t.month).slice(0, 7) === selectedMonth
-  );
+  // Reserve share comes from the configured distribution (defaults to 30%).
+  const reservePct =
+    distribution.find((d) => /reserve/i.test(d.name))?.percent ?? 30;
 
-  const monthlyRevenue = Number(currentMonthData?.revenue || 0);
-  const monthlyExpense = Number(currentMonthData?.expense || 0);
-  const monthlyProfit = monthlyRevenue - monthlyExpense;
-  const monthlyReserve = monthlyProfit > 0 ? monthlyProfit * 0.3 : 0;
-  const selectedMonthLabel = new Date(
-    `${selectedMonth}-01`
-  ).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
-
-  const isMonthly = viewMode === "monthly";
-
-  const cardLabelSuffix = isMonthly ? selectedMonthLabel : "MTD";
-
-  const cardValues = isMonthly
+  const cardValues = isAllTime
     ? {
-        revenue: monthlyRevenue,
-        expenses: monthlyExpense,
-        profit: monthlyProfit,
-        reserve: monthlyReserve,
-      }
-    : {
         revenue: summary.totalRevenue,
         expenses: summary.totalExpenses,
         profit: summary.netProfit,
         reserve: summary.reserveBalance,
+      }
+    : {
+        revenue: ranged.revenue,
+        expenses: ranged.expense,
+        profit: ranged.profit,
+        reserve: ranged.profit > 0 ? (ranged.profit * reservePct) / 100 : 0,
       };
+
+  const rangeLabel =
+    RANGE_OPTIONS.find((o) => o.key === rangeKey)?.label ?? "All time";
+  const cardLabelSuffix = isAllTime
+    ? "All time"
+    : bounds
+      ? `${prettyDate(bounds.start)} – ${prettyDate(bounds.end)}`
+      : rangeLabel;
+
+  // Distribution amounts reflect the profit of the selected range.
+  const distributionForRange = distribution.map((d) => ({
+    ...d,
+    amount: Math.round((cardValues.profit * d.percent) / 100),
+  }));
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold">
-            {isMonthly ? "Monthly Summary" : "Overall Summary"}
-          </h3>
+          <h3 className="text-sm font-semibold">{rangeLabel} summary</h3>
           <p className="text-xs text-muted-foreground">
-            {isMonthly
-              ? `Showing data for ${selectedMonthLabel}`
-              : "Showing all-time account totals"}
+            {isAllTime
+              ? "Showing all-time account totals"
+              : `Showing ${cardLabelSuffix}`}
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            setViewMode((prev) => (prev === "overall" ? "monthly" : "overall"))
-          }
-        >
-          {isMonthly ? (
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">Period</Label>
+            <Select
+              value={rangeKey}
+              onValueChange={(v) => setRangeKey(v as RangeKey)}
+            >
+              <SelectTrigger className="h-9 w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RANGE_OPTIONS.map((o) => (
+                  <SelectItem key={o.key} value={o.key}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {rangeKey === "custom" && (
             <>
-              <BarChart3 className="mr-1.5 h-3.5 w-3.5" />
-              Show Overall
-            </>
-          ) : (
-            <>
-              <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
-              Show Monthly
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">From</Label>
+                <Input
+                  type="date"
+                  className="h-9"
+                  value={customStart}
+                  onChange={(e) => setCustomStart(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">To</Label>
+                <Input
+                  type="date"
+                  className="h-9"
+                  value={customEnd}
+                  onChange={(e) => setCustomEnd(e.target.value)}
+                />
+              </div>
             </>
           )}
-        </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -312,13 +431,13 @@ function Overview() {
             Distribution snapshot
           </h3>
 
-          {distribution.length === 0 ? (
+          {distributionForRange.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No distribution data available.
             </p>
           ) : (
             <ul className="space-y-3">
-              {distribution.map((p) => (
+              {distributionForRange.map((p) => (
                 <li key={p.name} className="space-y-1.5">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{p.name}</span>

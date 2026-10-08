@@ -3,7 +3,7 @@
 // back to the well-known LOCAL dev values. For a CLOUD project you MUST export
 // the real service_role key first (never commit it).
 
-const URL = process.env.SUPABASE_URL || "http://127.0.0.1:54321";
+const URL = process.env.SUPABASE_URL;
 
 // Well-known local-dev service_role key (matches the default local JWT secret).
 const LOCAL_SERVICE_KEY =

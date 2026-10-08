@@ -13,13 +13,25 @@ import {
   Download,
   Pencil,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { useState } from "react";
 import { useAttendance } from "@/hooks/useAttendance";
-import type { AttendanceRecord } from "@/lib/api/attendance";
+import { deleteAttendance, type AttendanceRecord } from "@/lib/api/attendance";
 import { useEmployees } from "@/hooks/useEmployees";
 import { AttendanceEditDialog } from "@/components/attendance/AttendanceEditDialog";
-import { useQuery } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getHolidays } from "@/lib/api/holidays";
 import { getSettings } from "@/lib/api/settings";
 import { currentBusinessMonth } from "@/lib/businessDate";
@@ -140,7 +152,13 @@ function AttendanceLayout() {
 }
 
 function AttendanceOverview() {
+  const qc = useQueryClient();
   const { data: attendanceRecords = [], isLoading, error } = useAttendance();
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteAttendance,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+  });
 
   // Newest first — latest check-ins/check-outs at the top.
   const sortedRecords = [...attendanceRecords].sort((a, b) => recordTime(b) - recordTime(a));
@@ -345,10 +363,40 @@ function AttendanceOverview() {
               header: "",
               className: "text-right",
               render: (r) => (
-                <Button size="sm" variant="outline" className="h-7" onClick={() => openEdit(r)}>
-                  <Pencil className="mr-1 h-3 w-3" />
-                  Edit
-                </Button>
+                <div className="flex justify-end gap-1.5">
+                  <Button size="sm" variant="outline" className="h-7" onClick={() => openEdit(r)}>
+                    <Pencil className="mr-1 h-3 w-3" />
+                    Edit
+                  </Button>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="h-7 text-red-600">
+                        <Trash2 className="mr-1 h-3 w-3" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete attendance record?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This permanently removes the{" "}
+                          {formatDate(r.attendanceDate || r.checkIn)} record for{" "}
+                          {r.employeeName || getEmployeeName(r.employeeId)}. This
+                          cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteMutation.mutate(r.attendanceId)}
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               ),
             },
           ]}
