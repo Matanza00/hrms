@@ -10,8 +10,7 @@ export type SpecialWorkingDay = {
   createdAt?: string;
 };
 
-export const getSpecialWorkingDays = () =>
-  apiGet<SpecialWorkingDay[]>("specialWorkingDays");
+export const getSpecialWorkingDays = () => apiGet<SpecialWorkingDay[]>("specialWorkingDays");
 
 export const createSpecialWorkingDay = (data: {
   title: string;

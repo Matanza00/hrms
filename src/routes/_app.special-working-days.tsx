@@ -6,13 +6,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Sun } from "lucide-react";
+import { CalendarCheck, CalendarDays, Plus, Sun, Users } from "lucide-react";
+import { ChartCard } from "@/components/shared/ChartCard";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { cn } from "@/lib/utils";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -23,6 +28,7 @@ import {
 import { useState } from "react";
 
 export const Route = createFileRoute("/_app/special-working-days")({
+  head: () => ({ meta: [{ title: "Special Working Days — LDS HRMS" }] }),
   component: SpecialWorkingDaysPage,
 });
 
@@ -109,9 +115,7 @@ function SpecialWorkingDaysPage() {
 
   function toggleEmployee(employeeId: string) {
     setSelectedEmployeeIds((prev) =>
-      prev.includes(employeeId)
-        ? prev.filter((id) => id !== employeeId)
-        : [...prev, employeeId]
+      prev.includes(employeeId) ? prev.filter((id) => id !== employeeId) : [...prev, employeeId],
     );
   }
 
@@ -141,9 +145,7 @@ function SpecialWorkingDaysPage() {
         assignedEmployeeIds: allEmployees ? "" : selectedEmployeeIds.join(","),
       });
     } catch (err) {
-      setFormError(
-        err instanceof Error ? err.message : "Failed to create working day."
-      );
+      setFormError(err instanceof Error ? err.message : "Failed to create working day.");
     }
   }
 
@@ -153,6 +155,7 @@ function SpecialWorkingDaysPage() {
     return (
       <div>
         <PageHeader
+          icon={CalendarCheck}
           title="Special working days"
           description="Override holidays for selected employees when work is required."
         />
@@ -167,17 +170,24 @@ function SpecialWorkingDaysPage() {
     return (
       <div>
         <PageHeader
+          icon={CalendarCheck}
           title="Special working days"
           description="Override holidays for selected employees when work is required."
         />
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        <div className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
           {error instanceof Error ? error.message : "Something went wrong"}
         </div>
       </div>
     );
   }
 
-  const currentMonthDays = Array.from({ length: 31 }).map((_, i) => i + 1);
+  // Lay the month out under the weekday headings: blank cells before the 1st,
+  // and only as many days as this month actually has.
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const leadingBlanks = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+  const currentMonthDays = Array.from({ length: daysInMonth }).map((_, i) => i + 1);
+  const monthLabel = now.toLocaleDateString("en-PK", { month: "long", year: "numeric" });
 
   const latestDay = specialDays[0];
 
@@ -191,31 +201,35 @@ function SpecialWorkingDaysPage() {
   return (
     <div>
       <PageHeader
+        icon={CalendarCheck}
         title="Special working days"
         description="Override holidays for selected employees when work is required."
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
+              <Button>
+                <Plus />
                 Schedule day
               </Button>
             </DialogTrigger>
 
-            <DialogContent>
+            <DialogContent className="max-h-[90svh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Schedule special working day</DialogTitle>
+                <DialogDescription>
+                  The chosen employees are expected to work on this date even if it is a holiday.
+                </DialogDescription>
               </DialogHeader>
 
               {formError && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <div className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink">
                   {formError}
                 </div>
               )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 sm:gap-x-3">
                 <div className="sm:col-span-2 space-y-1.5">
-                  <Label className="text-xs">Title</Label>
+                  <Label>Title</Label>
                   <Input
                     placeholder="Eid workload / urgent delivery"
                     value={title}
@@ -224,7 +238,7 @@ function SpecialWorkingDaysPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Working date</Label>
+                  <Label>Working date</Label>
                   <Input
                     type="date"
                     value={workingDate}
@@ -232,7 +246,7 @@ function SpecialWorkingDaysPage() {
                   />
                 </div>
 
-                <label className="flex items-center gap-2 pt-6 text-sm">
+                <label className="flex cursor-pointer items-center gap-2 text-sm sm:pt-6">
                   <Checkbox
                     checked={allEmployees}
                     onCheckedChange={(v) => setAllEmployees(Boolean(v))}
@@ -242,7 +256,7 @@ function SpecialWorkingDaysPage() {
               </div>
 
               {!allEmployees && (
-                <div className="max-h-80 overflow-y-auto divide-y">
+                <div className="max-h-80 divide-y divide-divider overflow-y-auto rounded-lg border px-3">
                   {employees.map((e) => (
                     <label
                       key={e.employeeId}
@@ -253,116 +267,133 @@ function SpecialWorkingDaysPage() {
                         onCheckedChange={() => toggleEmployee(e.employeeId)}
                       />
 
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-[10px] bg-muted">
+                      <Avatar className="size-8">
+                        <AvatarFallback className="bg-muted text-[11px] text-text-secondary">
                           {initials(e.name)}
                         </AvatarFallback>
                       </Avatar>
 
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm font-medium">{e.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {e.department || "—"}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{e.department || "—"}</p>
                       </div>
                     </label>
                   ))}
                 </div>
               )}
 
-              <Button onClick={handleSave} disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Saving..." : "Assign"}
-              </Button>
+              <DialogFooter className="gap-2 sm:space-x-0">
+                <Button variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={createMutation.isPending}>
+                  {createMutation.isPending ? "Saving..." : "Assign"}
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-2xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-4">Current month calendar</h3>
-
-          <div className="grid grid-cols-7 gap-1 text-center">
-            {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-              <div
-                key={i}
-                className="text-[11px] font-medium text-muted-foreground py-1.5"
-              >
-                {d}
-              </div>
-            ))}
-
-            {currentMonthDays.map((day) => {
-              const isSpecial = specialDays.some((d) =>
-                sameDay(d.workingDate, day)
-              );
-
-              const weekend = new Date(
-                new Date().getFullYear(),
-                new Date().getMonth(),
-                day
-              ).getDay();
-
-              const isWeekend = weekend === 0 || weekend === 6;
-
-              return (
+      <div className="grid items-start gap-4 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2">
+          <ChartCard
+            icon={CalendarDays}
+            title="Current month calendar"
+            description={monthLabel}
+            bodyClassName=""
+          >
+            <div className="grid grid-cols-7 gap-1 text-center">
+              {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
                 <div
-                  key={day}
-                  className={`aspect-square grid place-items-center rounded-lg text-xs ${
-                    isSpecial
-                      ? "bg-accent text-accent-foreground font-semibold"
-                      : isWeekend
-                        ? "bg-muted/50 text-muted-foreground"
-                        : "hover:bg-muted"
-                  }`}
+                  key={i}
+                  className="py-1.5 font-mono text-[11px] font-medium text-muted-foreground"
                 >
-                  {day}
+                  {d}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+
+              {Array.from({ length: leadingBlanks }).map((_, i) => (
+                <div key={`blank-${i}`} aria-hidden />
+              ))}
+
+              {currentMonthDays.map((day) => {
+                const isSpecial = specialDays.some((d) => sameDay(d.workingDate, day));
+
+                const weekday = new Date(now.getFullYear(), now.getMonth(), day).getDay();
+
+                const isWeekend = weekday === 0 || weekday === 6;
+                const isToday = day === now.getDate();
+
+                return (
+                  <div
+                    key={day}
+                    className={cn(
+                      "grid aspect-square place-items-center rounded-md font-mono text-xs",
+                      isSpecial
+                        ? "bg-info font-medium text-white"
+                        : isWeekend
+                          ? "bg-subtle text-muted-foreground"
+                          : "hover:bg-muted",
+                      isToday && !isSpecial && "border border-foreground font-medium",
+                    )}
+                  >
+                    {day}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 rounded-[2px] bg-info" />
+                Special working day
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 rounded-[2px] border bg-subtle" />
+                Weekend
+              </span>
+            </div>
+          </ChartCard>
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
-            <Sun className="h-4 w-4 text-[oklch(0.78_0.16_75)]" />
-            Latest assignment
-          </h3>
-
+        <ChartCard icon={Sun} tone="warning" title="Latest assignment" bodyClassName="">
           {!latestDay ? (
-            <p className="text-sm text-muted-foreground">
-              No special working days scheduled.
-            </p>
+            <EmptyState icon={Sun} title="No special working days scheduled." />
           ) : (
             <>
-              <div className="mb-4 rounded-xl border bg-muted/40 p-3 text-sm">
-                <p className="font-medium">{latestDay.title}</p>
-                <p className="text-xs text-muted-foreground">
+              <div className="mb-4 rounded-lg border bg-subtle px-3 py-2.5">
+                <p className="text-sm font-medium">{latestDay.title}</p>
+                <p className="font-mono text-xs text-muted-foreground">
                   {formatDate(latestDay.workingDate)}
                 </p>
               </div>
 
-              <ul className="space-y-3">
-                {assignedEmployees.slice(0, 8).map((e) => (
-                  <li key={e.employeeId} className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-[10px] bg-muted">
-                        {initials(e.name)}
-                      </AvatarFallback>
-                    </Avatar>
+              {assignedEmployees.length === 0 ? (
+                <EmptyState icon={Users} title="No employees assigned." />
+              ) : (
+                <ul className="space-y-3">
+                  {assignedEmployees.slice(0, 8).map((e) => (
+                    <li key={e.employeeId} className="flex items-center gap-3">
+                      <Avatar className="size-8">
+                        <AvatarFallback className="bg-muted text-[11px] text-text-secondary">
+                          {initials(e.name)}
+                        </AvatarFallback>
+                      </Avatar>
 
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{e.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(latestDay.workingDate)} · Override
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{e.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDate(latestDay.workingDate)} · Override
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </>
           )}
-        </div>
+        </ChartCard>
       </div>
     </div>
   );

@@ -55,7 +55,9 @@ export async function submitFeedback(ctx: Ctx) {
 export async function getFeedback(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("feedback").select("*").order("created_at", { ascending: false });
+    .from("feedback")
+    .select("*")
+    .order("created_at", { ascending: false });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -66,7 +68,11 @@ export async function updateFeedbackStatus(ctx: Ctx) {
   const status = str(ctx.data.status);
   if (!feedbackId || !status) throw new ApiError("feedbackId and status are required");
   const { data, error } = await ctx.svc
-    .from("feedback").update({ status }).eq("feedback_id", feedbackId).select("*").maybeSingle();
+    .from("feedback")
+    .update({ status })
+    .eq("feedback_id", feedbackId)
+    .select("*")
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Feedback not found", 404);
   return camelizeRow(data);

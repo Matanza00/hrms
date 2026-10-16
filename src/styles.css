@@ -1,4 +1,4 @@
-/* @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"); */
+/* Geist + Geist Mono are loaded by a <link> in routes/__root.tsx (see design.md). */
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
 
@@ -7,14 +7,28 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Figma radii: 6 badge, 8 control, 10 workspace card, 12 card, 16 panel.
+     rounded-2xl is the card radius the pages already use, so it maps to 12px. */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
+  --radius-3xl: 16px;
+
+  /* Figma has a single elevation: Shadow/XS, 0 1 2 #0000000A. */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-canvas: var(--canvas);
+  --color-subtle: var(--subtle);
+  --color-divider: var(--divider);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -25,18 +39,40 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-text-secondary: var(--text-secondary);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-danger: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Status accents. Solid = icon tiles, chart series, swatches.
+     tint / line / ink = badge background, border and text. */
+  --color-info: var(--info);
+  --color-info-tint: var(--info-tint);
+  --color-info-line: var(--info-line);
+  --color-info-ink: var(--info-ink);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-tint: var(--success-tint);
+  --color-success-line: var(--success-line);
+  --color-success-ink: var(--success-ink);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-tint: var(--warning-tint);
+  --color-warning-line: var(--warning-line);
+  --color-warning-ink: var(--warning-ink);
+  --color-danger: var(--destructive);
+  --color-danger-tint: var(--danger-tint);
+  --color-danger-line: var(--danger-line);
+  --color-danger-ink: var(--danger-ink);
+  --color-violet: var(--violet);
+  --color-violet-tint: var(--violet-tint);
+  --color-violet-line: var(--violet-line);
+  --color-violet-ink: var(--violet-ink);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -54,93 +90,175 @@
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.985 0.003 247);
-  --foreground: oklch(0.16 0.04 265);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.16 0.04 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.16 0.04 265);
-  --primary: oklch(0.21 0.04 265);
-  --primary-foreground: oklch(0.985 0.003 247);
-  --secondary: oklch(0.965 0.008 247);
-  --secondary-foreground: oklch(0.21 0.04 265);
-  --muted: oklch(0.965 0.008 247);
-  --muted-foreground: oklch(0.5 0.04 257);
-  --accent: oklch(0.62 0.19 259);
-  --accent-foreground: oklch(0.985 0.003 247);
-  --destructive: oklch(0.62 0.23 27);
-  --destructive-foreground: oklch(0.985 0.003 247);
-  --success: oklch(0.7 0.18 152);
-  --success-foreground: oklch(0.16 0.04 265);
-  --warning: oklch(0.78 0.16 75);
-  --warning-foreground: oklch(0.16 0.04 265);
-  --border: oklch(0.92 0.013 255);
-  --input: oklch(0.92 0.013 255);
-  --ring: oklch(0.62 0.19 259);
-  --chart-1: oklch(0.62 0.19 259);
-  --chart-2: oklch(0.7 0.18 152);
-  --chart-3: oklch(0.78 0.16 75);
-  --chart-4: oklch(0.62 0.23 27);
-  --chart-5: oklch(0.55 0.15 295);
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.21 0.04 265);
-  --sidebar-primary: oklch(0.21 0.04 265);
-  --sidebar-primary-foreground: oklch(0.985 0.003 247);
-  --sidebar-accent: oklch(0.965 0.008 247);
-  --sidebar-accent-foreground: oklch(0.21 0.04 265);
-  --sidebar-border: oklch(0.92 0.013 255);
-  --sidebar-ring: oklch(0.62 0.19 259);
+
+  /* neutral/* */
+  --canvas: #f7f7f7;
+  --background: #ffffff;
+  --subtle: #fafafa;
+  --divider: #f0f0f0;
+  --border: #ebebeb;
+  --input: #ebebeb;
+  --muted: #f5f5f5;
+
+  /* text/* */
+  --foreground: #171717;
+  --text-secondary: #525252;
+  --muted-foreground: #737373;
+
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #171717;
+  --primary-foreground: #fafafa;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --ring: #a3a3a3;
+
+  /* accent/* */
+  --info: #3b82f6;
+  --info-tint: #eff6ff;
+  --info-line: #dbeafe;
+  --info-ink: #1d4ed8;
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --success-tint: #f0fdf4;
+  --success-line: #dcfce7;
+  --success-ink: #15803d;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --warning-tint: #fffbeb;
+  --warning-line: #fef3c7;
+  --warning-ink: #b45309;
+  --danger-tint: #fef2f2;
+  --danger-line: #fee2e2;
+  --danger-ink: #b91c1c;
+  --violet: #7c3aed;
+  --violet-tint: #f5f3ff;
+  --violet-line: #ede9fe;
+  --violet-ink: #6d28d9;
+
+  --chart-1: #3b82f6;
+  --chart-2: #16a34a;
+  --chart-3: #d97706;
+  --chart-4: #dc2626;
+  --chart-5: #7c3aed;
+
+  --sidebar: #f7f7f7;
+  --sidebar-foreground: #525252;
+  --sidebar-primary: #171717;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #ebebeb;
+  --sidebar-ring: #a3a3a3;
 }
 
 .dark {
-  --background: oklch(0.13 0.025 265);
-  --foreground: oklch(0.97 0.003 247);
-  --card: oklch(0.18 0.03 265);
-  --card-foreground: oklch(0.97 0.003 247);
-  --popover: oklch(0.18 0.03 265);
-  --popover-foreground: oklch(0.97 0.003 247);
-  --primary: oklch(0.97 0.003 247);
-  --primary-foreground: oklch(0.16 0.04 265);
-  --secondary: oklch(0.23 0.03 265);
-  --secondary-foreground: oklch(0.97 0.003 247);
-  --muted: oklch(0.23 0.03 265);
-  --muted-foreground: oklch(0.7 0.03 257);
-  --accent: oklch(0.62 0.19 259);
-  --accent-foreground: oklch(0.97 0.003 247);
-  --destructive: oklch(0.65 0.21 25);
-  --destructive-foreground: oklch(0.97 0.003 247);
-  --success: oklch(0.72 0.18 152);
-  --success-foreground: oklch(0.13 0.025 265);
-  --warning: oklch(0.78 0.16 75);
-  --warning-foreground: oklch(0.13 0.025 265);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.62 0.19 259);
-  --chart-1: oklch(0.62 0.19 259);
-  --chart-2: oklch(0.72 0.18 152);
-  --chart-3: oklch(0.78 0.16 75);
-  --chart-4: oklch(0.65 0.21 25);
-  --chart-5: oklch(0.65 0.18 295);
-  --sidebar: oklch(0.16 0.028 265);
-  --sidebar-foreground: oklch(0.97 0.003 247);
-  --sidebar-primary: oklch(0.62 0.19 259);
-  --sidebar-primary-foreground: oklch(0.97 0.003 247);
-  --sidebar-accent: oklch(0.23 0.03 265);
-  --sidebar-accent-foreground: oklch(0.97 0.003 247);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.62 0.19 259);
+  --canvas: #0a0a0a;
+  --background: #111111;
+  --subtle: #161616;
+  --divider: #1f1f1f;
+  --border: #262626;
+  --input: #2e2e2e;
+  --muted: #1c1c1c;
+
+  --foreground: #ededed;
+  --text-secondary: #a3a3a3;
+  --muted-foreground: #8f8f8f;
+
+  --card: #111111;
+  --card-foreground: #ededed;
+  --popover: #161616;
+  --popover-foreground: #ededed;
+  --primary: #ededed;
+  --primary-foreground: #111111;
+  --secondary: #1c1c1c;
+  --secondary-foreground: #ededed;
+  --accent: #1c1c1c;
+  --accent-foreground: #ededed;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --ring: #525252;
+
+  --info: #3b82f6;
+  --info-tint: rgb(59 130 246 / 0.12);
+  --info-line: rgb(59 130 246 / 0.24);
+  --info-ink: #93c5fd;
+  --success: #22c55e;
+  --success-foreground: #0a0a0a;
+  --success-tint: rgb(34 197 94 / 0.12);
+  --success-line: rgb(34 197 94 / 0.24);
+  --success-ink: #86efac;
+  --warning: #f59e0b;
+  --warning-foreground: #0a0a0a;
+  --warning-tint: rgb(245 158 11 / 0.12);
+  --warning-line: rgb(245 158 11 / 0.24);
+  --warning-ink: #fcd34d;
+  --danger-tint: rgb(239 68 68 / 0.12);
+  --danger-line: rgb(239 68 68 / 0.24);
+  --danger-ink: #fca5a5;
+  --violet: #8b5cf6;
+  --violet-tint: rgb(139 92 246 / 0.12);
+  --violet-line: rgb(139 92 246 / 0.24);
+  --violet-ink: #c4b5fd;
+
+  --chart-1: #3b82f6;
+  --chart-2: #22c55e;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #8b5cf6;
+
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #a3a3a3;
+  --sidebar-primary: #ededed;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #161616;
+  --sidebar-accent-foreground: #ededed;
+  --sidebar-border: #262626;
+  --sidebar-ring: #525252;
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
   }
-  html, body {
+  html,
+  body {
     font-family: var(--font-sans);
-    background-color: var(--color-background);
+    background-color: var(--color-canvas);
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
   }
+  /* Figures (money, hours, counts, codes) are set in Geist Mono. */
+  .tabular-nums {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Figma "Metrics": stat cards joined into one bordered strip with hairline
+   dividers. Put it on the grid that holds the StatCards (instead of gap-*).
+   Each card bleeds 1px right/bottom so the outer edge is clipped and only
+   the inner dividers show, however the grid wraps. Unlayered on purpose so
+   it beats the cards' own border/radius utilities. */
+.metric-strip {
+  gap: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-card);
+}
+.metric-strip > * {
+  margin: 0 -1px -1px 0;
+  border-width: 0 1px 1px 0;
+  border-color: var(--color-divider);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Full-height panels on phones.

@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import QRCode from "qrcode";
 import { Laptop, Printer, RefreshCw, Smartphone, Trash2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,6 +23,15 @@ import {
   type EmployeeIp,
 } from "@/lib/api/ips";
 import { DataTable } from "@/components/shared/DataTable";
+import { EmptyState } from "@/components/shared/EmptyState";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
   getAttendanceQr,
@@ -31,6 +42,7 @@ import {
 } from "@/lib/api/devices";
 
 export const Route = createFileRoute("/_app/attendance/qr")({
+  head: () => ({ meta: [{ title: "QR & Devices — LDS HRMS" }] }),
   component: AttendanceQr,
 });
 
@@ -70,6 +82,30 @@ function printPoster(imageDataUrl: string) {
   win.document.close();
   win.focus();
   win.print();
+}
+
+/** Card with a plain 16px icon + 14px title row, as in the Figma frame. */
+function Panel({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="min-w-0 rounded-2xl border bg-card p-4 sm:p-5">
+      <div className="flex items-center gap-2">
+        <Icon className="size-4 shrink-0 text-muted-foreground" />
+        <h3 className="text-sm font-semibold leading-5 tracking-[-0.2px]">{title}</h3>
+      </div>
+      <p className="mt-1.5 text-xs text-muted-foreground">{description}</p>
+      <div className="mt-4">{children}</div>
+    </section>
+  );
 }
 
 function AttendanceQr() {
@@ -148,33 +184,35 @@ function AttendanceQr() {
   const myIp = myIpQuery.data?.ip ?? "";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
           {error instanceof Error ? error.message : "Something went wrong"}
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <div className="rounded-2xl border bg-card p-6 text-center">
-          <h3 className="text-sm font-semibold">Office QR poster</h3>
+      <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <section className="rounded-2xl border bg-card p-5 text-center">
+          <h3 className="text-sm font-semibold leading-5 tracking-[-0.2px]">Office QR poster</h3>
           <p className="mt-1 text-xs text-muted-foreground">
             Print this and put it up in the office.
           </p>
 
           {qrQuery.isLoading ? (
-            <p className="py-16 text-sm text-muted-foreground">Loading...</p>
+            <p className="py-16 text-[13px] text-muted-foreground">Loading...</p>
           ) : image ? (
             <img
               src={image}
               alt="Attendance QR code"
-              className="mx-auto mt-4 w-full max-w-[240px] rounded-xl border"
+              className="mx-auto mt-4 w-full max-w-[200px] rounded-lg border"
             />
           ) : (
-            <p className="py-16 text-sm text-muted-foreground">No QR code yet.</p>
+            <div className="mt-4">
+              <EmptyState title="No QR code yet." />
+            </div>
           )}
 
-          <p className="mt-3 break-all text-[11px] text-muted-foreground">{scanUrl}</p>
+          <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{scanUrl}</p>
 
           <div className="mt-4 space-y-2">
             <Button
@@ -182,52 +220,30 @@ function AttendanceQr() {
               onClick={() => image && printPoster(image)}
               disabled={!image}
             >
-              <Printer className="mr-1.5 h-3.5 w-3.5" />
+              <Printer />
               Print poster
             </Button>
 
-            {confirmRotate ? (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-left">
-                <p className="text-xs text-amber-800">
-                  Every printed poster stops working and must be replaced. Continue?
-                </p>
-                <div className="mt-2 flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => rotate.mutate()}
-                    disabled={rotate.isPending}
-                  >
-                    {rotate.isPending ? "Working..." : "Yes, new code"}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => setConfirmRotate(false)}>
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <Button className="w-full" variant="outline" onClick={() => setConfirmRotate(true)}>
-                <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-                Generate new code
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              className="w-full text-danger-ink hover:bg-danger-tint hover:text-danger-ink"
+              onClick={() => setConfirmRotate(true)}
+            >
+              <RefreshCw />
+              Generate new code
+            </Button>
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border bg-card p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Smartphone className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold">Registered phones</h3>
-          </div>
-          <p className="mb-4 text-xs text-muted-foreground">
-            The first phone an employee scans with becomes theirs. Reset it when someone changes
-            phone — their next scan registers the new one.
-          </p>
-
+        <Panel
+          icon={Smartphone}
+          title="Registered phones"
+          description="The first phone an employee scans with becomes theirs. Reset it when someone changes phone — their next scan registers the new one."
+        >
           {devicesQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
+            <p className="text-[13px] text-muted-foreground">Loading...</p>
           ) : devices.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No phones registered yet.</p>
+            <EmptyState icon={Smartphone} title="No phones registered yet." />
           ) : (
             <DataTable<EmployeeDevice>
               rowKey={(r) => r.deviceId}
@@ -242,16 +258,21 @@ function AttendanceQr() {
                 {
                   key: "registeredAt",
                   header: "Registered",
-                  render: (r) => formatDateTime(r.registeredAt),
+                  render: (r) => (
+                    <span className="whitespace-nowrap">{formatDateTime(r.registeredAt)}</span>
+                  ),
                 },
                 {
                   key: "lastSeenAt",
                   header: "Last scan",
-                  render: (r) => formatDateTime(r.lastSeenAt),
+                  render: (r) => (
+                    <span className="whitespace-nowrap">{formatDateTime(r.lastSeenAt)}</span>
+                  ),
                 },
                 {
                   key: "actions",
                   header: "",
+                  className: "text-right",
                   render: (r) => (
                     <Button
                       size="sm"
@@ -266,29 +287,29 @@ function AttendanceQr() {
               ]}
             />
           )}
-        </div>
+        </Panel>
       </div>
 
-      <div className="rounded-2xl border bg-card p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <Laptop className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold">Desktop networks</h3>
-        </div>
-        <p className="mb-4 text-xs text-muted-foreground">
-          A desktop has no GPS, so the office radius alone can never let one through. Register the
-          network an employee&apos;s computer connects from and they can check in and out on it.
-          Everyone else still has to be inside the {"‘"}office radius{"’"} on their phone.
-        </p>
-
-        <div className="mb-4 rounded-xl border bg-muted/30 p-3 text-xs">
+      <Panel
+        icon={Laptop}
+        title="Desktop networks"
+        description={
+          <>
+            A desktop has no GPS, so the office radius alone can never let one through. Register the
+            network an employee&apos;s computer connects from and they can check in and out on it.
+            Everyone else still has to be inside the {"‘"}office radius{"’"} on their phone.
+          </>
+        }
+      >
+        <div className="rounded-lg border bg-subtle px-3 py-2.5 text-xs leading-[18px] text-text-secondary">
           This computer is reaching the server from{" "}
-          <span className="font-mono font-medium">{myIp || "…"}</span>. If the office computers
-          share this internet connection, that is the address to register.
+          <span className="font-mono font-medium text-foreground">{myIp || "…"}</span>. If the
+          office computers share this internet connection, that is the address to register.
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
+        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-start">
           <div className="space-y-1.5">
-            <Label className="text-xs">Employee</Label>
+            <Label>Employee</Label>
             <Select value={ipEmployee} onValueChange={setIpEmployee}>
               <SelectTrigger>
                 <SelectValue placeholder="Choose employee" />
@@ -304,18 +325,19 @@ function AttendanceQr() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">IP address</Label>
+            <Label>IP address</Label>
             <Input
               value={ipAddress}
               onChange={(e) => setIpAddress(e.target.value)}
               placeholder="e.g. 103.12.34.56"
               inputMode="decimal"
+              className="font-mono"
             />
             {myIp && ipAddress !== myIp && (
               <button
                 type="button"
                 onClick={() => setIpAddress(myIp)}
-                className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                className="cursor-pointer text-[11px] font-medium text-foreground underline-offset-2 hover:underline"
               >
                 Use this computer&apos;s address
               </button>
@@ -323,7 +345,7 @@ function AttendanceQr() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Label (optional)</Label>
+            <Label>Label (optional)</Label>
             <Input
               value={ipLabel}
               onChange={(e) => setIpLabel(e.target.value)}
@@ -332,7 +354,7 @@ function AttendanceQr() {
           </div>
 
           <Button
-            className="h-10"
+            className="h-9 sm:mt-6"
             disabled={!ipEmployee || !ipAddress.trim() || addIp.isPending}
             onClick={() =>
               addIp.mutate({
@@ -346,13 +368,15 @@ function AttendanceQr() {
           </Button>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-5">
           {ipsQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
+            <p className="text-[13px] text-muted-foreground">Loading...</p>
           ) : ips.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No networks registered yet, so attendance is phone-only.
-            </p>
+            <EmptyState
+              icon={Laptop}
+              title="No networks registered yet"
+              description="Attendance is phone-only until a network is added."
+            />
           ) : (
             <DataTable<EmployeeIp>
               rowKey={(r) => r.ipId}
@@ -366,17 +390,22 @@ function AttendanceQr() {
                 {
                   key: "ipAddress",
                   header: "Network",
-                  render: (r) => <span className="font-mono text-xs">{r.ipAddress}</span>,
+                  render: (r) => (
+                    <span className="break-all font-mono text-[13px]">{r.ipAddress}</span>
+                  ),
                 },
                 { key: "label", header: "Label", render: (r) => r.label || "—" },
                 {
                   key: "lastUsedAt",
                   header: "Last used",
-                  render: (r) => formatDateTime(r.lastUsedAt),
+                  render: (r) => (
+                    <span className="whitespace-nowrap">{formatDateTime(r.lastUsedAt)}</span>
+                  ),
                 },
                 {
                   key: "actions",
                   header: "",
+                  className: "text-right",
                   render: (r) => (
                     <Button
                       size="sm"
@@ -384,7 +413,7 @@ function AttendanceQr() {
                       onClick={() => removeIp.mutate(r.ipId)}
                       disabled={removeIp.isPending}
                     >
-                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      <Trash2 />
                       Remove
                     </Button>
                   ),
@@ -393,7 +422,37 @@ function AttendanceQr() {
             />
           )}
         </div>
-      </div>
+      </Panel>
+
+      <Dialog open={confirmRotate} onOpenChange={setConfirmRotate}>
+        <DialogContent className="max-w-md">
+          <DialogHeader className="flex-row items-start gap-3 space-y-0 text-left">
+            <div className="grid size-8 shrink-0 place-items-center rounded-md border border-danger-line bg-danger-tint text-danger-ink">
+              <RefreshCw className="size-4" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <DialogTitle>Generate a new QR code?</DialogTitle>
+              <DialogDescription>
+                Every poster you&apos;ve already printed will stop working immediately. Employees
+                won&apos;t be able to check in until you print and put up the new poster.
+              </DialogDescription>
+            </div>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:space-x-0">
+            <Button variant="outline" onClick={() => setConfirmRotate(false)}>
+              Keep current code
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => rotate.mutate()}
+              disabled={rotate.isPending}
+            >
+              <RefreshCw />
+              {rotate.isPending ? "Working..." : "Generate new code"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

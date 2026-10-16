@@ -97,7 +97,9 @@ const routes: Record<string, Handler> = {
   updateFeedbackStatus: feedback.updateFeedbackStatus,
 };
 
-async function parseRequest(req: Request): Promise<{ action: string; data: Record<string, unknown> }> {
+async function parseRequest(
+  req: Request,
+): Promise<{ action: string; data: Record<string, unknown> }> {
   if (req.method === "GET") {
     const url = new URL(req.url);
     const data: Record<string, unknown> = {};

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -18,12 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, CalendarHeart } from "lucide-react";
+import { CalendarDays, PartyPopper, Plus } from "lucide-react";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { toneSoft, type Tone } from "@/lib/tones";
+import { cn } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createHoliday, getHolidays, type Holiday } from "@/lib/api/holidays";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_app/holidays")({
+  head: () => ({ meta: [{ title: "Holidays — LDS HRMS" }] }),
   component: HolidaysPage,
 });
 
@@ -39,6 +45,29 @@ function formatDate(value?: string) {
     month: "short",
     day: "numeric",
   });
+}
+
+const typeTone: Record<string, Tone> = {
+  public: "success",
+  religious: "neutral",
+  company: "info",
+};
+
+/** Holiday type as a Figma badge: public green, religious neutral, company blue. */
+function TypeBadge({ type }: { type?: string }) {
+  if (!type) return <span className="text-muted-foreground">—</span>;
+  const tone = typeTone[type.toLowerCase()] ?? "neutral";
+  return (
+    <span
+      className={cn(
+        "inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-sm border px-2 text-xs font-medium capitalize",
+        toneSoft[tone],
+      )}
+    >
+      <span className="size-1.5 rounded-full bg-current" />
+      {type}
+    </span>
+  );
 }
 
 function formatCardDay(value?: string) {
@@ -61,10 +90,9 @@ function formatCardMeta(value?: string) {
 
   if (Number.isNaN(date.getTime())) return String(value);
 
-  return date.toLocaleDateString("en-PK", {
-    weekday: "long",
-    year: "numeric",
-  });
+  const year = date.toLocaleDateString("en-PK", { year: "numeric" });
+  const weekday = date.toLocaleDateString("en-PK", { weekday: "long" });
+  return `${year} · ${weekday}`;
 }
 
 function HolidaysPage() {
@@ -133,6 +161,7 @@ function HolidaysPage() {
     return (
       <div>
         <PageHeader
+          icon={PartyPopper}
           title="Holidays"
           description="Public, religious and company holidays for the year."
         />
@@ -147,10 +176,11 @@ function HolidaysPage() {
     return (
       <div>
         <PageHeader
+          icon={PartyPopper}
           title="Holidays"
           description="Public, religious and company holidays for the year."
         />
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        <div className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
           {String(loadError.message)}
         </div>
       </div>
@@ -162,23 +192,20 @@ function HolidaysPage() {
       const d = new Date(h.holidayDate);
       return !Number.isNaN(d.getTime()) && d >= new Date(new Date().toDateString());
     })
-    .sort(
-      (a, b) =>
-        new Date(a.holidayDate).getTime() -
-        new Date(b.holidayDate).getTime()
-    )
+    .sort((a, b) => new Date(a.holidayDate).getTime() - new Date(b.holidayDate).getTime())
     .slice(0, 4);
 
   return (
     <div>
       <PageHeader
+        icon={PartyPopper}
         title="Holidays"
         description="Public, religious and company holidays for the year."
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
+              <Button>
+                <Plus />
                 Add holiday
               </Button>
             </DialogTrigger>
@@ -186,43 +213,40 @@ function HolidaysPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add holiday</DialogTitle>
+                <DialogDescription>
+                  Holidays are skipped when working days and hours are counted.
+                </DialogDescription>
               </DialogHeader>
 
               {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <div className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink">
                   {error}
                 </div>
               )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 sm:gap-x-3">
                 <div className="sm:col-span-2 space-y-1.5">
-                  <Label className="text-xs">Name</Label>
+                  <Label>Name</Label>
                   <Input
                     value={form.title}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, title: e.target.value }))
-                    }
+                    onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Date</Label>
+                  <Label>Date</Label>
                   <Input
                     type="date"
                     value={form.holidayDate}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, holidayDate: e.target.value }))
-                    }
+                    onChange={(e) => setForm((p) => ({ ...p, holidayDate: e.target.value }))}
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Type</Label>
+                  <Label>Type</Label>
                   <Select
                     value={form.holidayType}
-                    onValueChange={(value) =>
-                      setForm((p) => ({ ...p, holidayType: value }))
-                    }
+                    onValueChange={(value) => setForm((p) => ({ ...p, holidayType: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select" />
@@ -237,41 +261,46 @@ function HolidaysPage() {
                 </div>
               </div>
 
-              <Button onClick={handleSave} disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Saving..." : "Save"}
-              </Button>
+              <DialogFooter className="gap-2 sm:space-x-0">
+                <Button variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={createMutation.isPending}>
+                  {createMutation.isPending ? "Saving..." : "Save"}
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         }
       />
 
-      <h3 className="text-sm font-semibold mb-3">Upcoming</h3>
+      <h3 className="mb-3 text-sm font-semibold leading-5 tracking-[-0.2px]">Upcoming</h3>
 
       {upcoming.length === 0 ? (
-        <div className="mb-8 rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
-          No upcoming holidays.
+        <div className="mb-5">
+          <EmptyState icon={CalendarDays} title="No upcoming holidays." />
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {upcoming.map((h) => (
-            <div key={h.holidayId} className="rounded-2xl border bg-card p-5">
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-[oklch(0.62_0.19_259/0.12)] text-[oklch(0.5_0.19_259)]">
-                  <CalendarHeart className="h-5 w-5" />
+            <div key={h.holidayId} className="min-w-0 rounded-2xl border bg-card p-5">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="grid size-8 shrink-0 place-items-center rounded-md bg-info-tint text-info-ink">
+                  <CalendarDays className="size-4" />
                 </div>
 
-                <div>
-                  <p className="text-xs text-muted-foreground capitalize">
-                    {h.holidayType}
+                <div className="min-w-0">
+                  <p className="text-xs capitalize text-muted-foreground">{h.holidayType}</p>
+                  <p className="truncate text-sm font-semibold leading-5 tracking-[-0.2px]">
+                    {h.title}
                   </p>
-                  <p className="text-sm font-semibold">{h.title}</p>
                 </div>
               </div>
 
-              <p className="mt-4 text-2xl font-semibold">
+              <p className="mt-4 font-mono text-[26px] font-medium leading-8 tracking-[-0.8px]">
                 {formatCardDay(h.holidayDate)}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {formatCardMeta(h.holidayDate)}
               </p>
             </div>
@@ -282,27 +311,22 @@ function HolidaysPage() {
       <DataTable<Holiday>
         rowKey={(r) => r.holidayId}
         data={holidays}
+        empty={<EmptyState icon={PartyPopper} title="No holidays added yet." />}
         columns={[
           {
             key: "title",
             header: "Holiday",
-            render: (r) => (
-              <span className="font-medium">{r.title || "—"}</span>
-            ),
+            render: (r) => <span className="font-medium">{r.title || "—"}</span>,
           },
           {
             key: "holidayDate",
             header: "Date",
-            render: (r) => formatDate(r.holidayDate),
+            render: (r) => <span className="whitespace-nowrap">{formatDate(r.holidayDate)}</span>,
           },
           {
             key: "holidayType",
             header: "Type",
-            render: (r) => (
-              <span className="capitalize rounded-full bg-muted px-2 py-0.5 text-[11px]">
-                {r.holidayType || "—"}
-              </span>
-            ),
+            render: (r) => <TypeBadge type={r.holidayType} />,
           },
         ]}
       />

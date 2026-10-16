@@ -11,14 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { ChartPie, Plus, Receipt } from "lucide-react";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import {
   Dialog,
   DialogContent,
@@ -30,14 +25,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createExpense, getExpenses, type Expense } from "@/lib/api/accounts";
 import { useState } from "react";
 
-const categories = [
-  "Salary",
-  "Utilities",
-  "Tools",
-  "Emergency",
-  "Misc",
-  "Reserve",
-];
+const categories = ["Salary", "Utilities", "Tools", "Emergency", "Misc", "Reserve"];
 
 const colors = [
   "var(--color-chart-1)",
@@ -49,8 +37,17 @@ const colors = [
 ];
 
 export const Route = createFileRoute("/_app/accounts/expenses")({
+  head: () => ({ meta: [{ title: "Expenses — LDS HRMS" }] }),
   component: ExpensesPage,
 });
+
+const tooltipStyle = {
+  background: "var(--color-card)",
+  border: "1px solid var(--color-border)",
+  borderRadius: 8,
+  fontSize: 12,
+  boxShadow: "var(--shadow-xs)",
+};
 
 function formatPKR(value: number | string | undefined) {
   const amount = Number(value || 0);
@@ -116,11 +113,11 @@ function ExpensesPage() {
 
   const byCat = categories.map((c, i) => ({
     name: c,
-    value: expenses
-      .filter((e) => e.category === c)
-      .reduce((a, b) => a + Number(b.amount || 0), 0),
+    value: expenses.filter((e) => e.category === c).reduce((a, b) => a + Number(b.amount || 0), 0),
     color: colors[i],
   }));
+
+  const hasExpenses = byCat.some((c) => c.value > 0);
 
   async function handleSave() {
     try {
@@ -154,7 +151,7 @@ function ExpensesPage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card p-6 text-[13px] text-muted-foreground">
         Loading expenses...
       </div>
     );
@@ -162,77 +159,71 @@ function ExpensesPage() {
 
   if (loadError) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
         {String(loadError.message)}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ChartCard title="Expense breakdown" description="By category">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={byCat}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={90}
-                  innerRadius={50}
-                  paddingAngle={3}
-                >
-                  {byCat.map((s, i) => (
-                    <Cell key={i} fill={s.color} />
-                  ))}
-                </Pie>
+        <div className="min-w-0 lg:col-span-2">
+          <ChartCard
+            icon={ChartPie}
+            tone="danger"
+            title="Expense breakdown"
+            description="By category"
+          >
+            {!hasExpenses ? (
+              <div className="h-full [&>div]:h-full">
+                <EmptyState icon={ChartPie} title="No expenses recorded yet" />
+              </div>
+            ) : (
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={byCat}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={90}
+                    innerRadius={50}
+                    paddingAngle={2}
+                    stroke="var(--color-card)"
+                  >
+                    {byCat.map((s, i) => (
+                      <Cell key={i} fill={s.color} />
+                    ))}
+                  </Pie>
 
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--color-card)",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
-                  formatter={(v: number) => formatPKR(v)}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => formatPKR(v)} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </ChartCard>
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-3">By category</h3>
-
-          <ul className="space-y-2.5 text-sm">
+        <ChartCard icon={Receipt} tone="info" title="By category" bodyClassName="">
+          <ul className="-my-2.5 divide-y divide-divider text-[13px]">
             {byCat.map((c) => (
-              <li
-                key={c.name}
-                className="flex items-center justify-between"
-              >
-                <span className="flex items-center gap-2">
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ background: c.color }}
-                  />
+              <li key={c.name} className="flex items-center justify-between gap-3 py-2.5">
+                <span className="flex items-center gap-2 text-text-secondary">
+                  <span className="size-2 rounded-full" style={{ background: c.color }} />
                   {c.name}
                 </span>
 
-                <span className="font-medium tabular-nums">
-                  {formatPKR(c.value)}
-                </span>
+                <span className="font-mono font-medium tabular-nums">{formatPKR(c.value)}</span>
               </li>
             ))}
           </ul>
-        </div>
+        </ChartCard>
       </div>
 
       <div className="flex justify-end">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
+            <Button>
+              <Plus />
               Record expense
             </Button>
           </DialogTrigger>
@@ -243,14 +234,14 @@ function ExpensesPage() {
             </DialogHeader>
 
             {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-[13px] text-danger-ink">
                 {error}
               </div>
             )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label className="text-xs">Date</Label>
+                <Label>Date</Label>
                 <Input
                   type="date"
                   value={form.expenseDate}
@@ -264,7 +255,7 @@ function ExpensesPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Category</Label>
+                <Label>Category</Label>
                 <Select
                   value={form.category}
                   onValueChange={(value) =>
@@ -289,7 +280,7 @@ function ExpensesPage() {
               </div>
 
               <div className="sm:col-span-2 space-y-1.5">
-                <Label className="text-xs">Description</Label>
+                <Label>Description</Label>
                 <Input
                   value={form.description}
                   onChange={(e) =>
@@ -302,7 +293,7 @@ function ExpensesPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Amount</Label>
+                <Label>Amount</Label>
                 <Input
                   type="number"
                   value={form.amount}
@@ -324,6 +315,14 @@ function ExpensesPage() {
       </div>
 
       <DataTable<Expense>
+        empty={
+          <span className="inline-flex flex-col items-center gap-2.5">
+            <span className="grid size-8 place-items-center rounded-md bg-muted">
+              <Receipt className="size-4 text-muted-foreground" />
+            </span>
+            No expenses recorded yet
+          </span>
+        }
         rowKey={(r) => r.expenseId}
         data={expenses}
         columns={[
@@ -336,7 +335,7 @@ function ExpensesPage() {
             key: "category",
             header: "Category",
             render: (r) => (
-              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
+              <span className="inline-flex h-[22px] items-center rounded-sm border bg-subtle px-2 text-xs font-medium text-text-secondary">
                 {r.category || "—"}
               </span>
             ),
@@ -344,17 +343,13 @@ function ExpensesPage() {
           {
             key: "description",
             header: "Description",
-            render: (r) => (
-              <span className="font-medium">
-                {r.description || "—"}
-              </span>
-            ),
+            render: (r) => <span className="font-medium">{r.description || "—"}</span>,
           },
           {
             key: "amount",
             header: "Amount",
             render: (r) => (
-              <span className="font-semibold tabular-nums">
+              <span className="font-mono text-[13px] font-medium tabular-nums">
                 {formatPKR(r.amount)}
               </span>
             ),

@@ -11,14 +11,14 @@ React app  ──►  Edge Function "api" (Deno)  ──►  Postgres (RLS) + St
 
 ## Layout
 
-| Path | What |
-|---|---|
-| `migrations/` | Versioned SQL schema (tables, RLS, defaults). |
-| `functions/api/index.ts` | The action router (maps every action → handler). |
-| `functions/api/handlers/*` | One file per domain (auth, attendance, payroll…). |
-| `functions/api/_shared/*` | Tricky logic: `businessDate.ts`, `geofence.ts`, `time.ts`, auth, case conversion. |
-| `seed.sql` | Demo rows for local dev (`supabase db reset`). |
-| `../scripts/*.mjs` | Admin bootstrap + employee CSV import. |
+| Path                       | What                                                                              |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| `migrations/`              | Versioned SQL schema (tables, RLS, defaults).                                     |
+| `functions/api/index.ts`   | The action router (maps every action → handler).                                  |
+| `functions/api/handlers/*` | One file per domain (auth, attendance, payroll…).                                 |
+| `functions/api/_shared/*`  | Tricky logic: `businessDate.ts`, `geofence.ts`, `time.ts`, auth, case conversion. |
+| `seed.sql`                 | Demo rows for local dev (`supabase db reset`).                                    |
+| `../scripts/*.mjs`         | Admin bootstrap + employee CSV import.                                            |
 
 ## First-time local run (needs Docker Desktop running)
 

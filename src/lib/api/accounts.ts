@@ -49,8 +49,7 @@ export type AccountsOverview = {
   distribution: ProfitDistributionItem[];
 };
 
-export const getAccountsOverview = () =>
-  apiGet<AccountsOverview>("accountsOverview");
+export const getAccountsOverview = () => apiGet<AccountsOverview>("accountsOverview");
 
 export type ReserveTransaction = {
   reserveId: string;
@@ -62,10 +61,7 @@ export type ReserveTransaction = {
   createdAt?: string;
 };
 
-export const getReserveLedger = () =>
-  apiGet<ReserveTransaction[]>("reserveLedger");
-
-
+export const getReserveLedger = () => apiGet<ReserveTransaction[]>("reserveLedger");
 
 export type Expense = {
   expenseId: string;
@@ -77,8 +73,7 @@ export type Expense = {
   createdAt?: string;
 };
 
-export const getExpenses = () =>
-  apiGet<Expense[]>("expenses");
+export const getExpenses = () => apiGet<Expense[]>("expenses");
 
 export const createExpense = (data: {
   expenseDate: string;

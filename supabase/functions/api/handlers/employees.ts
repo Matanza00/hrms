@@ -7,10 +7,24 @@ import { camelizeRow, camelizeRows, snakeizeObj } from "../_shared/case.ts";
 
 // Columns an admin is allowed to set (protects generated/audit columns).
 const WRITABLE = new Set([
-  "employee_code", "name", "email", "phone", "cnic", "dob", "joining_date",
-  "permanent_date", "end_date", "status", "department", "designation",
-  "basic_salary", "fuel_allowance", "opd_allowance", "address",
-  "emergency_contact", "active",
+  "employee_code",
+  "name",
+  "email",
+  "phone",
+  "cnic",
+  "dob",
+  "joining_date",
+  "permanent_date",
+  "end_date",
+  "status",
+  "department",
+  "designation",
+  "basic_salary",
+  "fuel_allowance",
+  "opd_allowance",
+  "address",
+  "emergency_contact",
+  "active",
 ]);
 
 // Blank date inputs arrive as "", which Postgres rejects for a date column.
@@ -44,7 +58,10 @@ export async function getEmployee(ctx: Ctx) {
     throw new ApiError("Not allowed", 403);
   }
   const { data, error } = await ctx.svc
-    .from("employees").select("*").eq("employee_id", employeeId).maybeSingle();
+    .from("employees")
+    .select("*")
+    .eq("employee_id", employeeId)
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Employee not found", 404);
   return camelizeRow(data);
@@ -58,7 +75,8 @@ export async function createEmployee(ctx: Ctx) {
 
   const { data, error } = await ctx.svc.from("employees").insert(patch).select("*").single();
   if (error) {
-    if (error.code === "23505") throw new ApiError("An employee with that code already exists", 409);
+    if (error.code === "23505")
+      throw new ApiError("An employee with that code already exists", 409);
     throw new ApiError(error.message, 500);
   }
 
@@ -107,7 +125,11 @@ export async function updateEmployee(ctx: Ctx) {
 
   const patch = pickWritable(payload);
   const { data, error } = await ctx.svc
-    .from("employees").update(patch).eq("employee_id", employeeId).select("*").maybeSingle();
+    .from("employees")
+    .update(patch)
+    .eq("employee_id", employeeId)
+    .select("*")
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Employee not found", 404);
 
@@ -125,7 +147,11 @@ export async function deactivateEmployee(ctx: Ctx) {
   if (!employeeId) throw new ApiError("employeeId is required");
 
   const { data, error } = await ctx.svc
-    .from("employees").update({ active: false }).eq("employee_id", employeeId).select("*").maybeSingle();
+    .from("employees")
+    .update({ active: false })
+    .eq("employee_id", employeeId)
+    .select("*")
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Employee not found", 404);
 

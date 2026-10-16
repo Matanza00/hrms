@@ -1,42 +1,77 @@
-import { CURRENT_EMPLOYEE_CODE, CURRENT_EMPLOYEE_ID } from "@/lib/currentEmployee";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { Wallet } from "lucide-react";
 import { getPayroll, type PayrollRecord } from "@/lib/api/payroll";
-
+import { useAuth } from "@/lib/auth/AuthContext";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
 export const Route = createFileRoute("/employee/payroll")({
+  head: () => ({ meta: [{ title: "My Payroll — LDS HRMS" }] }),
   component: EmployeePayroll,
 });
 
 function formatPKR(v: number | string | undefined) {
-  return new Intl.NumberFormat("en-PK", { style: "currency", currency: "PKR", maximumFractionDigits: 0 }).format(Number(v || 0));
+  return new Intl.NumberFormat("en-PK", {
+    style: "currency",
+    currency: "PKR",
+    maximumFractionDigits: 0,
+  }).format(Number(v || 0));
 }
 
+const money = "font-mono text-[13px] font-medium";
+
 function EmployeePayroll() {
+  const { employeeId } = useAuth();
   const { data: raw = [] } = useQuery({ queryKey: ["payroll"], queryFn: getPayroll });
-  const records = Array.isArray(raw) ? raw.filter((p) => p.employeeId === CURRENT_EMPLOYEE_ID) : [];
+  const records = Array.isArray(raw) ? raw.filter((p) => p.employeeId === employeeId) : [];
 
   return (
     <div>
-      <h1 className="text-3xl font-bold">My Payroll</h1>
-      <p className="text-muted-foreground">Salary, deductions and payslip history.</p>
+      <PageHeader
+        icon={Wallet}
+        title="My payroll"
+        description="Salary, deductions and payslip history."
+      />
 
-      <div className="mt-6">
-        <DataTable<PayrollRecord>
-          rowKey={(r) => r.payrollId}
-          data={records}
-          columns={[
-            { key: "month", header: "Month", render: (r) => String(r.month).slice(0, 7) },
-            { key: "grossSalary", header: "Gross", render: (r) => formatPKR(r.grossSalary) },
-            { key: "deductionAmount", header: "Deductions", render: (r) => formatPKR(r.deductionAmount) },
-            { key: "bonus", header: "Bonus", render: (r) => formatPKR(r.bonus) },
-            { key: "netSalary", header: "Net", render: (r) => <span className="font-semibold">{formatPKR(r.netSalary)}</span> },
-            { key: "status", header: "Status", render: (r) => <StatusBadge status={r.status} /> },
-          ]}
-        />
-      </div>
+      <DataTable<PayrollRecord>
+        rowKey={(r) => r.payrollId}
+        data={records}
+        empty="No payslips yet."
+        columns={[
+          {
+            key: "month",
+            header: "Month",
+            render: (r) => <span className="font-mono">{String(r.month).slice(0, 7)}</span>,
+          },
+          {
+            key: "grossSalary",
+            header: "Gross",
+            render: (r) => <span className={money}>{formatPKR(r.grossSalary)}</span>,
+          },
+          {
+            key: "deductionAmount",
+            header: "Deductions",
+            render: (r) => (
+              <span className={`${money} text-danger-ink`}>{formatPKR(r.deductionAmount)}</span>
+            ),
+          },
+          {
+            key: "bonus",
+            header: "Bonus",
+            render: (r) => <span className={money}>{formatPKR(r.bonus)}</span>,
+          },
+          {
+            key: "netSalary",
+            header: "Net",
+            render: (r) => (
+              <span className={`${money} font-semibold`}>{formatPKR(r.netSalary)}</span>
+            ),
+          },
+          { key: "status", header: "Status", render: (r) => <StatusBadge status={r.status} /> },
+        ]}
+      />
     </div>
   );
 }

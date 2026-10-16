@@ -17,10 +17,7 @@ type UserRow = {
 const USER_COLS = "id, username, role, employee_id, active";
 
 /** Find a user by username OR by their employee code (both are valid login IDs). */
-async function findUserByLoginId(
-  svc: SupabaseClient,
-  loginId: string,
-): Promise<UserRow | null> {
+async function findUserByLoginId(svc: SupabaseClient, loginId: string): Promise<UserRow | null> {
   const byUsername = await svc
     .from("users")
     .select(USER_COLS)

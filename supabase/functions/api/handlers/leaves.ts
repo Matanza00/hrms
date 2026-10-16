@@ -10,7 +10,10 @@ async function resolveEmployeeId(ctx: Ctx): Promise<string> {
   if (ctx.data.employeeId) return str(ctx.data.employeeId);
   if (ctx.data.employeeCode) {
     const { data } = await ctx.svc
-      .from("employees").select("employee_id").eq("employee_code", str(ctx.data.employeeCode)).maybeSingle();
+      .from("employees")
+      .select("employee_id")
+      .eq("employee_code", str(ctx.data.employeeCode))
+      .maybeSingle();
     if (!data) throw new ApiError("Employee not found", 404);
     return data.employee_id;
   }
@@ -56,7 +59,11 @@ export async function approveLeave(ctx: Ctx) {
   const leaveId = str(ctx.data.leaveId);
   if (!leaveId) throw new ApiError("leaveId is required");
 
-  const { data: leave } = await ctx.svc.from("leaves").select("*").eq("leave_id", leaveId).maybeSingle();
+  const { data: leave } = await ctx.svc
+    .from("leaves")
+    .select("*")
+    .eq("leave_id", leaveId)
+    .maybeSingle();
   if (!leave) throw new ApiError("Leave not found", 404);
 
   const total = Number(leave.total_days) || 0;
@@ -73,7 +80,9 @@ export async function approveLeave(ctx: Ctx) {
       approved_by: str(ctx.data.approvedBy) || caller.username,
       approved_at: new Date().toISOString(),
     })
-    .eq("leave_id", leaveId).select(SELECT).single();
+    .eq("leave_id", leaveId)
+    .select(SELECT)
+    .single();
   if (error) throw new ApiError(error.message, 500);
   return withEmployeeNameOne(data);
 }
@@ -89,7 +98,9 @@ export async function rejectLeave(ctx: Ctx) {
       approved_by: str(ctx.data.approvedBy) || caller.username,
       approved_at: new Date().toISOString(),
     })
-    .eq("leave_id", leaveId).select(SELECT).maybeSingle();
+    .eq("leave_id", leaveId)
+    .select(SELECT)
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Leave not found", 404);
   return withEmployeeNameOne(data);
@@ -137,7 +148,11 @@ export async function adminUpdateLeave(ctx: Ctx) {
   for (const k of Object.keys(patch)) if (patch[k] === undefined) delete patch[k];
 
   const { data, error } = await ctx.svc
-    .from("leaves").update(patch).eq("leave_id", leaveId).select(SELECT).maybeSingle();
+    .from("leaves")
+    .update(patch)
+    .eq("leave_id", leaveId)
+    .select(SELECT)
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Leave not found", 404);
   return withEmployeeNameOne(data);

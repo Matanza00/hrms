@@ -22,10 +22,7 @@ function authHeaders(): Record<string, string> {
   return headers;
 }
 
-export async function apiGet<T>(
-  action: string,
-  params: Record<string, string> = {}
-): Promise<T> {
+export async function apiGet<T>(action: string, params: Record<string, string> = {}): Promise<T> {
   const query = new URLSearchParams({ action, ...params });
   const url = `${API_URL}?${query.toString()}`;
 

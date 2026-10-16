@@ -8,7 +8,9 @@ import { camelizeRow, camelizeRows } from "../_shared/case.ts";
 export async function getHolidays(ctx: Ctx) {
   requireCaller(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("holidays").select("*").order("holiday_date", { ascending: true });
+    .from("holidays")
+    .select("*")
+    .order("holiday_date", { ascending: true });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -29,7 +31,9 @@ export async function createHoliday(ctx: Ctx) {
 export async function getSpecialWorkingDays(ctx: Ctx) {
   requireCaller(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("special_working_days").select("*").order("working_date", { ascending: true });
+    .from("special_working_days")
+    .select("*")
+    .order("working_date", { ascending: true });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -43,7 +47,11 @@ export async function createSpecialWorkingDay(ctx: Ctx) {
     assigned_employee_ids: str(ctx.data.assignedEmployeeIds) || null,
   };
   if (!row.title || !row.working_date) throw new ApiError("title and workingDate are required");
-  const { data, error } = await ctx.svc.from("special_working_days").insert(row).select("*").single();
+  const { data, error } = await ctx.svc
+    .from("special_working_days")
+    .insert(row)
+    .select("*")
+    .single();
   if (error) throw new ApiError(error.message, 500);
   return camelizeRow(data);
 }

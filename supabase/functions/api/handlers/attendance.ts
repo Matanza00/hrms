@@ -56,7 +56,14 @@ async function createCheckIn(
   const ip = clientIp(req);
 
   // 1) At the office, by GPS or by a registered network.
-  const err = await checkPresence(svc, employee.employee_id, settings, input.latitude, input.longitude, ip);
+  const err = await checkPresence(
+    svc,
+    employee.employee_id,
+    settings,
+    input.latitude,
+    input.longitude,
+    ip,
+  );
   if (err) throw new ApiError(err, 422);
 
   // 2) Server time + business date of the overnight shift.
@@ -66,7 +73,10 @@ async function createCheckIn(
 
   // 3) Holiday guard (weekend is informational only, mirroring the .gs).
   const { data: holiday } = await svc
-    .from("holidays").select("holiday_id").eq("holiday_date", attendanceDate).maybeSingle();
+    .from("holidays")
+    .select("holiday_id")
+    .eq("holiday_date", attendanceDate)
+    .maybeSingle();
   if (holiday) throw new ApiError("Today is a holiday", 422);
 
   const officeStart = settings.officeStartTime || settings.shiftStartTime || "18:00";
@@ -110,11 +120,21 @@ async function closeShift(
   const settings = await loadSettings(svc);
 
   const err = await checkPresence(
-    svc, open.employee_id as string, settings, input.latitude, input.longitude, clientIp(req),
+    svc,
+    open.employee_id as string,
+    settings,
+    input.latitude,
+    input.longitude,
+    clientIp(req),
   );
   if (err) throw new ApiError(err, 422);
   const derived = computeWorkMinutes(
-    { checkIn: open.check_in, checkOut: now, breakStart: open.break_start, breakEnd: open.break_end },
+    {
+      checkIn: open.check_in,
+      checkOut: now,
+      breakStart: open.break_start,
+      breakEnd: open.break_end,
+    },
     num(settings.requiredHours, 8),
   );
 
@@ -127,7 +147,8 @@ async function closeShift(
       deficit_minutes: derived.deficitMinutes,
     })
     .eq("attendance_id", open.attendance_id)
-    .select(SELECT).single();
+    .select(SELECT)
+    .single();
   if (error) throw new ApiError(error.message, 500);
   return data;
 }
@@ -169,7 +190,11 @@ export async function scanAttendance(ctx: Ctx) {
     : await createCheckIn(svc, employee, ctx.data, ctx.req);
 
   const registered = await commitDevice(
-    svc, employee.employee_id, token, str(ctx.data.deviceLabel), check,
+    svc,
+    employee.employee_id,
+    token,
+    str(ctx.data.deviceLabel),
+    check,
   );
 
   return {
@@ -191,7 +216,8 @@ export async function breakStart(ctx: Ctx) {
     .from("attendance")
     .update({ break_start: new Date().toISOString() })
     .eq("attendance_id", open.attendance_id)
-    .select(SELECT).single();
+    .select(SELECT)
+    .single();
   if (error) throw new ApiError(error.message, 500);
   return withEmployeeNameOne(data);
 }
@@ -206,7 +232,12 @@ export async function breakEnd(ctx: Ctx) {
   const now = new Date().toISOString();
   const settings = await loadSettings(ctx.svc);
   const derived = computeWorkMinutes(
-    { checkIn: open.check_in, checkOut: open.check_out, breakStart: open.break_start, breakEnd: now },
+    {
+      checkIn: open.check_in,
+      checkOut: open.check_out,
+      breakStart: open.break_start,
+      breakEnd: now,
+    },
     num(settings.requiredHours, 8),
   );
 
@@ -214,7 +245,8 @@ export async function breakEnd(ctx: Ctx) {
     .from("attendance")
     .update({ break_end: now, break_minutes: derived.breakMinutes })
     .eq("attendance_id", open.attendance_id)
-    .select(SELECT).single();
+    .select(SELECT)
+    .single();
   if (error) throw new ApiError(error.message, 500);
   return withEmployeeNameOne(data);
 }
@@ -232,7 +264,10 @@ export async function checkOut(ctx: Ctx) {
 
 export async function getAttendanceCorrections(ctx: Ctx) {
   const caller = requireCaller(ctx.caller);
-  let q = ctx.svc.from("attendance_corrections").select(SELECT).order("created_at", { ascending: false });
+  let q = ctx.svc
+    .from("attendance_corrections")
+    .select(SELECT)
+    .order("created_at", { ascending: false });
   if (caller.role !== "Admin") q = q.eq("employee_id", caller.employeeId ?? "");
   const { data, error } = await q;
   if (error) throw new ApiError(error.message, 500);
@@ -255,7 +290,10 @@ export async function requestAttendanceCorrection(ctx: Ctx) {
     throw new ApiError("attendanceDate, requestType and newValue are required");
   }
   const { data, error } = await ctx.svc
-    .from("attendance_corrections").insert(row).select(SELECT).single();
+    .from("attendance_corrections")
+    .insert(row)
+    .select(SELECT)
+    .single();
   if (error) throw new ApiError(error.message, 500);
   return withEmployeeNameOne(data);
 }
@@ -272,7 +310,8 @@ export async function approveAttendanceCorrection(ctx: Ctx) {
       approved_at: new Date().toISOString(),
     })
     .eq("correction_id", correctionId)
-    .select(SELECT).maybeSingle();
+    .select(SELECT)
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Correction not found", 404);
   // NOTE: this marks the request approved. Applying the change to the attendance
@@ -318,7 +357,11 @@ export async function adminUpdateAttendance(ctx: Ctx) {
     ...(await derivedPatch(ctx.svc, fields)),
   };
   const { data, error } = await ctx.svc
-    .from("attendance").update(patch).eq("attendance_id", attendanceId).select(SELECT).maybeSingle();
+    .from("attendance")
+    .update(patch)
+    .eq("attendance_id", attendanceId)
+    .select(SELECT)
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Attendance record not found", 404);
   return withEmployeeNameOne(data);
@@ -332,7 +375,10 @@ export async function adminCreateAttendance(ctx: Ctx) {
   let employeeId = str(fields.employeeId);
   if (!employeeId && fields.employeeCode) {
     const { data: emp } = await ctx.svc
-      .from("employees").select("employee_id").eq("employee_code", str(fields.employeeCode)).maybeSingle();
+      .from("employees")
+      .select("employee_id")
+      .eq("employee_code", str(fields.employeeCode))
+      .maybeSingle();
     if (!emp) throw new ApiError("Employee not found", 404);
     employeeId = emp.employee_id;
   }
@@ -351,7 +397,8 @@ export async function adminCreateAttendance(ctx: Ctx) {
   };
   const { data, error } = await ctx.svc.from("attendance").insert(row).select(SELECT).single();
   if (error) {
-    if (error.code === "23505") throw new ApiError("An attendance row for that employee/date already exists", 409);
+    if (error.code === "23505")
+      throw new ApiError("An attendance row for that employee/date already exists", 409);
     throw new ApiError(error.message, 500);
   }
   return withEmployeeNameOne(data);

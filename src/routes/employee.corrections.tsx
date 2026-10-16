@@ -12,6 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AlertTriangle, CircleCheck, ClockAlert, History } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { ChartCard } from "@/components/shared/ChartCard";
 import { DataTable } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useAttendance } from "@/hooks/useAttendance";
@@ -24,6 +27,7 @@ import {
 import { useAuth } from "@/lib/auth/AuthContext";
 
 export const Route = createFileRoute("/employee/corrections")({
+  head: () => ({ meta: [{ title: "Corrections — LDS HRMS" }] }),
   component: EmployeeCorrections,
 });
 
@@ -47,7 +51,7 @@ function toLocalInput(value?: string) {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
+    d.getHours(),
   )}:${pad(d.getMinutes())}`;
 }
 
@@ -95,13 +99,13 @@ function EmployeeCorrections() {
         .sort(
           (a, b) =>
             new Date(b.attendanceDate || b.checkIn || "").getTime() -
-            new Date(a.attendanceDate || a.checkIn || "").getTime()
+            new Date(a.attendanceDate || a.checkIn || "").getTime(),
         ),
-    [attendanceRaw, employeeId]
+    [attendanceRaw, employeeId],
   );
 
   const myCorrections = (Array.isArray(correctionsRaw) ? correctionsRaw : []).filter(
-    (c) => c.employeeId === employeeId
+    (c) => c.employeeId === employeeId,
   );
 
   const [attendanceId, setAttendanceId] = useState("");
@@ -113,9 +117,7 @@ function EmployeeCorrections() {
 
   const selectedRecord = myAttendance.find((a) => a.attendanceId === attendanceId);
   const isTimeField = requestType && requestType !== "Status";
-  const oldValue = selectedRecord
-    ? String(selectedRecord[FIELD_MAP[requestType]] ?? "")
-    : "";
+  const oldValue = selectedRecord ? String(selectedRecord[FIELD_MAP[requestType]] ?? "") : "";
 
   const mutation = useMutation({
     mutationFn: requestAttendanceCorrection,
@@ -127,8 +129,7 @@ function EmployeeCorrections() {
       setNewValue("");
       setReason("");
     },
-    onError: (err) =>
-      setError(err instanceof Error ? err.message : "Failed to submit request."),
+    onError: (err) => setError(err instanceof Error ? err.message : "Failed to submit request."),
   });
 
   function submit() {
@@ -153,29 +154,35 @@ function EmployeeCorrections() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold">Attendance Correction</h1>
-      <p className="text-muted-foreground">
-        Something wrong with your check-in, check-out or break times? Request a
-        correction and an admin will review it.
-      </p>
+      <PageHeader
+        icon={ClockAlert}
+        title="Attendance correction"
+        description="Something wrong with your check-in, check-out or break times? Request a correction and an admin will review it."
+      />
 
-      <div className="mt-6 rounded-2xl border bg-card p-5">
-        <h3 className="mb-4 text-sm font-semibold">New correction request</h3>
-
+      <ChartCard
+        title="New correction request"
+        description="Pick the day, the field and the right value"
+        icon={ClockAlert}
+        tone="warning"
+        bodyClassName=""
+      >
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mb-4 flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint px-3 py-2.5 text-[13px] text-danger-ink">
+            <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
             {error}
           </div>
         )}
         {success && (
-          <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+          <div className="mb-4 flex items-start gap-2 rounded-lg border border-success-line bg-success-tint px-3 py-2.5 text-[13px] text-success-ink">
+            <CircleCheck className="mt-0.5 size-3.5 shrink-0" />
             {success}
           </div>
         )}
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-x-3 gap-y-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">Attendance day</Label>
+            <Label>Attendance day</Label>
             <Select
               value={attendanceId}
               onValueChange={(v) => {
@@ -194,8 +201,7 @@ function EmployeeCorrections() {
                 ) : (
                   myAttendance.map((a) => (
                     <SelectItem key={a.attendanceId} value={a.attendanceId}>
-                      {formatDate(a.attendanceDate || a.checkIn)} ·{" "}
-                      {a.attendanceStatus || "—"}
+                      {formatDate(a.attendanceDate || a.checkIn)} · {a.attendanceStatus || "—"}
                     </SelectItem>
                   ))
                 )}
@@ -204,7 +210,7 @@ function EmployeeCorrections() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Field to correct</Label>
+            <Label>Field to correct</Label>
             <Select
               value={requestType}
               onValueChange={(v) => {
@@ -226,16 +232,17 @@ function EmployeeCorrections() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Current value</Label>
+            <Label>Current value</Label>
             <Input
               value={requestType ? formatValue(oldValue) : ""}
               readOnly
+              className="bg-subtle font-mono"
               placeholder="Pick a day and field"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Corrected value</Label>
+            <Label>Corrected value</Label>
             {requestType === "Status" ? (
               <Select value={newValue} onValueChange={setNewValue}>
                 <SelectTrigger>
@@ -252,6 +259,7 @@ function EmployeeCorrections() {
             ) : (
               <Input
                 type="datetime-local"
+                className="font-mono"
                 value={newValue}
                 disabled={!requestType}
                 onChange={(e) => setNewValue(e.target.value)}
@@ -260,7 +268,7 @@ function EmployeeCorrections() {
           </div>
 
           <div className="md:col-span-2 space-y-1.5">
-            <Label className="text-xs">Reason</Label>
+            <Label>Reason</Label>
             <Textarea
               rows={3}
               placeholder="Explain why this needs correcting…"
@@ -270,22 +278,51 @@ function EmployeeCorrections() {
           </div>
         </div>
 
-        <Button className="mt-4" disabled={mutation.isPending} onClick={submit}>
-          {mutation.isPending ? "Submitting…" : "Submit request"}
-        </Button>
-      </div>
+        <div className="mt-5 flex justify-end pb-1">
+          <Button
+            className="w-full sm:w-auto max-sm:h-11"
+            disabled={mutation.isPending}
+            onClick={submit}
+          >
+            {mutation.isPending ? "Submitting…" : "Submit request"}
+          </Button>
+        </div>
+      </ChartCard>
 
       <div className="mt-6">
-        <h3 className="mb-3 text-sm font-semibold">My correction requests</h3>
+        <div className="mb-3 flex items-center gap-1.5">
+          <History className="size-3.5 text-muted-foreground" />
+          <h3 className="text-sm font-semibold tracking-[-0.2px]">My correction requests</h3>
+        </div>
         <DataTable<AttendanceCorrection>
           rowKey={(r) => r.correctionId}
           data={myCorrections}
           empty="You haven't submitted any correction requests yet."
           columns={[
-            { key: "attendanceDate", header: "Date", render: (r) => formatDate(r.attendanceDate) },
+            {
+              key: "attendanceDate",
+              header: "Date",
+              render: (r) => (
+                <span className="font-mono text-[13px]">{formatDate(r.attendanceDate)}</span>
+              ),
+            },
             { key: "requestType", header: "Field", render: (r) => r.requestType || "—" },
-            { key: "oldValue", header: "Old", render: (r) => formatValue(r.oldValue) },
-            { key: "newValue", header: "Requested", render: (r) => formatValue(r.newValue) },
+            {
+              key: "oldValue",
+              header: "Old",
+              render: (r) => (
+                <span className="font-mono text-[13px] text-muted-foreground">
+                  {formatValue(r.oldValue)}
+                </span>
+              ),
+            },
+            {
+              key: "newValue",
+              header: "Requested",
+              render: (r) => (
+                <span className="font-mono text-[13px] font-medium">{formatValue(r.newValue)}</span>
+              ),
+            },
             {
               key: "reason",
               header: "Reason",

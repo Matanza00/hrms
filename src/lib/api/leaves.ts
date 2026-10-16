@@ -19,8 +19,7 @@ export type LeaveRequest = {
   updatedAt?: string;
 };
 
-export const getLeaveRequests = () =>
-  apiGet<LeaveRequest[]>("leaveRequests");
+export const getLeaveRequests = () => apiGet<LeaveRequest[]>("leaveRequests");
 
 export const applyLeave = (data: {
   employeeCode: string;

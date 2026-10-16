@@ -8,7 +8,9 @@ import { karachiParts } from "../_shared/time.ts";
 export async function getRevenue(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("revenue").select("*").order("revenue_date", { ascending: false });
+    .from("revenue")
+    .select("*")
+    .order("revenue_date", { ascending: false });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -33,7 +35,9 @@ export async function createRevenue(ctx: Ctx) {
 export async function getExpenses(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("expenses").select("*").order("expense_date", { ascending: false });
+    .from("expenses")
+    .select("*")
+    .order("expense_date", { ascending: false });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -47,7 +51,8 @@ export async function createExpense(ctx: Ctx) {
     description: str(ctx.data.description) || null,
     created_by: caller.username,
   };
-  if (!row.expense_date || !row.category) throw new ApiError("expenseDate and category are required");
+  if (!row.expense_date || !row.category)
+    throw new ApiError("expenseDate and category are required");
   const { data, error } = await ctx.svc.from("expenses").insert(row).select("*").single();
   if (error) throw new ApiError(error.message, 500);
   return camelizeRow(data);
@@ -56,7 +61,9 @@ export async function createExpense(ctx: Ctx) {
 export async function getReserveLedger(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("reserve_ledger").select("*").order("created_at", { ascending: false });
+    .from("reserve_ledger")
+    .select("*")
+    .order("created_at", { ascending: false });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -69,8 +76,16 @@ export async function getAccountsOverview(ctx: Ctx) {
   const [revRes, expRes, reserveRes, distRes] = await Promise.all([
     svc.from("revenue").select("revenue_date, amount"),
     svc.from("expenses").select("expense_date, amount"),
-    svc.from("reserve_ledger").select("balance_after").order("created_at", { ascending: false }).limit(1).maybeSingle(),
-    svc.from("profit_distribution").select("name, percent").order("sort_order", { ascending: true }),
+    svc
+      .from("reserve_ledger")
+      .select("balance_after")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    svc
+      .from("profit_distribution")
+      .select("name, percent")
+      .order("sort_order", { ascending: true }),
   ]);
   if (revRes.error) throw new ApiError(revRes.error.message, 500);
   if (expRes.error) throw new ApiError(expRes.error.message, 500);
@@ -93,8 +108,14 @@ export async function getAccountsOverview(ctx: Ctx) {
     buckets.push({ key, month: label, revenue: 0, expense: 0 });
   }
   const bucketFor = (dateStr: string) => buckets.find((b) => String(dateStr).startsWith(b.key));
-  for (const r of revenue) { const b = bucketFor(str(r.revenue_date)); if (b) b.revenue += Number(r.amount) || 0; }
-  for (const e of expenses) { const b = bucketFor(str(e.expense_date)); if (b) b.expense += Number(e.amount) || 0; }
+  for (const r of revenue) {
+    const b = bucketFor(str(r.revenue_date));
+    if (b) b.revenue += Number(r.amount) || 0;
+  }
+  for (const e of expenses) {
+    const b = bucketFor(str(e.expense_date));
+    if (b) b.expense += Number(e.amount) || 0;
+  }
 
   const distribution = (distRes.data ?? []).map((d) => ({
     name: d.name as string,
