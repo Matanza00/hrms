@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -36,7 +37,7 @@ function toLocalInput(value?: string) {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
+    d.getHours(),
   )}:${pad(d.getMinutes())}`;
 }
 
@@ -61,12 +62,7 @@ type Props = {
   employees: Employee[];
 };
 
-export function AttendanceEditDialog({
-  open,
-  onOpenChange,
-  record,
-  employees,
-}: Props) {
+export function AttendanceEditDialog({ open, onOpenChange, record, employees }: Props) {
   const qc = useQueryClient();
   const isEdit = !!record;
 
@@ -121,8 +117,7 @@ export function AttendanceEditDialog({
       qc.invalidateQueries({ queryKey: ["attendance"] });
       onOpenChange(false);
     },
-    onError: (err) =>
-      setError(err instanceof Error ? err.message : "Failed to save attendance."),
+    onError: (err) => setError(err instanceof Error ? err.message : "Failed to save attendance."),
   });
 
   function handleSave() {
@@ -155,16 +150,13 @@ export function AttendanceEditDialog({
   }
 
   const employeeName =
-    record?.employeeName ||
-    employees.find((e) => e.employeeId === employeeId)?.name;
+    record?.employeeName || employees.find((e) => e.employeeId === employeeId)?.name;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[90svh] max-w-lg overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {isEdit ? "Edit attendance" : "Add attendance record"}
-          </DialogTitle>
+          <DialogTitle>{isEdit ? "Edit attendance" : "Add attendance record"}</DialogTitle>
           <DialogDescription>
             {isEdit
               ? `Directly correct the times for ${employeeName || "this employee"}. Working hours are recalculated on save.`
@@ -174,19 +166,19 @@ export function AttendanceEditDialog({
 
         <div className="space-y-4">
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            <div className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink">
               {error}
             </div>
           )}
 
           {isEdit ? (
-            <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
+            <div className="rounded-lg border bg-subtle px-3 py-2 text-sm">
               <span className="text-muted-foreground">Employee: </span>
               <span className="font-medium">{employeeName || record?.employeeId}</span>
             </div>
           ) : (
             <div className="space-y-1.5">
-              <Label className="text-xs">Employee</Label>
+              <Label>Employee</Label>
               <Select value={employeeId} onValueChange={setEmployeeId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select employee" />
@@ -202,17 +194,18 @@ export function AttendanceEditDialog({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-x-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Date</Label>
+              <Label>Date</Label>
               <Input
                 type="date"
+                className="font-mono text-[13px]"
                 value={attendanceDate}
                 onChange={(e) => setAttendanceDate(e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Status</Label>
+              <Label>Status</Label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select" />
@@ -227,48 +220,52 @@ export function AttendanceEditDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Check In</Label>
+              <Label>Check In</Label>
               <Input
                 type="datetime-local"
+                className="font-mono text-[13px]"
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Check Out</Label>
+              <Label>Check Out</Label>
               <Input
                 type="datetime-local"
+                className="font-mono text-[13px]"
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Break Start</Label>
+              <Label>Break Start</Label>
               <Input
                 type="datetime-local"
+                className="font-mono text-[13px]"
                 value={breakStart}
                 onChange={(e) => setBreakStart(e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Break End</Label>
+              <Label>Break End</Label>
               <Input
                 type="datetime-local"
+                className="font-mono text-[13px]"
                 value={breakEnd}
                 onChange={(e) => setBreakEnd(e.target.value)}
               />
             </div>
           </div>
-
-          <div className="flex justify-end gap-2 pt-1">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={mutation.isPending}>
-              {mutation.isPending ? "Saving…" : "Save changes"}
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter className="gap-2 sm:space-x-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={mutation.isPending}>
+            {mutation.isPending ? "Saving…" : "Save changes"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

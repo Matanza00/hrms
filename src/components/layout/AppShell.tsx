@@ -1,11 +1,10 @@
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, LogOut, Moon, Search, Sun } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Bell, ChevronRight, LogOut, Moon, Search, Sun } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useQuery } from "@tanstack/react-query";
@@ -13,49 +12,88 @@ import { getLeaveRequests } from "@/lib/api/leaves";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { useAuth } from "@/lib/auth/AuthContext";
 
+/** Breadcrumb label for each top-level admin section. */
+const SECTION_LABELS: Record<string, string> = {
+  dashboard: "Dashboard",
+  employees: "Employees",
+  attendance: "Attendance",
+  leaves: "Leaves",
+  payroll: "Payroll",
+  accounts: "Accounts",
+  holidays: "Holidays",
+  "special-working-days": "Special Working Days",
+  reports: "Reports",
+  settings: "Settings",
+  profile: "Profile",
+};
+
+const SUB_LABELS: Record<string, string> = {
+  live: "Live Monitoring",
+  corrections: "Corrections",
+  qr: "QR & Devices",
+  revenue: "Revenue",
+  expenses: "Expenses",
+  reserve: "Reserve",
+  "profit-distribution": "Profit Distribution",
+  payslips: "Payslips",
+  request: "Request",
+  create: "New Employee",
+  edit: "Edit",
+};
+
+function initials(name?: string) {
+  if (!name) return "AD";
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .map((s) => s[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const [dark, setDark] = useState(false);
   const [defaultOpen, setDefaultOpen] = useState<boolean | null>(null);
   const [q, setQ] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
 
-  const { data: employeesRaw = [] } = useEmployees();
-
-  const { data: leavesRaw = [] } = useQuery({
+  const { data: employeesRaw } = useEmployees();
+  const { data: leavesRaw } = useQuery({
     queryKey: ["leaveRequests"],
     queryFn: getLeaveRequests,
   });
 
-  const employees = Array.isArray(employeesRaw) ? employeesRaw : [];
-  const leaves = Array.isArray(leavesRaw) ? leavesRaw : [];
-
   const { user, employee, logout } = useAuth();
   const navigate = useNavigate();
+  const path = useRouterState({ select: (s) => s.location.pathname });
   const accountName = employee?.name || user?.username || "Admin";
   const accountRole = user?.role === "Admin" ? "Administrator" : "Employee";
 
-  const pendingLeaves = leaves.filter((l) => l.status === "Pending").length;
+  const pendingLeaves = Array.isArray(leavesRaw)
+    ? leavesRaw.filter((l) => l.status === "Pending").length
+    : 0;
 
   const searchResults = useMemo(() => {
+    const employees = Array.isArray(employeesRaw) ? employeesRaw : [];
     if (!q.trim()) return [];
-
     const term = q.toLowerCase();
-
     return employees
       .filter((e) =>
-        [
-          e.name,
-          e.employeeCode,
-          e.email,
-          e.department,
-          e.designation,
-          e.status,
-        ]
+        [e.name, e.employeeCode, e.email, e.department, e.designation, e.status]
           .join(" ")
           .toLowerCase()
-          .includes(term)
+          .includes(term),
       )
       .slice(0, 5);
-  }, [q, employees]);
+  }, [q, employeesRaw]);
+
+  const crumbs = useMemo(() => {
+    const [section, sub] = path.split("/").filter(Boolean);
+    const list = [SECTION_LABELS[section] ?? "Dashboard"];
+    if (sub && SUB_LABELS[sub]) list.push(SUB_LABELS[sub]);
+    return list;
+  }, [path]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -63,63 +101,103 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setDefaultOpen(window.innerWidth >= 1280);
+    try {
+      setDark(window.localStorage.getItem("lds_theme") === "dark");
+    } catch {
+      // Storage blocked (private mode): stay light.
+    }
+  }, []);
+
+  const toggleTheme = () =>
+    setDark((v) => {
+      try {
+        window.localStorage.setItem("lds_theme", v ? "light" : "dark");
+      } catch {
+        // Storage blocked: the toggle still works for this visit.
+      }
+      return !v;
+    });
+
+  // ⌘K / Ctrl+K focuses the top-bar search, as the Figma kbd hint promises.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   if (defaultOpen === null) return null;
 
-  function initials(name?: string) {
-    if (!name) return "AD";
-
-    return name
-      .split(" ")
-      .filter(Boolean)
-      .map((s) => s[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  }
-
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
-      <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar />
+    <SidebarProvider defaultOpen={defaultOpen} className="bg-sidebar">
+      <AppSidebar />
 
-        <div className="flex flex-1 flex-col min-w-0">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-2 sm:gap-3 border-b bg-background/80 px-3 sm:px-4 backdrop-blur">
-            <SidebarTrigger className="h-11 w-11 sm:h-9 sm:w-9" />
+      <SidebarInset className="min-w-0 overflow-hidden bg-card">
+        {/* Figma "Top Bar": 56px, divider below, breadcrumbs left, tools right. */}
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-divider bg-card/90 pl-3 pr-3 backdrop-blur sm:pr-4">
+          <SidebarTrigger className="size-8 rounded-md border border-border bg-card shadow-none hover:bg-muted" />
 
-            <div className="relative hidden md:flex max-w-md flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <nav
+            aria-label="Breadcrumb"
+            className="hidden min-w-0 items-center gap-2 text-sm sm:flex"
+          >
+            <span className="text-muted-foreground">Workspace</span>
+            {crumbs.map((c, i) => (
+              <span key={c} className="flex min-w-0 items-center gap-2">
+                <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+                <span
+                  className={
+                    i === crumbs.length - 1
+                      ? "truncate font-medium text-foreground"
+                      : "truncate text-muted-foreground"
+                  }
+                >
+                  {c}
+                </span>
+              </span>
+            ))}
+          </nav>
 
-              <Input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search employees, codes, departments…"
-                className="h-9 pl-9 bg-muted/40 border-transparent focus-visible:bg-card"
-              />
+          <div className="ml-auto flex items-center gap-2">
+            <div className="relative hidden w-[300px] lg:block">
+              <label className="flex h-8 items-center gap-2 rounded-md border border-border bg-subtle pl-2.5 pr-1.5 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20">
+                <Search className="size-3.5 shrink-0 text-muted-foreground" />
+                <input
+                  ref={searchRef}
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Search pages, employees, codes…"
+                  className="min-w-0 flex-1 bg-transparent text-[13px] leading-[18px] text-foreground outline-none placeholder:text-muted-foreground"
+                />
+                <kbd className="flex h-5 items-center rounded-[5px] border border-border bg-card px-1.5 font-mono text-[11px] font-medium text-muted-foreground">
+                  ⌘K
+                </kbd>
+              </label>
 
               {searchResults.length > 0 && (
-                <div className="absolute left-0 right-0 top-11 z-50 rounded-xl border bg-card p-2 shadow-lg">
-                  {searchResults.map((employee) => (
+                <div className="absolute left-0 right-0 top-10 z-50 rounded-xl border bg-popover p-1.5 shadow-lg">
+                  {searchResults.map((e) => (
                     <Link
-                      key={employee.employeeId}
+                      key={e.employeeId}
                       to="/employees/$id"
-                      params={{ id: employee.employeeId }}
+                      params={{ id: e.employeeId }}
                       onClick={() => setQ("")}
-                      className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted"
+                      className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted"
                     >
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-[10px] bg-muted">
-                          {initials(employee.name)}
+                      <Avatar className="size-8">
+                        <AvatarFallback className="bg-muted text-[11px]">
+                          {initials(e.name)}
                         </AvatarFallback>
                       </Avatar>
-
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
-                          {employee.name}
-                        </p>
+                        <p className="truncate text-sm font-medium">{e.name}</p>
                         <p className="truncate text-xs text-muted-foreground">
-                          {employee.employeeCode} · {employee.department || "—"}
+                          <span className="font-mono">{e.employeeCode}</span> ·{" "}
+                          {e.department || "—"}
                         </p>
                       </div>
                     </Link>
@@ -128,81 +206,63 @@ export function AppShell({ children }: { children: ReactNode }) {
               )}
             </div>
 
-            <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
-              <Search className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="icon"
+              className="shadow-none"
+              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+              onClick={toggleTheme}
+            >
+              {dark ? <Sun className="!size-4" /> : <Moon className="!size-4" />}
             </Button>
 
-            <div className="ml-auto flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => setDark((v) => !v)}
-              >
-                {dark ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 relative"
-                asChild
-              >
-                <Link to="/leaves">
-                  <Bell className="h-4 w-4" />
-                  {pendingLeaves > 0 && (
-                    <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[oklch(0.62_0.23_27)] px-1 text-[9px] font-semibold text-white">
-                      {pendingLeaves}
-                    </span>
-                  )}
-                </Link>
-              </Button>
-
+            <Button variant="outline" size="icon" className="relative shadow-none" asChild>
               <Link
-                to="/profile"
-                className="ml-1 flex items-center gap-2 pl-2 sm:border-l"
+                to="/leaves"
+                aria-label={`Leave requests${pendingLeaves ? `, ${pendingLeaves} pending` : ""}`}
               >
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {initials(accountName)}
-                  </AvatarFallback>
-                </Avatar>
-
-                <div className="hidden sm:flex flex-col leading-tight">
-                  <span className="text-xs font-medium">{accountName}</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {accountRole}
+                <Bell className="!size-4" />
+                {pendingLeaves > 0 && (
+                  <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 font-mono text-[10px] font-medium text-white">
+                    {pendingLeaves}
                   </span>
-                </div>
+                )}
               </Link>
+            </Button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                aria-label="Sign out"
-                className="ml-1 h-11 px-3 sm:h-8"
-                onClick={() => {
-                  logout();
-                  navigate({ to: "/login" });
-                }}
-              >
-                <LogOut className="h-3.5 w-3.5 sm:mr-1.5" />
-                <span className="hidden sm:inline">Sign out</span>
-              </Button>
-            </div>
-          </header>
+            <FeedbackWidget variant="toolbar" />
 
-          <main className="min-w-0 flex-1 overflow-x-hidden p-3 pb-24 sm:p-4 sm:pb-24 md:p-6 lg:p-8">
-            {children}
-          </main>
-        </div>
+            <div className="hidden h-5 w-px bg-border sm:block" />
 
-        <FeedbackWidget />
-      </div>
+            <Link to="/profile" className="flex items-center gap-2">
+              <Avatar className="size-7">
+                <AvatarFallback className="bg-foreground text-xs font-medium text-background">
+                  {initials(accountName).slice(0, 1)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden flex-col sm:flex">
+                <span className="text-[13px] font-medium leading-[18px]">{accountName}</span>
+                <span className="text-[11px] leading-4 text-muted-foreground">{accountRole}</span>
+              </div>
+            </Link>
+
+            <Button
+              variant="outline"
+              aria-label="Sign out"
+              className="h-8 px-2.5 shadow-none"
+              onClick={() => {
+                logout();
+                navigate({ to: "/login" });
+              }}
+            >
+              <LogOut />
+              <span className="hidden sm:inline">Sign out</span>
+            </Button>
+          </div>
+        </header>
+
+        <main className="min-w-0 flex-1 overflow-x-hidden p-4 pb-16 md:p-6">{children}</main>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

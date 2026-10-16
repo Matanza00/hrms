@@ -23,7 +23,7 @@ interface Props<T> {
 export function DataTable<T>({ columns, data, empty, rowKey }: Props<T>) {
   if (data.length === 0) {
     return (
-      <div className="rounded-2xl border bg-card p-8 text-center text-sm text-muted-foreground sm:p-10">
+      <div className="rounded-lg border border-dashed bg-card p-8 text-center text-[13px] text-muted-foreground sm:p-10">
         {empty ?? "No records found"}
       </div>
     );
@@ -45,16 +45,14 @@ export function DataTable<T>({ columns, data, empty, rowKey }: Props<T>) {
         {data.map((row) => (
           <div
             key={rowKey(row)}
-            className="rounded-2xl border bg-card p-4 [&_button]:min-h-11 [&_button]:px-4"
+            className="rounded-2xl border bg-card p-4 shadow-xs [&_button]:min-h-11 [&_button]:px-4"
           >
             <div className="text-sm font-semibold">{cell(row, first)}</div>
             <dl className="mt-3 space-y-2">
               {mobileColumns.map((c) =>
                 c.header ? (
                   <div key={c.key} className="flex items-start justify-between gap-3">
-                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                      {c.header}
-                    </dt>
+                    <dt className="text-xs text-muted-foreground">{c.header}</dt>
                     <dd className="min-w-0 text-right text-sm">{cell(row, c)}</dd>
                   </div>
                 ) : (
@@ -69,16 +67,16 @@ export function DataTable<T>({ columns, data, empty, rowKey }: Props<T>) {
       </div>
 
       {/* Tablets and up: the real table. */}
-      <div className="hidden overflow-hidden rounded-2xl border bg-card sm:block">
+      <div className="hidden overflow-hidden rounded-2xl border bg-card shadow-xs sm:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-left">
+              <tr className="border-b bg-subtle text-left">
                 {columns.map((c) => (
                   <th
                     key={c.key}
                     className={cn(
-                      "px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+                      "h-10 px-4 text-[13px] font-medium text-muted-foreground",
                       c.className,
                     )}
                   >
@@ -91,7 +89,7 @@ export function DataTable<T>({ columns, data, empty, rowKey }: Props<T>) {
               {data.map((row) => (
                 <tr
                   key={rowKey(row)}
-                  className="border-b transition-colors last:border-0 hover:bg-muted/30"
+                  className="border-b transition-colors last:border-0 hover:bg-subtle"
                 >
                   {columns.map((c) => (
                     <td key={c.key} className={cn("px-4 py-3.5 align-middle", c.className)}>

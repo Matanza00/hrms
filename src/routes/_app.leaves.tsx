@@ -1,36 +1,20 @@
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  useRouterState,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { DataTable } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
-import {
-  CalendarDays,
-  CalendarCheck,
-  CalendarX,
-  CalendarClock,
-  Plus,
-  Check,
-  X,
-  Pencil,
-} from "lucide-react";
+import { CalendarDays, Check, CircleCheck, Clock, Pencil, Plus, Wallet, X } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  getLeaveRequests,
-  type LeaveRequest,
-} from "@/lib/api/leaves";
+import { getLeaveRequests, type LeaveRequest } from "@/lib/api/leaves";
 import { apiPost } from "@/lib/apiClient";
 import { useEmployees } from "@/hooks/useEmployees";
 import { LeaveEditDialog } from "@/components/leaves/LeaveEditDialog";
 import type { Employee } from "@/lib/api/employees";
 
 export const Route = createFileRoute("/_app/leaves")({
+  head: () => ({ meta: [{ title: "Leaves — LDS HRMS" }] }),
   component: LeavesLayout,
 });
 
@@ -55,15 +39,18 @@ function LeavesLayout() {
   return (
     <div>
       <PageHeader
+        icon={CalendarDays}
         title="Leave management"
         description="Track balances, requests and approvals."
         actions={
-          <Button size="sm" asChild>
-            <Link to="/leaves/request">
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Request leave
-            </Link>
-          </Button>
+          isRoot && (
+            <Button asChild>
+              <Link to="/leaves/request">
+                <Plus />
+                Request leave
+              </Link>
+            </Button>
+          )
         }
       />
 
@@ -86,9 +73,7 @@ function LeavesOverview() {
 
   const { data: employeesRaw = [] } = useEmployees();
 
-  const employees: Employee[] = Array.isArray(employeesRaw)
-    ? employeesRaw
-    : [];
+  const employees: Employee[] = Array.isArray(employeesRaw) ? employeesRaw : [];
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<LeaveRequest | null>(null);
@@ -104,9 +89,7 @@ function LeavesOverview() {
   }
 
   function getEmployeeName(employeeId?: string) {
-    const employee = employees.find(
-      (e) => e.employeeId === employeeId
-    );
+    const employee = employees.find((e) => e.employeeId === employeeId);
 
     return employee?.name || employeeId || "Unknown";
   }
@@ -137,7 +120,7 @@ function LeavesOverview() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-xl border bg-card p-5 text-[13px] text-muted-foreground">
         Loading leave requests...
       </div>
     );
@@ -145,7 +128,7 @@ function LeavesOverview() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div className="rounded-xl border border-danger-line bg-danger-tint p-5 text-[13px] text-danger-ink">
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );
@@ -163,14 +146,11 @@ function LeavesOverview() {
     .filter((l) => l.status === "Approved")
     .reduce((sum, l) => sum + Number(l.unpaidDays || 0), 0);
 
-  const totalRequestedDays = leaveRequests.reduce(
-    (sum, l) => sum + Number(l.totalDays || 0),
-    0
-  );
+  const totalRequestedDays = leaveRequests.reduce((sum, l) => sum + Number(l.totalDays || 0), 0);
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+      <div className="metric-strip grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         <StatCard
           label="Requested Days"
           value={totalRequestedDays}
@@ -178,46 +158,21 @@ function LeavesOverview() {
           tone="accent"
         />
 
-        <StatCard
-          label="Paid Days"
-          value={paidDays}
-          icon={CalendarDays}
-          tone="success"
-        />
+        <StatCard label="Paid Days" value={paidDays} icon={CircleCheck} tone="success" />
 
-        <StatCard
-          label="Unpaid Days"
-          value={unpaidDays}
-          icon={CalendarDays}
-          tone="warning"
-        />
+        <StatCard label="Unpaid Days" value={unpaidDays} icon={Wallet} tone="warning" />
 
-        <StatCard
-          label="Pending"
-          value={pending}
-          icon={CalendarClock}
-          tone="warning"
-        />
+        <StatCard label="Pending" value={pending} icon={Clock} tone="warning" />
 
-        <StatCard
-          label="Approved"
-          value={approved}
-          icon={CalendarCheck}
-          tone="success"
-        />
+        <StatCard label="Approved" value={approved} icon={Check} tone="success" />
 
-        <StatCard
-          label="Rejected"
-          value={rejected}
-          icon={CalendarX}
-          tone="danger"
-        />
+        <StatCard label="Rejected" value={rejected} icon={X} tone="danger" />
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Leave records</h3>
-        <Button size="sm" variant="outline" onClick={openAdd}>
-          <Plus className="mr-1.5 h-3.5 w-3.5" />
+      <div className="mt-5 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold leading-5 tracking-[-0.2px]">Leave records</h3>
+        <Button variant="outline" onClick={openAdd}>
+          <Plus />
           Add old leave
         </Button>
       </div>
@@ -231,7 +186,7 @@ function LeavesOverview() {
               key: "employeeName",
               header: "Employee",
               render: (r) => (
-                <span className="font-medium">
+                <span className="font-medium text-foreground">
                   {r.employeeName || getEmployeeName(r.employeeId)}
                 </span>
               ),
@@ -239,43 +194,39 @@ function LeavesOverview() {
             {
               key: "leaveType",
               header: "Type",
-              render: (r) => (
-                <span className="capitalize">{r.leaveType}</span>
-              ),
+              render: (r) => <span className="capitalize">{r.leaveType}</span>,
             },
             {
               key: "startDate",
               header: "Start",
+              className: "whitespace-nowrap",
               render: (r) => formatDate(r.startDate),
             },
             {
               key: "endDate",
               header: "End",
+              className: "whitespace-nowrap",
               render: (r) => formatDate(r.endDate),
             },
             {
               key: "totalDays",
               header: "Days",
-              render: (r) => (
-                <span className="tabular-nums">
-                  {Number(r.totalDays || 0)}
-                </span>
-              ),
+              render: (r) => <span className="font-mono">{Number(r.totalDays || 0)}</span>,
             },
             {
               key: "paidDays",
               header: "Paid",
-              render: (r) => (
-                <span className="tabular-nums">
-                  {Number(r.paidDays || 0)}
-                </span>
-              ),
+              render: (r) => <span className="font-mono">{Number(r.paidDays || 0)}</span>,
             },
             {
               key: "unpaidDays",
               header: "Unpaid",
               render: (r) => (
-                <span className="tabular-nums">
+                <span
+                  className={
+                    Number(r.unpaidDays || 0) ? "font-mono" : "font-mono text-muted-foreground"
+                  }
+                >
                   {Number(r.unpaidDays || 0)}
                 </span>
               ),
@@ -284,9 +235,7 @@ function LeavesOverview() {
               key: "reason",
               header: "Reason",
               render: (r) => (
-                <span className="text-muted-foreground line-clamp-1">
-                  {r.reason || "—"}
-                </span>
+                <span className="text-muted-foreground line-clamp-1">{r.reason || "—"}</span>
               ),
             },
             {
@@ -303,35 +252,32 @@ function LeavesOverview() {
 
                 return (
                   <div className="flex justify-end gap-1.5">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7"
-                      disabled={!isPending || approveMutation.isPending}
-                      onClick={() => approveMutation.mutate(r.leaveId)}
-                    >
-                      <Check className="mr-1 h-3 w-3" />
-                      Approve
-                    </Button>
+                    {isPending && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={approveMutation.isPending}
+                          onClick={() => approveMutation.mutate(r.leaveId)}
+                        >
+                          <Check className="text-success-ink" />
+                          Approve
+                        </Button>
 
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7"
-                      disabled={!isPending || rejectMutation.isPending}
-                      onClick={() => rejectMutation.mutate(r.leaveId)}
-                    >
-                      <X className="mr-1 h-3 w-3" />
-                      Reject
-                    </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={rejectMutation.isPending}
+                          onClick={() => rejectMutation.mutate(r.leaveId)}
+                        >
+                          <X className="text-danger-ink" />
+                          Reject
+                        </Button>
+                      </>
+                    )}
 
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7"
-                      onClick={() => openEdit(r)}
-                    >
-                      <Pencil className="mr-1 h-3 w-3" />
+                    <Button size="sm" variant="outline" onClick={() => openEdit(r)}>
+                      <Pencil />
                       Edit
                     </Button>
                   </div>

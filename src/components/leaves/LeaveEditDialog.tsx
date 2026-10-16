@@ -18,11 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  adminAddLeave,
-  adminUpdateLeave,
-  type LeaveRequest,
-} from "@/lib/api/leaves";
+import { adminAddLeave, adminUpdateLeave, type LeaveRequest } from "@/lib/api/leaves";
 import type { Employee } from "@/lib/api/employees";
 
 const LEAVE_TYPES = ["Annual", "Casual", "Sick", "Unpaid", "Absent"];
@@ -84,9 +80,11 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
       const isUnpaid = leaveType === "Unpaid" || leaveType === "Absent";
       // Default paid/unpaid split: paid types count fully as paid unless the
       // admin overrode the paid days figure.
+      // Clamped so a stale override (e.g. after shortening the dates) can
+      // never record more paid days than the leave is long.
       const paid =
         paidDays !== ""
-          ? Number(paidDays)
+          ? Math.min(totalDays, Math.max(0, Number(paidDays) || 0))
           : isUnpaid
             ? 0
             : totalDays;
@@ -94,8 +92,7 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
 
       const data = {
         employeeId,
-        employeeCode: employees.find((e) => e.employeeId === employeeId)
-          ?.employeeCode,
+        employeeCode: employees.find((e) => e.employeeId === employeeId)?.employeeCode,
         leaveType,
         startDate,
         endDate,
@@ -106,16 +103,13 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
         reason,
       };
 
-      return isEdit
-        ? adminUpdateLeave(leave!.leaveId, data)
-        : adminAddLeave(data);
+      return isEdit ? adminUpdateLeave(leave!.leaveId, data) : adminAddLeave(data);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leaveRequests"] });
       onOpenChange(false);
     },
-    onError: (err) =>
-      setError(err instanceof Error ? err.message : "Failed to save leave."),
+    onError: (err) => setError(err instanceof Error ? err.message : "Failed to save leave."),
   });
 
   function handleSave() {
@@ -140,16 +134,13 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
   }
 
   const employeeName =
-    leave?.employeeName ||
-    employees.find((e) => e.employeeId === employeeId)?.name;
+    leave?.employeeName || employees.find((e) => e.employeeId === employeeId)?.name;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {isEdit ? "Correct leave record" : "Add old leave"}
-          </DialogTitle>
+          <DialogTitle>{isEdit ? "Correct leave record" : "Add old leave"}</DialogTitle>
           <DialogDescription>
             {isEdit
               ? `Adjust the leave record for ${employeeName || "this employee"}.`
@@ -159,21 +150,21 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
 
         <div className="space-y-4">
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            <div className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink">
               {error}
             </div>
           )}
 
           {isEdit ? (
-            <div className="rounded-lg bg-muted/50 px-3 py-2 text-sm">
-              <span className="text-muted-foreground">Employee: </span>
-              <span className="font-medium">
+            <div className="flex items-center justify-between gap-3 rounded-lg border bg-subtle px-3 py-2.5 text-[13px]">
+              <span className="text-muted-foreground">Employee</span>
+              <span className="truncate font-medium text-foreground">
                 {employeeName || leave?.employeeId}
               </span>
             </div>
           ) : (
             <div className="space-y-1.5">
-              <Label className="text-xs">Employee</Label>
+              <Label>Employee</Label>
               <Select value={employeeId} onValueChange={setEmployeeId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select employee" />
@@ -181,7 +172,7 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
                 <SelectContent>
                   {employees.map((e) => (
                     <SelectItem key={e.employeeId} value={e.employeeId}>
-                      {e.name} — {e.employeeCode}
+                      {e.name} — <span className="font-mono">{e.employeeCode}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -189,9 +180,9 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-x-3 gap-y-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Leave type</Label>
+              <Label>Leave type</Label>
               <Select value={leaveType} onValueChange={setLeaveType}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select" />
@@ -206,7 +197,7 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Status</Label>
+              <Label>Status</Label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select" />
@@ -221,32 +212,25 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Start date</Label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
+              <Label>Start date</Label>
+              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">End date</Label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
+              <Label>End date</Label>
+              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Total days</Label>
-              <Input value={totalDays} readOnly />
+              <Label>Total days</Label>
+              <Input value={totalDays} readOnly className="bg-subtle font-mono" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Paid days (optional)</Label>
+              <Label>Paid days (optional)</Label>
               <Input
                 type="number"
                 min={0}
                 max={totalDays}
                 placeholder="Auto"
+                className="font-mono"
                 value={paidDays}
                 onChange={(e) => setPaidDays(e.target.value)}
               />
@@ -254,7 +238,7 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Reason / note</Label>
+            <Label>Reason / note</Label>
             <Textarea
               rows={2}
               placeholder="e.g. Backfilled from last year's records"
@@ -263,7 +247,7 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-1">
+          <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>

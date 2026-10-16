@@ -1,18 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FileText } from "lucide-react";
+import { FileText, FolderOpen } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { IconTile } from "@/components/shared/IconTile";
 
 export const Route = createFileRoute("/employee/documents")({
+  head: () => ({ meta: [{ title: "Documents — LDS HRMS" }] }),
   component: () => (
     <div>
-      <h1 className="text-3xl font-bold">My Documents</h1>
-      <p className="text-muted-foreground">CNIC, certificates and medical documents.</p>
+      <PageHeader
+        icon={FolderOpen}
+        title="My documents"
+        description="CNIC, certificates and medical documents."
+      />
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
         {["CNIC", "Educational Certificates", "Medical Documents"].map((d) => (
-          <div key={d} className="rounded-2xl border bg-card p-5">
-            <FileText className="mb-3 h-5 w-5 text-muted-foreground" />
-            <p className="font-medium">{d}</p>
-            <p className="text-xs text-muted-foreground">Google Drive upload pending</p>
+          <div key={d} className="flex items-start gap-3 rounded-2xl border bg-card p-5">
+            <IconTile icon={FileText} tone="neutral" size="md" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold tracking-[-0.2px]">{d}</p>
+              <p className="text-xs text-muted-foreground">Google Drive upload pending</p>
+            </div>
           </div>
         ))}
       </div>

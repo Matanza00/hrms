@@ -10,13 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UploadCloud } from "lucide-react";
+import { CalendarPlus, Upload } from "lucide-react";
+import { IconTile } from "@/components/shared/IconTile";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { applyLeave } from "@/lib/api/leaves";
 import { useEmployees } from "@/hooks/useEmployees";
 
 export const Route = createFileRoute("/_app/leaves/request")({
+  head: () => ({ meta: [{ title: "Request Leave — LDS HRMS" }] }),
   component: LeaveRequestPage,
 });
 
@@ -92,9 +94,7 @@ function LeaveRequestPage() {
         startDate: form.startDate,
         endDate: form.endDate,
         totalDays,
-        reason: form.notes
-          ? `${form.reason}\n\nAdmin Notes: ${form.notes}`
-          : form.reason,
+        reason: form.notes ? `${form.reason}\n\nAdmin Notes: ${form.notes}` : form.reason,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit leave.");
@@ -102,126 +102,117 @@ function LeaveRequestPage() {
   }
 
   return (
-    <div className="max-w-2xl rounded-2xl border bg-card p-6">
-      <h3 className="text-base font-semibold">New leave request</h3>
-      <p className="text-xs text-muted-foreground mb-5">
-        Submit a request for approval by admin.
-      </p>
-
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
+    <section className="max-w-3xl overflow-hidden rounded-xl border bg-card">
+      <header className="flex items-center gap-2.5 border-b border-divider px-5 py-3.5">
+        <IconTile icon={CalendarPlus} />
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold leading-5 tracking-[-0.2px]">New leave request</h3>
+          <p className="text-xs text-muted-foreground">Submit a request for approval by admin.</p>
         </div>
-      )}
+      </header>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label className="text-xs">Employee Code</Label>
-          <Select
-            value={form.employeeCode}
-            onValueChange={(value) =>
-              setForm((p) => ({ ...p, employeeCode: value }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select employee" />
-            </SelectTrigger>
-
-            <SelectContent>
-              {employees.map((employee) => (
-                <SelectItem
-                  key={employee.employeeId}
-                  value={employee.employeeCode}
-                >
-                  {employee.name} — {employee.employeeCode}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-xs">Leave type</Label>
-          <Select
-            value={form.leaveType}
-            onValueChange={(value) =>
-              setForm((p) => ({ ...p, leaveType: value }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select" />
-            </SelectTrigger>
-
-            <SelectContent>
-              <SelectItem value="Annual">Annual</SelectItem>
-              <SelectItem value="Casual">Casual</SelectItem>
-              <SelectItem value="Sick">Sick</SelectItem>
-              <SelectItem value="Unpaid">Unpaid</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-xs">Start date</Label>
-          <Input
-            type="date"
-            value={form.startDate}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, startDate: e.target.value }))
-            }
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-xs">End date</Label>
-          <Input
-            type="date"
-            value={form.endDate}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, endDate: e.target.value }))
-            }
-          />
-        </div>
-
-        <div className="sm:col-span-2 rounded-xl border bg-muted/40 px-4 py-3 text-sm">
-          Total days: <span className="font-semibold">{totalDays}</span>
-        </div>
-
-        <div className="sm:col-span-2 space-y-1.5">
-          <Label className="text-xs">Reason</Label>
-          <Textarea
-            rows={3}
-            placeholder="Briefly explain your reason…"
-            value={form.reason}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, reason: e.target.value }))
-            }
-          />
-        </div>
-
-        <div className="sm:col-span-2 space-y-1.5">
-          <Label className="text-xs">Attachment</Label>
-          <div className="rounded-xl border-2 border-dashed p-6 text-center opacity-70">
-            <UploadCloud className="mx-auto h-5 w-5 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground mt-2">
-              Attachment upload will be connected later.
-            </p>
+      <div className="p-5">
+        {error && (
+          <div className="mb-4 rounded-lg border border-danger-line bg-danger-tint px-4 py-3 text-[13px] text-danger-ink">
+            {error}
           </div>
-        </div>
+        )}
 
-        <div className="sm:col-span-2 space-y-1.5">
-          <Label className="text-xs">Notes for admin</Label>
-          <Textarea
-            rows={2}
-            value={form.notes}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, notes: e.target.value }))
-            }
-          />
+        <div className="grid gap-x-3 gap-y-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label>Employee Code</Label>
+            <Select
+              value={form.employeeCode}
+              onValueChange={(value) => setForm((p) => ({ ...p, employeeCode: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select employee" />
+              </SelectTrigger>
+
+              <SelectContent>
+                {employees.map((employee) => (
+                  <SelectItem key={employee.employeeId} value={employee.employeeCode}>
+                    {employee.name} — <span className="font-mono">{employee.employeeCode}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Leave type</Label>
+            <Select
+              value={form.leaveType}
+              onValueChange={(value) => setForm((p) => ({ ...p, leaveType: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="Annual">Annual</SelectItem>
+                <SelectItem value="Casual">Casual</SelectItem>
+                <SelectItem value="Sick">Sick</SelectItem>
+                <SelectItem value="Unpaid">Unpaid</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Start date</Label>
+            <Input
+              type="date"
+              value={form.startDate}
+              onChange={(e) => setForm((p) => ({ ...p, startDate: e.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>End date</Label>
+            <Input
+              type="date"
+              value={form.endDate}
+              onChange={(e) => setForm((p) => ({ ...p, endDate: e.target.value }))}
+            />
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border bg-subtle px-4 py-3 text-[13px] sm:col-span-2">
+            <span className="font-medium text-muted-foreground">Total days</span>
+            <span className="font-mono text-sm font-medium">{totalDays}</span>
+          </div>
+
+          <div className="sm:col-span-2 space-y-1.5">
+            <Label>Reason</Label>
+            <Textarea
+              rows={3}
+              placeholder="Briefly explain your reason…"
+              value={form.reason}
+              onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))}
+            />
+          </div>
+
+          <div className="sm:col-span-2 space-y-1.5">
+            <Label>Attachment</Label>
+            <div className="flex flex-col items-center gap-2.5 rounded-lg border border-dashed px-6 py-6 text-center">
+              <IconTile icon={Upload} tone="neutral" size="md" />
+              <p className="text-[13px] text-muted-foreground">
+                Attachment upload will be connected later.
+              </p>
+            </div>
+          </div>
+
+          <div className="sm:col-span-2 space-y-1.5">
+            <Label>Notes for admin</Label>
+            <Textarea
+              rows={2}
+              value={form.notes}
+              onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 mt-5">
+      <div className="flex justify-end gap-2 border-t border-divider px-5 py-3.5">
         <Button variant="outline" asChild>
           <Link to="/leaves">Cancel</Link>
         </Button>
@@ -230,6 +221,6 @@ function LeaveRequestPage() {
           {mutation.isPending ? "Submitting..." : "Submit request"}
         </Button>
       </div>
-    </div>
+    </section>
   );
 }

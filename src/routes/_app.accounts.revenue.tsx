@@ -5,16 +5,8 @@ import { ChartCard } from "@/components/shared/ChartCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { ChartColumn, Plus, TrendingUp } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import {
   Dialog,
   DialogContent,
@@ -27,8 +19,23 @@ import { createRevenue, getRevenue, type Revenue } from "@/lib/api/accounts";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_app/accounts/revenue")({
+  head: () => ({ meta: [{ title: "Revenue — LDS HRMS" }] }),
   component: RevenuePage,
 });
+
+const axisTick = {
+  fontFamily: "var(--font-mono)",
+  fontSize: 11,
+  fill: "var(--color-muted-foreground)",
+};
+
+const tooltipStyle = {
+  background: "var(--color-card)",
+  border: "1px solid var(--color-border)",
+  borderRadius: 8,
+  fontSize: 12,
+  boxShadow: "var(--shadow-xs)",
+};
 
 function formatPKR(value: number | string | undefined) {
   const amount = Number(value || 0);
@@ -107,10 +114,7 @@ function RevenuePage() {
     },
   });
 
-  const totalRevenue = revenues.reduce(
-    (sum, r) => sum + Number(r.amount || 0),
-    0
-  );
+  const totalRevenue = revenues.reduce((sum, r) => sum + Number(r.amount || 0), 0);
 
   const monthlyMap = revenues.reduce<Record<string, number>>((acc, r) => {
     const key = getMonthKey(r.revenueDate);
@@ -152,7 +156,7 @@ function RevenuePage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card p-6 text-[13px] text-muted-foreground">
         Loading revenue...
       </div>
     );
@@ -160,90 +164,91 @@ function RevenuePage() {
 
   if (loadError) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
         {String(loadError.message)}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ChartCard title="Revenue trend" description="Revenue by month">
+        <div className="min-w-0 lg:col-span-2">
+          <ChartCard
+            icon={TrendingUp}
+            tone="success"
+            title="Revenue trend"
+            description="Revenue by month"
+          >
             <ResponsiveContainer>
-              <BarChart data={revenueTrend}>
+              <BarChart data={revenueTrend} margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
                 <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--color-border)"
+                  strokeDasharray="4 4"
+                  stroke="var(--color-divider)"
                   vertical={false}
                 />
 
                 <XAxis
                   dataKey="month"
-                  fontSize={11}
-                  stroke="var(--color-muted-foreground)"
+                  tick={axisTick}
+                  axisLine={false}
+                  tickLine={false}
+                  tickMargin={8}
                 />
 
                 <YAxis
-                  fontSize={11}
-                  stroke="var(--color-muted-foreground)"
+                  tick={axisTick}
+                  axisLine={false}
+                  tickLine={false}
+                  width={48}
                   tickFormatter={(v) => `${(Number(v) / 1000000).toFixed(1)}M`}
                 />
 
                 <Tooltip
-                  contentStyle={{
-                    background: "var(--color-card)",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
+                  contentStyle={tooltipStyle}
+                  cursor={{ fill: "var(--color-muted)" }}
                   formatter={(v: number) => formatPKR(v)}
                 />
 
                 <Bar
                   dataKey="revenue"
-                  fill="var(--color-chart-2)"
-                  radius={[8, 8, 0, 0]}
+                  name="Revenue"
+                  fill="var(--color-success)"
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={80}
                 />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
         </div>
 
-        <div className="rounded-2xl border bg-card p-5">
-          <h3 className="text-sm font-semibold mb-3">Quick stats</h3>
-
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total revenue</span>
-              <span className="font-medium tabular-nums">
-                {formatPKR(totalRevenue)}
-              </span>
+        <ChartCard icon={ChartColumn} tone="info" title="Quick stats" bodyClassName="">
+          <dl className="-my-3 divide-y divide-divider text-[13px]">
+            <div className="flex items-center justify-between gap-3 py-3">
+              <dt className="text-muted-foreground">Total revenue</dt>
+              <dd className="font-mono font-medium tabular-nums">{formatPKR(totalRevenue)}</dd>
             </div>
 
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Entries</span>
-              <span className="font-medium">{revenues.length}</span>
+            <div className="flex items-center justify-between gap-3 py-3">
+              <dt className="text-muted-foreground">Entries</dt>
+              <dd className="font-mono font-medium tabular-nums">{revenues.length}</dd>
             </div>
 
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Latest entry</span>
-              <span className="font-medium">
-                {revenues[0]?.revenueDate
-                  ? formatDate(revenues[0].revenueDate)
-                  : "—"}
-              </span>
+            <div className="flex items-center justify-between gap-3 py-3">
+              <dt className="text-muted-foreground">Latest entry</dt>
+              <dd className="font-mono font-medium tabular-nums">
+                {revenues[0]?.revenueDate ? formatDate(revenues[0].revenueDate) : "—"}
+              </dd>
             </div>
-          </div>
-        </div>
+          </dl>
+        </ChartCard>
       </div>
 
       <div className="flex justify-end">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
+            <Button>
+              <Plus />
               Record revenue
             </Button>
           </DialogTrigger>
@@ -254,61 +259,51 @@ function RevenuePage() {
             </DialogHeader>
 
             {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-[13px] text-danger-ink">
                 {error}
               </div>
             )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label className="text-xs">Date</Label>
+                <Label>Date</Label>
                 <Input
                   type="date"
                   value={form.revenueDate}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, revenueDate: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, revenueDate: e.target.value }))}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Client</Label>
+                <Label>Client</Label>
                 <Input
                   value={form.client}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, client: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, client: e.target.value }))}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Source</Label>
+                <Label>Source</Label>
                 <Input
                   value={form.source}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, source: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, source: e.target.value }))}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Amount (PKR)</Label>
+                <Label>Amount (PKR)</Label>
                 <Input
                   type="number"
                   value={form.amount}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, amount: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
                 />
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-xs">Description</Label>
+                <Label>Description</Label>
                 <Input
                   value={form.description}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, description: e.target.value }))
-                  }
+                  onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                 />
               </div>
             </div>
@@ -332,9 +327,7 @@ function RevenuePage() {
           {
             key: "client",
             header: "Client",
-            render: (r) => (
-              <span className="font-medium">{r.client || "—"}</span>
-            ),
+            render: (r) => <span className="font-medium">{r.client || "—"}</span>,
           },
           {
             key: "source",
@@ -345,7 +338,7 @@ function RevenuePage() {
             key: "amount",
             header: "Amount",
             render: (r) => (
-              <span className="font-semibold tabular-nums">
+              <span className="font-mono text-[13px] font-medium tabular-nums">
                 {formatPKR(r.amount)}
               </span>
             ),

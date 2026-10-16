@@ -5,6 +5,7 @@ import {
   getEmployee,
   getEmployees,
   updateEmployee,
+  type Employee,
 } from "@/lib/api/employees";
 
 export const useEmployees = () =>
@@ -33,13 +34,8 @@ export const useUpdateEmployee = () => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      employeeId,
-      data,
-    }: {
-      employeeId: string;
-      data: any;
-    }) => updateEmployee(employeeId, data),
+    mutationFn: ({ employeeId, data }: { employeeId: string; data: Partial<Employee> }) =>
+      updateEmployee(employeeId, data),
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ["employees"] });
       qc.invalidateQueries({ queryKey: ["employee", variables.employeeId] });

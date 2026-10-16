@@ -3,6 +3,7 @@ import { DataTable } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   approveAttendanceCorrection,
@@ -12,6 +13,7 @@ import {
 import { useEmployees } from "@/hooks/useEmployees";
 
 export const Route = createFileRoute("/_app/attendance/corrections")({
+  head: () => ({ meta: [{ title: "Attendance Corrections — LDS HRMS" }] }),
   component: Corrections,
 });
 
@@ -50,14 +52,10 @@ function Corrections() {
 
   const { data: employeesRaw = [] } = useEmployees();
 
-  const employees = Array.isArray(employeesRaw)
-    ? employeesRaw
-    : [];
+  const employees = Array.isArray(employeesRaw) ? employeesRaw : [];
 
   function getEmployeeName(employeeId?: string) {
-    const employee = employees.find(
-      (e) => e.employeeId === employeeId
-    );
+    const employee = employees.find((e) => e.employeeId === employeeId);
 
     return employee?.name || employeeId || "Unknown";
   }
@@ -89,113 +87,122 @@ function Corrections() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );
   }
 
   return (
-    <DataTable<AttendanceCorrection>
-      rowKey={(r) => r.correctionId}
-      data={corrections}
-      columns={[
-        {
-          key: "employee",
-          header: "Employee",
-          render: (r) => (
-            <span className="font-medium">
-              {r.employeeName || getEmployeeName(r.employeeId)}
-            </span>
-          ),
-        },
-        {
-          key: "attendanceDate",
-          header: "Date",
-          render: (r) => formatDate(r.attendanceDate),
-        },
-        {
-          key: "requestType",
-          header: "Type",
-          render: (r) => (
-            <span className="font-mono text-xs text-muted-foreground">
-              {r.requestType}
-            </span>
-          ),
-        },
-        {
-          key: "oldValue",
-          header: "Old",
-          render: (r) => (
-            <span className="text-xs text-muted-foreground">
-              {r.oldValue || "—"}
-            </span>
-          ),
-        },
-        {
-          key: "newValue",
-          header: "New",
-          render: (r) => (
-            <span className="text-xs font-medium">
-              {r.newValue || "—"}
-            </span>
-          ),
-        },
-        {
-          key: "reason",
-          header: "Reason",
-          render: (r) => (
-            <span className="text-muted-foreground">
-              {r.reason || "—"}
-            </span>
-          ),
-        },
-        {
-          key: "createdAt",
-          header: "Requested",
-          render: (r) => formatDateTime(r.createdAt),
-        },
-        {
-          key: "status",
-          header: "Status",
-          render: (r) => <StatusBadge status={r.status} />,
-        },
-        {
-          key: "actions",
-          header: "",
-          className: "text-right",
-          render: (r) => {
-            const isPending = r.status === "Pending";
-
-            return (
-              <div className="flex justify-end gap-1.5">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7"
-                  disabled={!isPending || approveMutation.isPending}
-                  onClick={() =>
-                    approveMutation.mutate(r.correctionId)
-                  }
-                >
-                  <Check className="h-3 w-3 mr-1" />
-                  Approve
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7"
-                  disabled
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Reject
-                </Button>
-              </div>
-            );
+    <div className="space-y-3">
+      {approveMutation.error && (
+        <div className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
+          {approveMutation.error instanceof Error
+            ? approveMutation.error.message
+            : "Could not approve the request."}
+        </div>
+      )}
+      <DataTable<AttendanceCorrection>
+        rowKey={(r) => r.correctionId}
+        data={corrections}
+        empty={
+          <EmptyState
+            title="No correction requests"
+            description="Requests employees send to fix a check-in, break or check-out show up here."
+          />
+        }
+        columns={[
+          {
+            key: "employee",
+            header: "Employee",
+            render: (r) => (
+              <span className="font-medium">{r.employeeName || getEmployeeName(r.employeeId)}</span>
+            ),
           },
-        },
-      ]}
-    />
+          {
+            key: "attendanceDate",
+            header: "Date",
+            render: (r) => (
+              <span className="whitespace-nowrap">{formatDate(r.attendanceDate)}</span>
+            ),
+          },
+          {
+            key: "requestType",
+            header: "Type",
+            render: (r) => (
+              <span className="font-mono text-sm text-muted-foreground">{r.requestType}</span>
+            ),
+          },
+          {
+            key: "oldValue",
+            header: "Old",
+            render: (r) => (
+              <span className="break-all font-mono text-[13px] text-muted-foreground">
+                {r.oldValue || "—"}
+              </span>
+            ),
+          },
+          {
+            key: "newValue",
+            header: "New",
+            render: (r) => (
+              <span className="break-all font-mono text-[13px] font-medium">
+                {r.newValue || "—"}
+              </span>
+            ),
+          },
+          {
+            key: "reason",
+            header: "Reason",
+            render: (r) => <span className="text-muted-foreground">{r.reason || "—"}</span>,
+          },
+          {
+            key: "createdAt",
+            header: "Requested",
+            render: (r) => formatDateTime(r.createdAt),
+          },
+          {
+            key: "status",
+            header: "Status",
+            render: (r) => <StatusBadge status={r.status} />,
+          },
+          {
+            key: "actions",
+            header: "",
+            className: "text-right",
+            render: (r) => {
+              const isPending = r.status === "Pending";
+
+              if (!isPending) {
+                return (
+                  <span className="whitespace-nowrap text-xs text-muted-foreground">
+                    {r.approvedBy ? `${r.status} by ${r.approvedBy}` : "—"}
+                  </span>
+                );
+              }
+
+              return (
+                <div className="flex justify-end gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={approveMutation.isPending}
+                    onClick={() => approveMutation.mutate(r.correctionId)}
+                  >
+                    <Check />
+                    Approve
+                  </Button>
+
+                  <Button size="sm" variant="outline" disabled>
+                    <X />
+                    Reject
+                  </Button>
+                </div>
+              );
+            },
+          },
+        ]}
+      />
+    </div>
   );
 }
