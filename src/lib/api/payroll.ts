@@ -33,8 +33,7 @@ export type PayrollRecord = {
   paidAt?: string;
 };
 
-export const getPayroll = () =>
-  apiGet<PayrollRecord[]>("payroll");
+export const getPayroll = () => apiGet<PayrollRecord[]>("payroll");
 
 export const generatePayroll = (data: {
   employeeId?: string;
@@ -44,12 +43,8 @@ export const generatePayroll = (data: {
   recalculate?: boolean;
 }) => apiPost<PayrollRecord>("generatePayroll", data);
 
-export const markPayrollPaid = (data: {
-  employeeId: string;
-  month: string;
-}) => apiPost("markPayrollPaid", data);
+export const markPayrollPaid = (data: { employeeId: string; month: string }) =>
+  apiPost("markPayrollPaid", data);
 
-export const cancelPayroll = (data: {
-  employeeId: string;
-  month: string;
-}) => apiPost("cancelPayroll", data);
+export const cancelPayroll = (data: { employeeId: string; month: string }) =>
+  apiPost("cancelPayroll", data);

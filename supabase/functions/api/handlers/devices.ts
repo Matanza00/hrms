@@ -32,7 +32,10 @@ export async function assertDeviceAllowed(
   token: string,
 ): Promise<DeviceCheck> {
   const { data: known } = await svc
-    .from("employee_devices").select("*").eq("device_token", token).maybeSingle();
+    .from("employee_devices")
+    .select("*")
+    .eq("device_token", token)
+    .maybeSingle();
 
   if (known && known.employee_id !== employeeId) {
     throw new ApiError("This phone is already registered to another employee.", 403);
@@ -41,7 +44,10 @@ export async function assertDeviceAllowed(
 
   const { data: current } = await svc
     .from("employee_devices")
-    .select("device_id").eq("employee_id", employeeId).eq("active", true).maybeSingle();
+    .select("device_id")
+    .eq("employee_id", employeeId)
+    .eq("active", true)
+    .maybeSingle();
   if (current) {
     throw new ApiError(
       "Attendance is tied to your registered phone. Ask an admin to reset it if you changed phones.",
@@ -128,7 +134,10 @@ export async function resetEmployeeDevice(ctx: Ctx) {
 export async function getAttendanceQr(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("settings").select("value").eq("key", "attendanceQrCode").maybeSingle();
+    .from("settings")
+    .select("value")
+    .eq("key", "attendanceQrCode")
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   return { code: (data?.value as string) ?? "" };
 }
@@ -140,7 +149,8 @@ export async function rotateAttendanceQr(ctx: Ctx) {
   const code = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 
   const { error } = await ctx.svc
-    .from("settings").upsert({ key: "attendanceQrCode", value: code }, { onConflict: "key" });
+    .from("settings")
+    .upsert({ key: "attendanceQrCode", value: code }, { onConflict: "key" });
   if (error) throw new ApiError(error.message, 500);
   return { code };
 }

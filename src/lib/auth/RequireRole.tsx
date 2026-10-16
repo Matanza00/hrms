@@ -15,13 +15,7 @@ export function homePathForRole(role: AuthRole | null) {
   return role === "Admin" ? "/dashboard" : "/employee/dashboard";
 }
 
-export function RequireRole({
-  role,
-  children,
-}: {
-  role: AuthRole;
-  children: ReactNode;
-}) {
+export function RequireRole({ role, children }: { role: AuthRole; children: ReactNode }) {
   const { status, role: current } = useAuth();
 
   if (status === "loading") return <FullScreenLoader />;

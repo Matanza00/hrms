@@ -1,11 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  breakEnd,
-  breakStart,
-  checkIn,
-  checkOut,
-  getAttendance,
-} from "@/lib/api/attendance";
+import { breakEnd, breakStart, checkIn, checkOut, getAttendance } from "@/lib/api/attendance";
 
 export const useAttendance = () =>
   useQuery({

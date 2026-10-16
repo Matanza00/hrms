@@ -1,10 +1,6 @@
 import { apiGet, apiPost } from "../apiClient";
 
-export type FeedbackType =
-  | "Bug / Something broken"
-  | "Missing feature"
-  | "Improvement"
-  | "Other";
+export type FeedbackType = "Bug / Something broken" | "Missing feature" | "Improvement" | "Other";
 
 export type FeedbackStatus = "New" | "In Progress" | "Resolved" | "Dismissed";
 
@@ -52,7 +48,5 @@ export const submitFeedback = (data: SubmitFeedbackInput) =>
 /** Admin-only: list all submitted feedback. */
 export const getFeedback = () => apiGet<Feedback[]>("feedback");
 
-export const updateFeedbackStatus = (
-  feedbackId: string,
-  status: FeedbackStatus
-) => apiPost<Feedback>("updateFeedbackStatus", { feedbackId, status });
+export const updateFeedbackStatus = (feedbackId: string, status: FeedbackStatus) =>
+  apiPost<Feedback>("updateFeedbackStatus", { feedbackId, status });

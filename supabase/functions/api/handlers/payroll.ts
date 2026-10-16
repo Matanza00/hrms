@@ -54,10 +54,16 @@ export async function generatePayroll(ctx: Ctx) {
   const employee = await resolveEmployee(ctx);
 
   const existing = await ctx.svc
-    .from("payroll").select("payroll_id, status")
-    .eq("employee_id", employee.employee_id).eq("month", month).maybeSingle();
+    .from("payroll")
+    .select("payroll_id, status")
+    .eq("employee_id", employee.employee_id)
+    .eq("month", month)
+    .maybeSingle();
   if (existing.data && !recalculate) {
-    throw new ApiError("Payroll already generated for this month (pass recalculate to overwrite)", 409);
+    throw new ApiError(
+      "Payroll already generated for this month (pass recalculate to overwrite)",
+      409,
+    );
   }
 
   const settings = await loadSettings(ctx.svc);
@@ -69,7 +75,8 @@ export async function generatePayroll(ctx: Ctx) {
     .from("attendance")
     .select("is_late, deficit_minutes, check_out")
     .eq("employee_id", employee.employee_id)
-    .gte("attendance_date", start).lte("attendance_date", end);
+    .gte("attendance_date", start)
+    .lte("attendance_date", end);
 
   const rows = att ?? [];
   // RULE (late): every 3 late arrivals = 1 deducted day; a remainder of 2 = ½ day.
@@ -95,7 +102,8 @@ export async function generatePayroll(ctx: Ctx) {
     .select("unpaid_days")
     .eq("employee_id", employee.employee_id)
     .eq("status", "Approved")
-    .lte("start_date", end).gte("end_date", start);
+    .lte("start_date", end)
+    .gte("end_date", start);
   const unpaidLeaveDays = (leaves ?? []).reduce((s, l) => s + (Number(l.unpaid_days) || 0), 0);
 
   // RULE (sandwich): weekends/holidays flanked by unpaid leave. Not enough of
@@ -110,8 +118,10 @@ export async function generatePayroll(ctx: Ctx) {
 
   const totalDeductionDays =
     unpaidLeaveDays +
-    lateFullDays + 0.5 * lateHalfDays +
-    deficitFullDays + 0.5 * deficitHalfDays +
+    lateFullDays +
+    0.5 * lateHalfDays +
+    deficitFullDays +
+    0.5 * deficitHalfDays +
     sandwichDays;
 
   const perDay = workingDaysPerMonth > 0 ? gross / workingDaysPerMonth : 0;
@@ -141,7 +151,10 @@ export async function generatePayroll(ctx: Ctx) {
   };
 
   const { data, error } = await ctx.svc
-    .from("payroll").upsert(record, { onConflict: "employee_id,month" }).select(SELECT).single();
+    .from("payroll")
+    .upsert(record, { onConflict: "employee_id,month" })
+    .select(SELECT)
+    .single();
   if (error) throw new ApiError(error.message, 500);
   return withEmployeeNameOne(data);
 }
@@ -156,8 +169,12 @@ async function setStatusForMonth(ctx: Ctx, status: "Paid" | "Cancelled") {
   if (status === "Paid") patch.paid_at = new Date().toISOString();
 
   const { data, error } = await ctx.svc
-    .from("payroll").update(patch)
-    .eq("employee_id", employeeId).eq("month", month).select(SELECT).maybeSingle();
+    .from("payroll")
+    .update(patch)
+    .eq("employee_id", employeeId)
+    .eq("month", month)
+    .select(SELECT)
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Payroll record not found", 404);
   return withEmployeeNameOne(data);
