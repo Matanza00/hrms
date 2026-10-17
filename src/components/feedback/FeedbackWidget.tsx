@@ -22,12 +22,7 @@ import {
 import { useAuth } from "@/lib/auth/AuthContext";
 import { submitFeedback, type FeedbackType } from "@/lib/api/feedback";
 
-const TYPES: FeedbackType[] = [
-  "Bug / Something broken",
-  "Missing feature",
-  "Improvement",
-  "Other",
-];
+const TYPES: FeedbackType[] = ["Bug / Something broken", "Missing feature", "Improvement", "Other"];
 
 /** Max width (px) we downscale screenshots to before uploading. */
 const MAX_SCREENSHOT_WIDTH = 1600;
@@ -64,7 +59,12 @@ function fileToCompressedDataUrl(file: File | Blob): Promise<string> {
   });
 }
 
-export function FeedbackWidget() {
+export function FeedbackWidget({
+  variant = "floating",
+}: {
+  /** "toolbar" renders the Figma top-bar icon button instead of the floating pill. */
+  variant?: "floating" | "toolbar";
+}) {
   const { role, user, employee } = useAuth();
   const pagePath = useRouterState({ select: (s) => s.location.pathname });
 
@@ -76,8 +76,7 @@ export function FeedbackWidget() {
   const [done, setDone] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const reporterName =
-    employee?.name || user?.username || "Unknown user";
+  const reporterName = employee?.name || user?.username || "Unknown user";
   const reporterEmail = (employee?.email as string) || "";
   const reporterCode = employee?.employeeCode || user?.username || "";
 
@@ -92,8 +91,7 @@ export function FeedbackWidget() {
   const mutation = useMutation({
     mutationFn: submitFeedback,
     onSuccess: () => setDone(true),
-    onError: (err) =>
-      setError(err instanceof Error ? err.message : "Failed to send feedback."),
+    onError: (err) => setError(err instanceof Error ? err.message : "Failed to send feedback."),
   });
 
   async function handleFile(file: File | Blob | undefined | null) {
@@ -112,7 +110,7 @@ export function FeedbackWidget() {
     if (!open) return;
     function onPaste(e: ClipboardEvent) {
       const item = Array.from(e.clipboardData?.items || []).find((i) =>
-        i.type.startsWith("image/")
+        i.type.startsWith("image/"),
       );
       if (item) {
         e.preventDefault();
@@ -143,12 +141,8 @@ export function FeedbackWidget() {
       reporterName,
       reporterEmail,
       reporterCode,
-      userAgent:
-        typeof navigator !== "undefined" ? navigator.userAgent : "",
-      viewport:
-        typeof window !== "undefined"
-          ? `${window.innerWidth}x${window.innerHeight}`
-          : "",
+      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+      viewport: typeof window !== "undefined" ? `${window.innerWidth}x${window.innerHeight}` : "",
       screenshot,
       createdAt: new Date().toISOString(),
     });
@@ -161,30 +155,43 @@ export function FeedbackWidget() {
 
   return (
     <>
-      {/* Floating trigger — visible on every page for admins and employees. */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 z-40 flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="Send feedback"
-      >
-        <MessageSquarePlus className="h-4 w-4" />
-        <span className="hidden sm:inline">Feedback</span>
-      </button>
+      {variant === "toolbar" ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => setOpen(true)}
+          aria-label="Send feedback"
+          title="Send feedback"
+        >
+          <MessageSquarePlus className="!size-4" />
+        </Button>
+      ) : (
+        /* Floating trigger for layouts without a top bar slot. */
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 z-40 flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 py-3 text-[13px] font-medium text-primary-foreground shadow-lg transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Send feedback"
+        >
+          <MessageSquarePlus className="h-4 w-4" />
+          <span className="hidden sm:inline">Feedback</span>
+        </button>
+      )}
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Send feedback to the developer</DialogTitle>
             <DialogDescription>
-              Found something broken or missing? Tell us what happened and
-              attach a screenshot so it can be fixed faster.
+              Found something broken or missing? Tell us what happened and attach a screenshot so it
+              can be fixed faster.
             </DialogDescription>
           </DialogHeader>
 
           {done ? (
             <div className="space-y-4 py-4 text-center">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-green-100 text-green-700">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-success-tint text-success-ink">
                 <Send className="h-5 w-5" />
               </div>
               <div>
@@ -203,7 +210,7 @@ export function FeedbackWidget() {
           ) : (
             <div className="space-y-4">
               {error && (
-                <div role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+                <div role="alert" className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink">
                   {error}
                 </div>
               )}
@@ -225,9 +232,7 @@ export function FeedbackWidget() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">
-                  What's the issue / what should change?
-                </Label>
+                <Label className="text-xs">What's the issue / what should change?</Label>
                 <Textarea
                   rows={4}
                   placeholder="Describe what's missing, broken, or what you'd like the developer to update…"
@@ -271,26 +276,21 @@ export function FeedbackWidget() {
                     <ImagePlus className="h-5 w-5 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">
                       Click to upload — or press{" "}
-                      <kbd className="rounded border bg-muted px-1 text-[10px]">
-                        Ctrl/⌘ + V
-                      </kbd>{" "}
-                      to paste a screenshot
+                      <kbd className="rounded border bg-muted px-1 text-[10px]">Ctrl/⌘ + V</kbd> to
+                      paste a screenshot
                     </span>
                   </button>
                 )}
               </div>
 
               <p className="rounded-lg bg-muted/50 px-3 py-2 text-[11px] text-muted-foreground">
-                We'll automatically include the page you're on
-                (<span className="font-medium">{pagePath}</span>) and your
-                account so the developer has full context.
+                We'll automatically include the page you're on (
+                <span className="font-medium">{pagePath}</span>) and your account so the developer
+                has full context.
               </p>
 
               <div className="flex justify-end gap-2 pt-1">
-                <Button
-                  variant="outline"
-                  onClick={() => handleOpenChange(false)}
-                >
+                <Button variant="outline" onClick={() => handleOpenChange(false)}>
                   Cancel
                 </Button>
                 <Button onClick={handleSubmit} disabled={mutation.isPending}>

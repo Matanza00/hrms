@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { AlertTriangle, Clock, Coffee, History, LogIn, LogOut, TimerReset } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { ChartCard } from "@/components/shared/ChartCard";
+import { StatCard } from "@/components/shared/StatCard";
 import { DataTable } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import {
@@ -19,6 +23,7 @@ import { getSettings } from "@/lib/api/settings";
 import { useCurrentBusinessDate } from "@/hooks/useBusinessDate";
 
 export const Route = createFileRoute("/employee/attendance")({
+  head: () => ({ meta: [{ title: "My Attendance — LDS HRMS" }] }),
   component: EmployeeAttendance,
 });
 
@@ -101,27 +106,47 @@ function EmployeeAttendance() {
     }
   }
 
+  // 44px on phones, where these are thumbed; the system's 32px from sm up.
+  const actionBtn = "max-sm:h-11 max-sm:flex-1 max-sm:basis-[calc(50%-4px)]";
+
   return (
     <div>
-      <h1 className="text-3xl font-bold">My Attendance</h1>
-      <p className="text-muted-foreground">Check in, breaks, checkout and history.</p>
+      <PageHeader
+        icon={Clock}
+        title="My attendance"
+        description="Check in, breaks, checkout and history."
+      />
 
-      <div className="mt-6 rounded-2xl border bg-card shadow-xs p-5">
-        <h3 className="mb-4 text-sm font-semibold">Today's Actions</h3>
-
+      <ChartCard
+        title="Today's actions"
+        description="Location is checked when you check in and out"
+        icon={Clock}
+        tone="warning"
+        bodyClassName=""
+      >
         {actionError && (
-          <div role="alert" className="mb-4 rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+          <div
+            role="alert"
+            className="mb-4 flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint px-3 py-2.5 text-[13px] text-danger-ink"
+          >
+            <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
             {actionError}
           </div>
         )}
 
         <div className="flex flex-wrap gap-2">
-          <Button disabled={!!todayRecord?.checkIn || checkIn.isPending} onClick={handleCheckIn}>
+          <Button
+            className={actionBtn}
+            disabled={!!todayRecord?.checkIn || checkIn.isPending}
+            onClick={handleCheckIn}
+          >
+            <LogIn />
             Check In
           </Button>
 
           <Button
             variant="outline"
+            className={actionBtn}
             disabled={!todayRecord?.checkIn || !!todayRecord?.breakStart || breakStart.isPending}
             onClick={() => {
               if (!employeeCode) return;
@@ -129,11 +154,13 @@ function EmployeeAttendance() {
               breakStart.mutate(employeeCode, { onError });
             }}
           >
+            <Coffee />
             Start Break
           </Button>
 
           <Button
             variant="outline"
+            className={actionBtn}
             disabled={!todayRecord?.breakStart || !!todayRecord?.breakEnd || breakEnd.isPending}
             onClick={() => {
               if (!employeeCode) return;
@@ -141,27 +168,54 @@ function EmployeeAttendance() {
               breakEnd.mutate(employeeCode, { onError });
             }}
           >
+            <TimerReset />
             End Break
           </Button>
 
           <Button
             variant="outline"
+            className={actionBtn}
             disabled={!todayRecord?.checkIn || !!todayRecord?.checkOut || checkOut.isPending}
             onClick={handleCheckOut}
           >
+            <LogOut />
             Check Out
           </Button>
         </div>
 
-        <div className="mt-4 grid gap-3 text-sm md:grid-cols-4">
-          <p>Check In: {formatTime(todayRecord?.checkIn)}</p>
-          <p>Break Start: {formatTime(todayRecord?.breakStart)}</p>
-          <p>Break End: {formatTime(todayRecord?.breakEnd)}</p>
-          <p>Check Out: {formatTime(todayRecord?.checkOut)}</p>
+        <div className="metric-strip mt-5 mb-1 grid grid-cols-2 md:grid-cols-4">
+          <StatCard
+            label="Check in"
+            value={formatTime(todayRecord?.checkIn)}
+            icon={LogIn}
+            tone="success"
+          />
+          <StatCard
+            label="Break start"
+            value={formatTime(todayRecord?.breakStart)}
+            icon={Coffee}
+            tone="warning"
+          />
+          <StatCard
+            label="Break end"
+            value={formatTime(todayRecord?.breakEnd)}
+            icon={TimerReset}
+            tone="warning"
+          />
+          <StatCard
+            label="Check out"
+            value={formatTime(todayRecord?.checkOut)}
+            icon={LogOut}
+            tone="accent"
+          />
         </div>
-      </div>
+      </ChartCard>
 
-      <div className="mt-6">
+      <div className="mb-3 mt-6 flex items-center gap-1.5">
+        <History className="size-3.5 text-muted-foreground" />
+        <h3 className="text-sm font-semibold tracking-[-0.2px]">History</h3>
+      </div>
+      <div>
         <DataTable<AttendanceRecord>
           rowKey={(r) => r.attendanceId}
           data={records}
@@ -169,22 +223,30 @@ function EmployeeAttendance() {
             {
               key: "attendanceDate",
               header: "Date",
-              render: (r) => r.attendanceDate || "—",
+              render: (r) => (
+                <span className="font-mono text-[13px]">{r.attendanceDate || "—"}</span>
+              ),
             },
             {
               key: "checkIn",
               header: "Check In",
-              render: (r) => formatTime(r.checkIn),
+              render: (r) => <span className="font-mono text-[13px]">{formatTime(r.checkIn)}</span>,
             },
             {
               key: "checkOut",
               header: "Check Out",
-              render: (r) => formatTime(r.checkOut),
+              render: (r) => (
+                <span className="font-mono text-[13px]">{formatTime(r.checkOut)}</span>
+              ),
             },
             {
               key: "workingMinutes",
               header: "Hours",
-              render: (r) => (r.checkOut ? formatHoursMinutes(Number(r.workingMinutes || 0)) : "—"),
+              render: (r) => (
+                <span className="font-mono text-[13px] font-medium">
+                  {r.checkOut ? formatHoursMinutes(Number(r.workingMinutes || 0)) : "—"}
+                </span>
+              ),
             },
             {
               // Short or over for the day; the month nets these out.
@@ -192,10 +254,18 @@ function EmployeeAttendance() {
               header: "Balance",
               render: (r) => {
                 const balance = dayBalanceMinutes(r, requiredPerDay);
-                if (balance === null) return "—";
-                if (balance === 0) return "0m";
+                if (balance === null) return <span className="font-mono text-[13px]">—</span>;
+                if (balance === 0) return <span className="font-mono text-[13px]">0m</span>;
                 const amount = formatHoursMinutes(balance);
-                return balance < 0 ? `-${amount}` : `+${amount}`;
+                return balance < 0 ? (
+                  <span className="font-mono text-[13px] font-medium text-danger-ink">
+                    -{amount}
+                  </span>
+                ) : (
+                  <span className="font-mono text-[13px] font-medium text-success-ink">
+                    +{amount}
+                  </span>
+                );
               },
             },
             {

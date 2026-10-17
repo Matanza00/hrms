@@ -1,10 +1,4 @@
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  useNavigate,
-  useRouterState,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Clock,
@@ -70,54 +64,55 @@ function EmployeeShell() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-card/80 backdrop-blur">
+    <div className="min-h-screen bg-canvas">
+      <header className="sticky top-0 z-10 border-b border-divider bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <Logo className="h-9 w-9 rounded-lg" />
-            <span className="text-sm font-semibold tracking-tight">
-              Employee Portal
-            </span>
+            <Logo className="size-8 rounded-md" />
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold leading-5">LDS</span>
+              <span className="text-xs leading-4 text-muted-foreground">Employee Portal</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-2 sm:flex">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+              <Avatar className="size-7">
+                <AvatarFallback className="bg-foreground text-xs font-medium text-background">
                   {initials(name)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col leading-tight">
-                <span className="text-xs font-medium">{name}</span>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[13px] font-medium leading-[18px]">{name}</span>
+                <span className="text-[11px] leading-4 text-muted-foreground">
                   {employee?.designation || "Employee"}
                 </span>
               </div>
             </div>
 
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="mr-1.5 h-3.5 w-3.5" />
+            <FeedbackWidget variant="toolbar" />
+            <Button variant="outline" className="shadow-none" onClick={handleLogout}>
+              <LogOut />
               Sign out
             </Button>
           </div>
         </div>
 
-        <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav className="mx-auto flex max-w-5xl gap-0.5 overflow-x-auto px-4 pb-2.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {nav.map((item) => {
-            const active =
-              path === item.url || path.startsWith(item.url + "/");
+            const active = path === item.url || path.startsWith(item.url + "/");
 
             return (
               <Link
                 key={item.url}
                 to={item.url}
-                className={`flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition ${
+                className={`flex h-[34px] shrink-0 items-center gap-2 rounded-md border px-2.5 text-sm transition max-sm:min-h-11 ${
                   active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "border-border bg-card font-medium text-foreground shadow-xs"
+                    : "border-transparent text-text-secondary hover:bg-muted hover:text-foreground"
                 }`}
               >
-                <item.icon className="h-3.5 w-3.5" />
+                <item.icon className="size-4" />
                 {item.label}
               </Link>
             );
@@ -128,8 +123,6 @@ function EmployeeShell() {
       <main className="mx-auto max-w-5xl px-4 py-6 pb-[max(6rem,calc(env(safe-area-inset-bottom)+5rem))]">
         <Outlet />
       </main>
-
-      <FeedbackWidget />
     </div>
   );
 }

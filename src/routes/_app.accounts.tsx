@@ -1,4 +1,9 @@
 import { useMemo, useState } from "react";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { StatCard } from "@/components/shared/StatCard";
+import { ChartCard } from "@/components/shared/ChartCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,24 +14,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  createFileRoute,
-  Link,
-  Outlet,
-  useRouterState,
-} from "@tanstack/react-router";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { StatCard } from "@/components/shared/StatCard";
-import { ChartCard } from "@/components/shared/ChartCard";
-import {
   TrendingUp,
   TrendingDown,
   PiggyBank,
-  BadgeDollarSign,
+  CircleDollarSign,
+  ChartColumn,
+  ChartPie,
+  Receipt,
 } from "lucide-react";
 import {
-  Area,
-  AreaChart,
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -42,6 +41,7 @@ import {
 } from "@/lib/api/accounts";
 
 export const Route = createFileRoute("/_app/accounts")({
+  head: () => ({ meta: [{ title: "Accounts — LDS HRMS" }] }),
   component: AccountsLayout,
 });
 
@@ -54,6 +54,31 @@ function formatPKR(value: number | string | undefined) {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+const axisTick = {
+  fontFamily: "var(--font-mono)",
+  fontSize: 11,
+  fill: "var(--color-muted-foreground)",
+};
+
+const tooltipStyle = {
+  background: "var(--color-card)",
+  border: "1px solid var(--color-border)",
+  borderRadius: 8,
+  fontSize: 12,
+  boxShadow: "var(--shadow-xs)",
+};
+
+// Distribution bars cycle through the accent solids (blue, green, amber, red, violet).
+const barColors = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
+];
+
+const dot = { r: 3, fill: "var(--color-card)", strokeWidth: 1.5 };
 
 function AccountsLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -71,11 +96,13 @@ function AccountsLayout() {
   return (
     <div>
       <PageHeader
+        icon={Receipt}
         title="Accounts"
         description="Revenue, expenses, reserve and profit distribution."
       />
 
-      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border bg-card shadow-xs p-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:inline-flex [&::-webkit-scrollbar]:hidden">
+      {/* Segmented sub-nav: same look as the Tabs primitive, but these are links. */}
+      <nav className="mb-5 flex max-w-full gap-1 overflow-x-auto rounded-md bg-muted p-[3px] [-ms-overflow-style:none] [scrollbar-width:none] sm:inline-flex sm:gap-0 [&::-webkit-scrollbar]:hidden">
         {tabs.map((t) => {
           const active = path === t.url;
 
@@ -83,9 +110,9 @@ function AccountsLayout() {
             <Link
               key={t.url}
               to={t.url}
-              className={`flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-medium transition sm:min-h-0 ${
+              className={`inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-3 py-1 text-[13px] font-medium transition-all sm:h-[26px] sm:min-h-0 ${
                 active
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-card text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -93,7 +120,7 @@ function AccountsLayout() {
             </Link>
           );
         })}
-      </div>
+      </nav>
 
       {isRoot ? <Overview /> : <Outlet />}
     </div>
@@ -121,6 +148,7 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
+/** "YYYY-MM-DD" in the viewer's local time zone (not UTC). */
 function ymd(d: Date) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
@@ -200,7 +228,7 @@ function Overview() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card p-6 text-[13px] text-muted-foreground">
         Loading accounts overview...
       </div>
     );
@@ -208,7 +236,7 @@ function Overview() {
 
   if (error) {
     return (
-      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+      <div role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );
@@ -262,7 +290,9 @@ function Overview() {
     <>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold">{rangeLabel} summary</h3>
+          <h3 className="text-sm font-semibold leading-5 tracking-[-0.2px]">
+            {rangeLabel} summary
+          </h3>
           <p className="text-xs text-muted-foreground">
             {isAllTime
               ? "Showing all-time account totals"
@@ -270,14 +300,14 @@ function Overview() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="space-y-1">
-            <Label className="text-[11px] text-muted-foreground">Period</Label>
+        <div className="flex w-full flex-wrap items-end gap-2 sm:w-auto">
+          <div className="w-full space-y-1.5 sm:w-[200px]">
+            <Label htmlFor="accounts-period">Period</Label>
             <Select
               value={rangeKey}
               onValueChange={(v) => setRangeKey(v as RangeKey)}
             >
-              <SelectTrigger className="h-9 w-[160px]">
+              <SelectTrigger id="accounts-period">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -292,20 +322,20 @@ function Overview() {
 
           {rangeKey === "custom" && (
             <>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-muted-foreground">From</Label>
+              <div className="min-w-0 flex-1 space-y-1.5 sm:w-[160px] sm:flex-none">
+                <Label htmlFor="accounts-period-from">From</Label>
                 <Input
+                  id="accounts-period-from"
                   type="date"
-                  className="h-9"
                   value={customStart}
                   onChange={(e) => setCustomStart(e.target.value)}
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-muted-foreground">To</Label>
+              <div className="min-w-0 flex-1 space-y-1.5 sm:w-[160px] sm:flex-none">
+                <Label htmlFor="accounts-period-to">To</Label>
                 <Input
+                  id="accounts-period-to"
                   type="date"
-                  className="h-9"
                   value={customEnd}
                   onChange={(e) => setCustomEnd(e.target.value)}
                 />
@@ -315,7 +345,7 @@ function Overview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="metric-strip grid grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={`Revenue (${cardLabelSuffix})`}
           value={formatPKR(cardValues.revenue)}
@@ -333,8 +363,8 @@ function Overview() {
         <StatCard
           label={`Profit (${cardLabelSuffix})`}
           value={formatPKR(cardValues.profit)}
-          icon={BadgeDollarSign}
-          tone={cardValues.profit >= 0 ? "success" : "danger"}
+          icon={CircleDollarSign}
+          tone={cardValues.profit >= 0 ? "accent" : "danger"}
         />
 
         <StatCard
@@ -345,124 +375,120 @@ function Overview() {
         />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ChartCard title="Revenue vs Expenses" description="Last 6 months">
-            <ResponsiveContainer>
-              <AreaChart data={trend}>
-                <defs>
-                  <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="0%"
-                      stopColor="var(--color-chart-2)"
-                      stopOpacity={0.45}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="var(--color-chart-2)"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2">
+          <ChartCard
+            icon={ChartColumn}
+            tone="info"
+            title="Revenue vs Expenses"
+            description="Last 6 months"
+            bodyClassName=""
+          >
+            <div className="h-64">
+              <ResponsiveContainer>
+                <LineChart data={trend} margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
+                  <CartesianGrid
+                    strokeDasharray="4 4"
+                    stroke="var(--color-divider)"
+                    vertical={false}
+                  />
 
-                  <linearGradient id="exp" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="0%"
-                      stopColor="var(--color-chart-4)"
-                      stopOpacity={0.45}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="var(--color-chart-4)"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                </defs>
+                  <XAxis
+                    dataKey="month"
+                    tick={axisTick}
+                    axisLine={false}
+                    tickLine={false}
+                    tickMargin={8}
+                  />
 
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--color-border)"
-                  vertical={false}
-                />
+                  <YAxis
+                    tick={axisTick}
+                    axisLine={false}
+                    tickLine={false}
+                    width={48}
+                    tickFormatter={(v) => `${(Number(v) / 1000000).toFixed(1)}M`}
+                  />
 
-                <XAxis
-                  dataKey="month"
-                  stroke="var(--color-muted-foreground)"
-                  fontSize={11}
-                />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    cursor={{ stroke: "var(--color-border)" }}
+                    formatter={(v: number) => formatPKR(v)}
+                  />
 
-                <YAxis
-                  stroke="var(--color-muted-foreground)"
-                  fontSize={11}
-                  tickFormatter={(v) => `${(Number(v) / 1000000).toFixed(1)}M`}
-                />
+                  <Line
+                    type="linear"
+                    dataKey="revenue"
+                    name="Revenue"
+                    stroke="var(--color-success)"
+                    strokeWidth={2}
+                    dot={dot}
+                    activeDot={{ r: 4 }}
+                  />
 
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--color-card)",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
-                  formatter={(v: number) => formatPKR(v)}
-                />
+                  <Line
+                    type="linear"
+                    dataKey="expense"
+                    name="Expenses"
+                    stroke="var(--color-destructive)"
+                    strokeWidth={2}
+                    dot={dot}
+                    activeDot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
 
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="var(--color-chart-2)"
-                  fill="url(#rev)"
-                  strokeWidth={2.5}
-                />
-
-                <Area
-                  type="monotone"
-                  dataKey="expense"
-                  stroke="var(--color-chart-4)"
-                  fill="url(#exp)"
-                  strokeWidth={2.5}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 rounded-[2px] bg-success" />
+                Revenue
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 rounded-[2px] bg-destructive" />
+                Expenses
+              </span>
+            </div>
           </ChartCard>
         </div>
 
-        <div className="rounded-2xl border bg-card shadow-xs p-5">
-          <h3 className="text-sm font-semibold mb-4">
-            Distribution snapshot
-          </h3>
-
+        <ChartCard
+          icon={ChartPie}
+          tone="violet"
+          title="Distribution snapshot"
+          description="Share of net profit"
+          bodyClassName=""
+        >
           {distributionForRange.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No distribution data available.
-            </p>
+            <EmptyState icon={ChartPie} title="No distribution data available." />
           ) : (
-            <ul className="space-y-3">
-              {distributionForRange.map((p) => (
+            <ul className="space-y-4">
+              {distributionForRange.map((p, i) => (
                 <li key={p.name} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{p.name}</span>
-                    <span className="tabular-nums">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="truncate text-[13px] font-medium leading-[18px]">
+                      {p.name}
+                    </span>
+                    <span className="font-mono text-[13px] font-medium tabular-nums">
                       {formatPKR(p.amount)}
                     </span>
                   </div>
 
-                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-divider">
                     <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${p.percent}%` }}
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, Number(p.percent) || 0))}%`,
+                        background: barColors[i % barColors.length],
+                      }}
                     />
                   </div>
 
-                  <p className="text-[11px] text-muted-foreground">
-                    {p.percent}%
-                  </p>
+                  <p className="font-mono text-xs text-muted-foreground">{p.percent}%</p>
                 </li>
               ))}
             </ul>
           )}
-        </div>
-
-        
+        </ChartCard>
       </div>
     </>
   );

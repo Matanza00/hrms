@@ -1,35 +1,18 @@
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  useRouterState,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { DataTable } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
-import {
-  Wallet,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  BadgeDollarSign,
-  FileText,
-  CheckCircle2,
-  XCircle,
-  RefreshCw,
-} from "lucide-react";
+import { Wallet, CircleX, TrendingUp, CircleDollarSign, FileText, CircleCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  cancelPayroll,
-  getPayroll,
-  markPayrollPaid,
-  type PayrollRecord,
-} from "@/lib/api/payroll";
+import { cancelPayroll, getPayroll, markPayrollPaid, type PayrollRecord } from "@/lib/api/payroll";
 import { useEmployees } from "@/hooks/useEmployees";
 import { RunPayrollDialog } from "@/components/payroll/RunPayrollDialog";
 
 export const Route = createFileRoute("/_app/payroll")({
+  head: () => ({ meta: [{ title: "Payroll — LDS HRMS" }] }),
   component: PayrollLayout,
 });
 
@@ -63,11 +46,12 @@ function PayrollLayout() {
   return (
     <div>
       <PageHeader
+        icon={Wallet}
         title="Payroll"
         description="Process salaries, allowances and deductions."
         actions={
           <>
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" asChild>
               <Link to="/payroll/payslips">Payslips</Link>
             </Button>
 
@@ -86,14 +70,10 @@ function PayrollOverview() {
 
   const { data: employeesRaw = [] } = useEmployees();
 
-  const employees = Array.isArray(employeesRaw)
-    ? employeesRaw
-    : [];
+  const employees = Array.isArray(employeesRaw) ? employeesRaw : [];
 
   function getEmployeeName(employeeId?: string) {
-    const employee = employees.find(
-      (e) => e.employeeId === employeeId
-    );
+    const employee = employees.find((e) => e.employeeId === employeeId);
 
     return employee?.name || employeeId || "Unknown";
   }
@@ -125,7 +105,7 @@ function PayrollOverview() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card p-6 text-[13px] text-muted-foreground">
         Loading payroll...
       </div>
     );
@@ -133,69 +113,43 @@ function PayrollOverview() {
 
   if (error) {
     return (
-      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+      <div
+        role="alert"
+        className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink"
+      >
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );
   }
 
-  const activePayroll = payrollRecords.filter(
-    (p) => p.status !== "Cancelled"
-  );
+  const activePayroll = payrollRecords.filter((p) => p.status !== "Cancelled");
 
-  const totalGross = activePayroll.reduce(
-    (a, b) => a + Number(b.grossSalary || 0),
-    0
-  );
+  const totalGross = activePayroll.reduce((a, b) => a + Number(b.grossSalary || 0), 0);
 
-  const deductions = activePayroll.reduce(
-    (a, b) => a + Number(b.deductionAmount || 0),
-    0
-  );
+  const deductions = activePayroll.reduce((a, b) => a + Number(b.deductionAmount || 0), 0);
 
-  const bonuses = activePayroll.reduce(
-    (a, b) => a + Number(b.bonus || 0),
-    0
-  );
+  const bonuses = activePayroll.reduce((a, b) => a + Number(b.bonus || 0), 0);
 
-  const net = activePayroll.reduce(
-    (a, b) => a + Number(b.netSalary || 0),
-    0
-  );
+  const net = activePayroll.reduce((a, b) => a + Number(b.netSalary || 0), 0);
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard
-          label="Total Payroll"
-          value={formatPKR(totalGross)}
-          icon={Wallet}
-          tone="accent"
-        />
+      <div className="metric-strip grid grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Total Payroll" value={formatPKR(totalGross)} icon={Wallet} tone="accent" />
 
-        <StatCard
-          label="Deductions"
-          value={formatPKR(deductions)}
-          icon={ArrowDownCircle}
-          tone="danger"
-        />
+        <StatCard label="Deductions" value={formatPKR(deductions)} icon={CircleX} tone="danger" />
 
-        <StatCard
-          label="Bonuses"
-          value={formatPKR(bonuses)}
-          icon={ArrowUpCircle}
-          tone="success"
-        />
+        <StatCard label="Bonuses" value={formatPKR(bonuses)} icon={TrendingUp} tone="success" />
 
         <StatCard
           label="Net Payroll"
           value={formatPKR(net)}
-          icon={BadgeDollarSign}
-          tone="success"
+          icon={CircleDollarSign}
+          tone="accent"
         />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5">
         <DataTable<PayrollRecord>
           rowKey={(r) => r.payrollId}
           data={payrollRecords}
@@ -218,7 +172,7 @@ function PayrollOverview() {
               key: "grossSalary",
               header: "Gross",
               render: (r) => (
-                <span className="tabular-nums">
+                <span className="font-mono text-[13px] font-medium tabular-nums">
                   {formatPKR(r.grossSalary)}
                 </span>
               ),
@@ -227,7 +181,7 @@ function PayrollOverview() {
               key: "bonus",
               header: "Bonus",
               render: (r) => (
-                <span className="tabular-nums text-[oklch(0.48_0.18_152)]">
+                <span className="font-mono text-[13px] tabular-nums text-success-ink">
                   +{formatPKR(r.bonus)}
                 </span>
               ),
@@ -236,16 +190,16 @@ function PayrollOverview() {
               key: "deductionAmount",
               header: "Deductions",
               render: (r) => (
-                <span className="tabular-nums text-[oklch(0.5_0.23_27)]">
+                <span className="font-mono text-[13px] tabular-nums text-danger-ink">
                   -{formatPKR(r.deductionAmount)}
                 </span>
               ),
             },
             {
               key: "totalDeductionDays",
-              header: "Deduction Days",
+              header: "Deduction days",
               render: (r) => (
-                <span className="tabular-nums">
+                <span className="font-mono text-[13px] tabular-nums">
                   {Number(r.totalDeductionDays || 0)}
                 </span>
               ),
@@ -255,11 +209,10 @@ function PayrollOverview() {
               header: "Net",
               render: (r) => (
                 <span
-                  className={`font-semibold tabular-nums ${
-                    r.status === "Cancelled"
-                      ? "text-muted-foreground line-through"
-                      : ""
-                  }`}
+                  className={cn(
+                    "font-mono text-[13px] font-medium tabular-nums",
+                    r.status === "Cancelled" && "text-muted-foreground line-through",
+                  )}
                 >
                   {formatPKR(r.netSalary)}
                 </span>
@@ -280,14 +233,9 @@ function PayrollOverview() {
 
                 return (
                   <div className="flex justify-end gap-1.5">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7"
-                      asChild
-                    >
+                    <Button size="sm" variant="outline" asChild>
                       <Link to="/payroll/payslips">
-                        <FileText className="h-3 w-3 mr-1" />
+                        <FileText />
                         Payslip
                       </Link>
                     </Button>
@@ -295,7 +243,6 @@ function PayrollOverview() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7"
                       disabled={!canPay || markPaidMutation.isPending}
                       onClick={() =>
                         markPaidMutation.mutate({
@@ -304,14 +251,13 @@ function PayrollOverview() {
                         })
                       }
                     >
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      <CircleCheck />
                       Paid
                     </Button>
 
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7"
                       disabled={!canCancel || cancelMutation.isPending}
                       onClick={() =>
                         cancelMutation.mutate({
@@ -320,7 +266,7 @@ function PayrollOverview() {
                         })
                       }
                     >
-                      <XCircle className="h-3 w-3 mr-1" />
+                      <CircleX />
                       Cancel
                     </Button>
                   </div>

@@ -7,14 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useEmployees } from "@/hooks/useEmployees";
 import type { Employee } from "@/lib/api/employees";
-import {
-  Filter,
-  Plus,
-  Search,
-  MoreHorizontal,
-  Mail,
-  Phone,
-} from "lucide-react";
+import { Filter, Plus, Users, Search, MoreHorizontal, Mail, Phone } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_app/employees/")({
@@ -44,27 +37,21 @@ function EmployeesList() {
   const { data: employees = [], isLoading, error } = useEmployees();
 
   const filtered = employees.filter((e) =>
-    [
-      e.name,
-      e.employeeCode,
-      e.email,
-      e.department,
-      e.designation,
-      e.status,
-    ]
+    [e.name, e.employeeCode, e.email, e.department, e.designation, e.status]
       .join(" ")
       .toLowerCase()
-      .includes(q.toLowerCase())
+      .includes(q.toLowerCase()),
   );
 
   if (isLoading) {
     return (
       <div>
         <PageHeader
+          icon={Users}
           title="Employees"
           description="Manage your workforce, roles and employment records."
         />
-        <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
+        <div className="rounded-xl border bg-card p-5 text-[13px] text-muted-foreground">
           Loading employees...
         </div>
       </div>
@@ -75,10 +62,11 @@ function EmployeesList() {
     return (
       <div>
         <PageHeader
+          icon={Users}
           title="Employees"
           description="Manage your workforce, roles and employment records."
         />
-        <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+        <div role="alert" className="rounded-xl border border-danger-line bg-danger-tint p-5 text-[13px] text-danger-ink">
           {error instanceof Error ? error.message : "Something went wrong"}
         </div>
       </div>
@@ -88,12 +76,13 @@ function EmployeesList() {
   return (
     <div>
       <PageHeader
+        icon={Users}
         title="Employees"
         description="Manage your workforce, roles and employment records."
         actions={
-          <Button size="sm" asChild>
+          <Button asChild>
             <Link to="/employees/create">
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              <Plus />
               New employee
             </Link>
           </Button>
@@ -111,8 +100,8 @@ function EmployeesList() {
           />
         </div>
 
-        <Button variant="outline" size="sm">
-          <Filter className="mr-1.5 h-3.5 w-3.5" />
+        <Button variant="outline" className="self-start sm:self-auto">
+          <Filter />
           Filters
         </Button>
       </div>
@@ -125,9 +114,7 @@ function EmployeesList() {
             key: "employeeCode",
             header: "Code",
             render: (r) => (
-              <span className="font-mono text-xs text-muted-foreground">
-                {r.employeeCode}
-              </span>
+              <span className="font-mono text-sm text-muted-foreground">{r.employeeCode}</span>
             ),
           },
           {
@@ -137,21 +124,19 @@ function EmployeesList() {
               <Link
                 to="/employees/$id"
                 params={{ id: r.employeeId }}
-                className="flex items-center gap-3 group"
+                className="group flex min-w-0 items-center gap-3"
               >
-                <Avatar className="h-9 w-9">
-                  <AvatarFallback className="text-[11px] bg-muted">
+                <Avatar className="size-9">
+                  <AvatarFallback className="bg-muted text-[11px] text-text-secondary">
                     {initials(r.name)}
                   </AvatarFallback>
                 </Avatar>
 
-                <div>
-                  <p className="font-medium group-hover:text-accent">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-foreground group-hover:underline">
                     {r.name || "Unnamed"}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    {r.designation || "—"}
-                  </p>
+                  <p className="truncate text-xs text-muted-foreground">{r.designation || "—"}</p>
                 </div>
               </Link>
             ),
@@ -169,21 +154,19 @@ function EmployeesList() {
           {
             key: "active",
             header: "Active",
-            render: (r) => (
-              <StatusBadge status={isActive(r.active) ? "Active" : "Inactive"} />
-            ),
+            render: (r) => <StatusBadge status={isActive(r.active) ? "Active" : "Inactive"} />,
           },
           {
             key: "phone",
             header: "Contact",
             render: (r) => (
               <div className="space-y-1">
-                <p className="flex items-center gap-1.5 text-xs">
-                  <Phone className="h-3 w-3 text-muted-foreground" />
+                <p className="flex items-center gap-1.5 text-xs text-foreground sm:justify-start">
+                  <Phone className="size-3 shrink-0 text-muted-foreground" />
                   {r.phone || "—"}
                 </p>
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Mail className="h-3 w-3" />
+                  <Mail className="size-3 shrink-0" />
                   {r.email || "—"}
                 </p>
               </div>
@@ -194,9 +177,13 @@ function EmployeesList() {
             header: "",
             className: "w-10 text-right",
             render: (r) => (
-              <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                <Link to="/employees/$id" params={{ id: r.employeeId }}>
-                  <MoreHorizontal className="h-4 w-4" />
+              <Button variant="ghost" size="icon" asChild>
+                <Link
+                  to="/employees/$id"
+                  params={{ id: r.employeeId }}
+                  aria-label={`Open ${r.name || "employee"}`}
+                >
+                  <MoreHorizontal />
                 </Link>
               </Button>
             ),
@@ -210,10 +197,10 @@ function EmployeesList() {
         </span>
 
         <div className="flex gap-1.5">
-          <Button variant="outline" size="sm" disabled>
+          <Button variant="outline" disabled>
             Previous
           </Button>
-          <Button variant="outline" size="sm" disabled>
+          <Button variant="outline" disabled>
             Next
           </Button>
         </div>

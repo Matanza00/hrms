@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { LucideIcon } from "lucide-react";
+import { Coffee, LogIn, LogOut, TriangleAlert } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Coffee,
-  LogIn,
-  LogOut,
-  AlertTriangle,
-} from "lucide-react";
+import { IconTile } from "@/components/shared/IconTile";
+import type { Tone } from "@/lib/tones";
 import { useAttendance } from "@/hooks/useAttendance";
-import { currentBusinessDate, isCurrentShift } from "@/lib/businessDate";
+import { useCurrentBusinessDate } from "@/hooks/useBusinessDate";
+import { isCurrentShift } from "@/lib/businessDate";
 
 export const Route = createFileRoute("/_app/attendance/live")({
+  head: () => ({ meta: [{ title: "Live Monitoring — LDS HRMS" }] }),
   component: Live,
 });
 
@@ -46,55 +46,65 @@ function formatTime(value?: string) {
   });
 }
 
+/** "Friday, 16 October 2026" for a yyyy-mm-dd business date. */
+function formatShiftDay(businessDate: string) {
+  const date = new Date(`${businessDate}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return businessDate;
+  return date.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 function isLate(value: boolean | string | undefined) {
   return value === true || value === "TRUE";
 }
 
 function Column({
   title,
-  icon: Icon,
-  color,
+  icon,
+  tone,
+  tileClassName,
   items,
 }: {
   title: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
+  icon: LucideIcon;
+  tone: Tone;
+  tileClassName?: string;
   items: LiveItem[];
 }) {
   return (
-    <div className="rounded-2xl border bg-card shadow-xs p-5">
-      <div className="mb-4 flex items-center gap-2">
-        <div className={`grid h-8 w-8 place-items-center rounded-lg ${color}`}>
-          <Icon className="h-4 w-4" />
-        </div>
-
-        <div>
-          <h3 className="text-sm font-semibold">{title}</h3>
+    <div className="rounded-2xl border bg-card p-5">
+      <div className="mb-4 flex items-center gap-2.5">
+        <IconTile icon={icon} tone={tone} className={tileClassName} />
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-semibold leading-5 tracking-[-0.2px]">{title}</h3>
           <p className="text-xs text-muted-foreground">
-            {items.length} employees
+            <span className="font-mono">{items.length}</span>{" "}
+            {items.length === 1 ? "employee" : "employees"}
           </p>
         </div>
       </div>
 
       {items.length === 0 ? (
-        <p className="rounded-xl border border-dashed p-4 text-center text-xs text-muted-foreground">
+        <p className="rounded-lg border border-dashed px-4 py-5 text-center text-[13px] leading-[18px] text-muted-foreground">
           No employees
         </p>
       ) : (
         <ul className="space-y-3">
           {items.map((i, idx) => (
-            <li
-              key={`${i.name}-${idx}`}
-              className="relative flex items-start gap-3 pl-4 before:absolute before:left-1 before:top-2 before:h-1.5 before:w-1.5 before:rounded-full before:bg-accent"
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-[10px] bg-muted">
+            <li key={`${i.name}-${idx}`} className="flex items-start gap-3 pl-4">
+              <Avatar className="size-8">
+                <AvatarFallback className="bg-muted text-[11px] text-text-secondary">
                   {initials(i.name)}
                 </AvatarFallback>
               </Avatar>
 
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{i.name}</p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{i.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {i.time}
                   {i.meta ? ` · ${i.meta}` : ""}
@@ -110,10 +120,11 @@ function Column({
 
 function Live() {
   const { data: attendanceRecords = [], isLoading, error } = useAttendance();
+  const businessDate = useCurrentBusinessDate();
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card shadow-xs p-6 text-sm text-muted-foreground">
+      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
         Loading live attendance...
       </div>
     );
@@ -121,7 +132,10 @@ function Live() {
 
   if (error) {
     return (
-      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+      <div
+        role="alert"
+        className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink"
+      >
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );
@@ -129,39 +143,28 @@ function Live() {
 
   // Live monitoring is a view of TODAY's shift only. Without this filter the
   // same person shows up once per past day (e.g. Faraz in "Checked Out" again
-  // and again). The (employee, business-date) pair is unique, so this leaves at
+  // and again), and older rows without a check-out would sit under "Checked In"
+  // forever. The (employee, business-date) pair is unique, so this leaves at
   // most one row per employee.
-  const today = currentBusinessDate();
-  const todays = attendanceRecords.filter((a) =>
-    isCurrentShift(a.attendanceDate || a.checkIn, today),
+  const today = attendanceRecords.filter((a) =>
+    isCurrentShift(a.attendanceDate || a.checkIn, businessDate),
   );
 
-  const todayLabel = new Date(`${today}T00:00:00`).toLocaleDateString("en-PK", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
   // Currently on break = break started and not yet ended.
-  const onBreakNow = (a: (typeof todays)[number]) =>
-    !!a.breakStart && !a.breakEnd;
+  const onBreakNow = (a: (typeof today)[number]) => !!a.breakStart && !a.breakEnd;
 
   // Checked in = in the office right now: has a check-in, no check-out, and is
   // not on a break. This must NOT exclude people who have *finished* a break
   // (both break times set) — otherwise they vanish from the board entirely.
-  const checkedIn = todays
+  const checkedIn = today
     .filter((a) => a.checkIn && !a.checkOut && !onBreakNow(a))
     .map((a) => ({
       name: a.employeeName || a.employeeId,
       time: `In at ${formatTime(a.checkIn)}`,
-      meta:
-        a.latitude && a.longitude
-          ? `${a.latitude}, ${a.longitude}`
-          : undefined,
+      meta: a.latitude && a.longitude ? `${a.latitude}, ${a.longitude}` : undefined,
     }));
 
-  const onBreak = todays
+  const onBreak = today
     .filter((a) => a.checkIn && !a.checkOut && onBreakNow(a))
     .map((a) => ({
       name: a.employeeName || a.employeeId,
@@ -169,7 +172,7 @@ function Live() {
       meta: a.breakMinutes ? `${a.breakMinutes} min` : undefined,
     }));
 
-  const checkedOut = todays
+  const checkedOut = today
     .filter((a) => a.checkOut)
     .map((a) => ({
       name: a.employeeName || a.employeeId,
@@ -177,7 +180,7 @@ function Live() {
       meta: a.attendanceStatus,
     }));
 
-  const late = todays
+  const late = today
     .filter((a) => isLate(a.isLate))
     .map((a) => ({
       name: a.employeeName || a.employeeId,
@@ -186,44 +189,30 @@ function Live() {
     }));
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[oklch(0.7_0.18_152)] opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-[oklch(0.5_0.18_152)]" />
+    <div>
+      <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span className="relative grid size-2.5 place-items-center rounded-full bg-success-line">
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-40 motion-reduce:hidden" />
+          <span className="relative size-1.5 rounded-full bg-success" />
         </span>
-        <h3 className="text-sm font-semibold">Today&rsquo;s shift</h3>
-        <span className="text-xs text-muted-foreground">· {todayLabel}</span>
+        <h3 className="text-sm font-semibold leading-5 tracking-[-0.2px]">Today&apos;s shift</h3>
+        <span className="text-xs text-muted-foreground">· {formatShiftDay(businessDate)}</span>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <Column
-        title="Checked In"
-        icon={LogIn}
-        color="bg-[oklch(0.7_0.18_152/0.15)] text-[oklch(0.5_0.18_152)]"
-        items={checkedIn}
-      />
+      <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Column title="Checked In" icon={LogIn} tone="success" items={checkedIn} />
 
-      <Column
-        title="On Break"
-        icon={Coffee}
-        color="bg-[oklch(0.78_0.16_75/0.18)] text-[oklch(0.5_0.16_75)]"
-        items={onBreak}
-      />
+        <Column title="On Break" icon={Coffee} tone="warning" items={onBreak} />
 
-      <Column
-        title="Checked Out"
-        icon={LogOut}
-        color="bg-muted text-foreground"
-        items={checkedOut}
-      />
+        <Column
+          title="Checked Out"
+          icon={LogOut}
+          tone="neutral"
+          tileClassName="bg-muted-foreground text-card"
+          items={checkedOut}
+        />
 
-      <Column
-        title="Late Arrivals"
-        icon={AlertTriangle}
-        color="bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.5_0.23_27)]"
-        items={late}
-      />
+        <Column title="Late Arrivals" icon={TriangleAlert} tone="danger" items={late} />
       </div>
     </div>
   );

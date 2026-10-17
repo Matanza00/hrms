@@ -1,11 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CalendarCheck, CalendarClock, Clock, Hourglass, PartyPopper, Timer } from "lucide-react";
+import {
+  CalendarCheck,
+  CalendarClock,
+  CalendarDays,
+  Clock,
+  Hourglass,
+  Info,
+  LayoutDashboard,
+  PartyPopper,
+  Timer,
+} from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
+import { ChartCard } from "@/components/shared/ChartCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useEmployeeStats } from "@/hooks/useEmployeeStats";
 import type { Holiday } from "@/lib/api/holidays";
+import { toneSolid, type Tone } from "@/lib/tones";
 
 export const Route = createFileRoute("/employee/dashboard")({
+  head: () => ({ meta: [{ title: "My Dashboard — LDS HRMS" }] }),
   component: EmployeeDashboard,
 });
 
@@ -33,6 +48,9 @@ function whenLabel(dateStr: string) {
   return `In ${d} days`;
 }
 
+// Progress fills cycle through the accent solids, one per leave type.
+const barTones: Tone[] = ["info", "success", "warning", "violet", "danger"];
+
 function EmployeeDashboard() {
   const { employeeId, employee, user } = useAuth();
   const stats = useEmployeeStats(employeeId);
@@ -41,56 +59,52 @@ function EmployeeDashboard() {
   const { leaves, hours, holidays } = stats;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Welcome back, {name.split(" ")[0]} 👋
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Here's your leave balance, working hours and what's coming up.
-        </p>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        icon={LayoutDashboard}
+        title={`Welcome back, ${name.split(" ")[0]}`}
+        description="Here's your leave balance, working hours and what's coming up."
+      />
 
-      {/* KPI grid */}
-      {/* Six across only once there is room for the labels; below that they
-          truncate to "Remainin…" and the card stops saying anything. */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+      {/* KPI strip. Three across at most: six across truncates the labels
+          to "Remainin…" and the card stops saying anything. */}
+      <div className="metric-strip grid grid-cols-2 md:grid-cols-3">
         <StatCard
-          label="Remaining Leaves"
+          label="Remaining leaves"
           value={stats.isLoading ? "…" : leaves.remaining}
           hint={`of ${leaves.entitlement} days`}
           icon={CalendarCheck}
           tone="success"
         />
         <StatCard
-          label="Leaves Taken"
+          label="Leaves taken"
           value={stats.isLoading ? "…" : leaves.taken}
           hint={leaves.pending ? `${leaves.pending} pending` : "approved days"}
           icon={CalendarClock}
           tone="accent"
         />
         <StatCard
-          label="Total Leaves"
+          label="Total leaves"
           value={stats.isLoading ? "…" : leaves.entitlement}
           hint="annual entitlement"
-          icon={CalendarCheck}
+          icon={CalendarDays}
         />
         <StatCard
-          label="Hours This Month"
+          label="Hours this month"
           value={stats.isLoading ? "…" : `${hours.monthWorked}h`}
           hint={`of ${hours.monthTarget}h target`}
           icon={Clock}
           tone="accent"
         />
         <StatCard
-          label="Remaining Hours"
+          label="Remaining hours"
           value={stats.isLoading ? "…" : `${hours.remaining}h`}
           hint="to hit monthly target"
           icon={Hourglass}
           tone="warning"
         />
         <StatCard
-          label="Next Holiday"
+          label="Next holiday"
           value={
             stats.isLoading ? "…" : holidays.next ? whenLabel(holidays.next.holidayDate) : "None"
           }
@@ -102,29 +116,29 @@ function EmployeeDashboard() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Leave breakdown by type */}
-        <div className="rounded-2xl border bg-card shadow-xs p-5">
-          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-            <CalendarCheck className="h-4 w-4 text-muted-foreground" />
-            Leave Balance
-          </h3>
-
-          <div className="space-y-4">
-            {leaves.byType.map((t) => {
+        <ChartCard
+          title="Leave balance"
+          description="Days used against each quota"
+          icon={CalendarDays}
+          bodyClassName=""
+        >
+          <div className="space-y-4 pb-1">
+            {leaves.byType.map((t, i) => {
               const pct = t.quota > 0 ? Math.min(100, (t.taken / t.quota) * 100) : 0;
               return (
                 <div key={t.type} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{t.type}</span>
-                    <span className="text-muted-foreground tabular-nums">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[13px] font-medium">{t.type}</span>
+                    <span className="font-mono text-[13px] font-medium">
                       {t.remaining} left{" "}
-                      <span className="text-xs">
+                      <span className="text-xs font-normal text-muted-foreground">
                         ({t.taken}/{t.quota})
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-divider">
                     <div
-                      className="h-full rounded-full bg-primary transition-all"
+                      className={`h-full rounded-full transition-all ${toneSolid[barTones[i % barTones.length]]}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -133,65 +147,79 @@ function EmployeeDashboard() {
             })}
 
             {leaves.pending > 0 && (
-              <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                You have <span className="font-medium">{leaves.pending}</span> day(s) of leave
-                pending approval.
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Info className="size-3.5 shrink-0" />
+                <span>
+                  You have{" "}
+                  <span className="font-mono font-medium text-foreground">{leaves.pending}</span>{" "}
+                  day(s) of leave pending approval.
+                </span>
               </p>
             )}
           </div>
-        </div>
+        </ChartCard>
 
         {/* Hours + upcoming holidays */}
         <div className="space-y-4">
-          <div className="rounded-2xl border bg-card shadow-xs p-5">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-              <Timer className="h-4 w-4 text-muted-foreground" />
-              This Month's Hours
-            </h3>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="rounded-xl border bg-muted/30 p-3">
-                <p className="text-lg font-semibold tabular-nums">{hours.monthWorked}h</p>
-                <p className="text-[11px] text-muted-foreground">Worked</p>
-              </div>
-              <div className="rounded-xl border bg-muted/30 p-3">
-                <p className="text-lg font-semibold tabular-nums">{hours.monthTarget}h</p>
-                <p className="text-[11px] text-muted-foreground">Target</p>
-              </div>
-              <div className="rounded-xl border bg-muted/30 p-3">
-                <p className="text-lg font-semibold tabular-nums">{hours.remaining}h</p>
-                <p className="text-[11px] text-muted-foreground">Remaining</p>
-              </div>
+          <ChartCard
+            title="This month's hours"
+            description="Worked against your monthly target"
+            icon={Timer}
+            tone="warning"
+            bodyClassName=""
+          >
+            <div className="grid grid-cols-3 overflow-hidden rounded-lg border">
+              {[
+                { label: "Worked", value: hours.monthWorked },
+                { label: "Target", value: hours.monthTarget },
+                { label: "Remaining", value: hours.remaining },
+              ].map((c) => (
+                <div key={c.label} className="border-r border-divider px-3 py-3 last:border-r-0">
+                  <p className="text-xs text-muted-foreground">{c.label}</p>
+                  <p className="font-mono text-lg font-medium tracking-[-0.4px]">{c.value}h</p>
+                </div>
+              ))}
             </div>
             {/* Netted over the month, so extra hours on a long day cover a
                 short one. Being ahead is worth saying out loud. */}
             {hours.deficit > 0 ? (
-              <p className="mt-3 text-xs text-muted-foreground">
-                Short by <span className="font-medium text-foreground">{hours.deficit}h</span>{" "}
-                against the days worked so far this month.
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Info className="size-3.5 shrink-0" />
+                <span>
+                  Short by{" "}
+                  <span className="font-mono font-medium text-danger-ink">{hours.deficit}h</span>{" "}
+                  against the days worked so far this month.
+                </span>
               </p>
             ) : hours.surplus > 0 ? (
-              <p className="mt-3 text-xs text-muted-foreground">
-                Ahead by <span className="font-medium text-foreground">{hours.surplus}h</span>{" "}
-                against the days worked so far this month.
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Info className="size-3.5 shrink-0" />
+                <span>
+                  Ahead by{" "}
+                  <span className="font-mono font-medium text-success-ink">{hours.surplus}h</span>{" "}
+                  against the days worked so far this month.
+                </span>
               </p>
             ) : null}
-          </div>
+          </ChartCard>
 
-          <div className="rounded-2xl border bg-card shadow-xs p-5">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-              <PartyPopper className="h-4 w-4 text-muted-foreground" />
-              Upcoming Holidays
-            </h3>
+          <ChartCard
+            title="Upcoming holidays"
+            description="Office closures ahead"
+            icon={PartyPopper}
+            tone="success"
+            bodyClassName=""
+          >
             {stats.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading…</p>
+              <p className="text-[13px] text-muted-foreground">Loading…</p>
             ) : holidays.upcoming.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No upcoming holidays.</p>
+              <EmptyState icon={PartyPopper} title="No upcoming holidays." />
             ) : (
-              <ul className="space-y-2">
+              <ul className="-mx-5 -mt-5 -mb-4">
                 {holidays.upcoming.slice(0, 5).map((h: Holiday) => (
                   <li
                     key={h.holidayId}
-                    className="flex items-center justify-between rounded-xl border px-3 py-2"
+                    className="flex items-center justify-between gap-3 border-b border-divider px-5 py-3 last:border-b-0"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{h.title}</p>
@@ -199,14 +227,14 @@ function EmployeeDashboard() {
                         {formatDate(h.holidayDate)} · {h.holidayType}
                       </p>
                     </div>
-                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
+                    <span className="inline-flex h-[22px] shrink-0 items-center rounded-sm border bg-subtle px-2 font-mono text-[11px] font-medium text-text-secondary">
                       {whenLabel(h.holidayDate)}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
-          </div>
+          </ChartCard>
         </div>
       </div>
     </div>

@@ -11,48 +11,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UploadCloud } from "lucide-react";
-import { useState } from "react";
+import { Building2, FileText, Upload, User, UserPlus, Wallet, type LucideIcon } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { IconTile } from "@/components/shared/IconTile";
+import type { Tone } from "@/lib/tones";
 import { useCreateEmployee } from "@/hooks/useEmployees";
 
 export const Route = createFileRoute("/_app/employees/create")({
+  head: () => ({ meta: [{ title: "New Employee — LDS HRMS" }] }),
   component: EmployeeCreate,
 });
 
+/** Figma "Card" with a form body: icon-tile header row, then a two-column grid. */
 function Section({
   title,
   children,
   description,
+  icon,
+  tone = "info",
 }: {
   title: string;
-  description?: string;
-  children: React.ReactNode;
+  description?: ReactNode;
+  icon: LucideIcon;
+  tone?: Tone;
+  children: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border bg-card shadow-xs p-6">
-      <div className="mb-4">
-        <h3 className="text-sm font-semibold">{title}</h3>
-        {description && (
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {description}
-          </p>
-        )}
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
-    </div>
+    <section className="overflow-hidden rounded-xl border bg-card">
+      <header className="flex items-center gap-2.5 border-b border-divider px-5 py-3.5">
+        <IconTile icon={icon} tone={tone} />
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold leading-5 tracking-[-0.2px]">{title}</h3>
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
+        </div>
+      </header>
+      <div className="grid gap-x-3 gap-y-4 p-5 sm:grid-cols-2">{children}</div>
+    </section>
   );
 }
 
 function F({
   label,
+  required,
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  required?: boolean;
+  children: ReactNode;
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs">{label}</Label>
+      <Label>
+        {label}
+        {required && <span className="ml-0.5 text-danger-ink">*</span>}
+      </Label>
       {children}
     </div>
   );
@@ -109,10 +121,7 @@ function EmployeeCreate() {
   const [form, setForm] = useState<EmployeeForm>(initialForm);
   const [error, setError] = useState("");
 
-  function updateField<K extends keyof EmployeeForm>(
-    field: K,
-    value: EmployeeForm[K]
-  ) {
+  function updateField<K extends keyof EmployeeForm>(field: K, value: EmployeeForm[K]) {
     setError("");
     setForm((prev) => ({
       ...prev,
@@ -159,10 +168,8 @@ function EmployeeCreate() {
         department: form.department,
         designation: form.designation,
         basicSalary: Number(form.basicSalary || 0),
-        fuelAllowance:
-          form.status === "Permanent" ? Number(form.fuelAllowance || 0) : 0,
-        opdAllowance:
-          form.status === "Permanent" ? Number(form.opdAllowance || 0) : 0,
+        fuelAllowance: form.status === "Permanent" ? Number(form.fuelAllowance || 0) : 0,
+        opdAllowance: form.status === "Permanent" ? Number(form.opdAllowance || 0) : 0,
         address: form.address,
         emergencyContact: form.emergencyContact,
       });
@@ -176,35 +183,23 @@ function EmployeeCreate() {
   return (
     <div>
       <PageHeader
-        eyebrow="Employees"
+        icon={UserPlus}
         title="Add new employee"
-        description="Onboard a new team member with their personal, employment and salary details."
-        actions={
-          <>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/employees">Cancel</Link>
-            </Button>
-
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              disabled={createEmployee.isPending}
-            >
-              {createEmployee.isPending ? "Saving..." : "Save employee"}
-            </Button>
-          </>
-        }
+        description="Onboard a new team member with their personal, employment and salary details. Fields marked * are required."
       />
 
       {error && (
-        <div role="alert" className="mb-4 rounded-xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+        <div
+          role="alert"
+          className="mb-4 rounded-lg border border-danger-line bg-danger-tint px-4 py-3 text-[13px] text-danger-ink"
+        >
           {error}
         </div>
       )}
 
-      <div className="space-y-4 max-w-5xl">
-        <Section title="Personal information">
-          <F label="Full name">
+      <div className="space-y-5">
+        <Section title="Personal information" icon={User}>
+          <F label="Full name" required>
             <Input
               value={form.name}
               onChange={(e) => updateField("name", e.target.value)}
@@ -212,7 +207,7 @@ function EmployeeCreate() {
             />
           </F>
 
-          <F label="Email">
+          <F label="Email" required>
             <Input
               type="email"
               value={form.email}
@@ -266,13 +261,21 @@ function EmployeeCreate() {
 
         <Section
           title="Employment information"
-          description="A login is created automatically: the Login ID is the employee code and the password is admin12345. The code cannot contain spaces."
+          icon={Building2}
+          tone="violet"
+          description={
+            <>
+              A login is created automatically: the Login ID is the employee code and the password
+              is <span className="font-mono">admin12345</span>. The code cannot contain spaces.
+            </>
+          }
         >
-          <F label="Employee code">
+          <F label="Employee code" required>
             <Input
               value={form.employeeCode}
               onChange={(e) => updateField("employeeCode", e.target.value)}
               placeholder="EMP001"
+              className="font-mono"
             />
           </F>
 
@@ -285,14 +288,7 @@ function EmployeeCreate() {
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
               <SelectContent>
-                {[
-                  "Engineering",
-                  "Design",
-                  "Accounts",
-                  "HR",
-                  "Marketing",
-                  "Operations",
-                ].map((d) => (
+                {["Engineering", "Design", "Accounts", "HR", "Marketing", "Operations"].map((d) => (
                   <SelectItem key={d} value={d}>
                     {d}
                   </SelectItem>
@@ -347,10 +343,11 @@ function EmployeeCreate() {
           </F>
         </Section>
 
-        <Section title="Salary information">
+        <Section title="Salary information" icon={Wallet} tone="success">
           <F label="Basic salary">
             <Input
               type="number"
+              className="font-mono"
               value={form.basicSalary}
               onChange={(e) => updateField("basicSalary", e.target.value)}
               placeholder="200000"
@@ -360,6 +357,7 @@ function EmployeeCreate() {
           <F label="Fuel allowance">
             <Input
               type="number"
+              className="font-mono"
               value={form.fuelAllowance}
               onChange={(e) => updateField("fuelAllowance", e.target.value)}
               placeholder="15000"
@@ -370,6 +368,7 @@ function EmployeeCreate() {
           <F label="OPD allowance">
             <Input
               type="number"
+              className="font-mono"
               value={form.opdAllowance}
               onChange={(e) => updateField("opdAllowance", e.target.value)}
               placeholder="5000"
@@ -380,27 +379,32 @@ function EmployeeCreate() {
 
         <Section
           title="Documents"
+          icon={FileText}
+          tone="warning"
           description="Google Drive upload will be connected later."
         >
-          <div className="sm:col-span-2 rounded-xl border-2 border-dashed p-8 text-center opacity-70">
-            <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-full bg-muted">
-              <UploadCloud className="h-5 w-5" />
+          <div className="flex flex-col items-center gap-2.5 rounded-lg border border-dashed px-6 py-8 text-center sm:col-span-2">
+            <IconTile icon={Upload} tone="neutral" size="md" />
+            <div>
+              <p className="text-[13px] font-medium leading-[18px]">Document upload pending</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                CNIC, Educational Certificates, Medical Documents
+              </p>
             </div>
-            <p className="text-sm font-medium">Document upload pending</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              CNIC, Educational Certificates, Medical Documents
-            </p>
           </div>
         </Section>
 
-        <div className="flex justify-end gap-2 pb-6">
-          <Button variant="outline" asChild>
-            <Link to="/employees">Cancel</Link>
-          </Button>
+        <div className="flex flex-col-reverse gap-3 border-t border-divider pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[13px] text-muted-foreground">Unsaved new employee</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/employees">Cancel</Link>
+            </Button>
 
-          <Button onClick={handleSubmit} disabled={createEmployee.isPending}>
-            {createEmployee.isPending ? "Saving..." : "Save employee"}
-          </Button>
+            <Button onClick={handleSubmit} disabled={createEmployee.isPending}>
+              {createEmployee.isPending ? "Saving..." : "Save employee"}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -2,17 +2,36 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { applyLeave, getLeaveRequests, type LeaveRequest } from "@/lib/api/leaves";
+import {
+  AlertTriangle,
+  CalendarCheck,
+  CalendarClock,
+  CalendarDays,
+  CalendarPlus,
+  Hourglass,
+  History,
+} from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { ChartCard } from "@/components/shared/ChartCard";
+import { StatCard } from "@/components/shared/StatCard";
 import { DataTable } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useEmployeeStats } from "@/hooks/useEmployeeStats";
 
 export const Route = createFileRoute("/employee/leaves")({
+  head: () => ({ meta: [{ title: "My Leaves — LDS HRMS" }] }),
   component: EmployeeLeaves,
 });
 
@@ -54,74 +73,173 @@ function EmployeeLeaves() {
     });
   }
 
+  const setField = (key: keyof typeof form) => (value: string) =>
+    setForm((p) => ({ ...p, [key]: value }));
+
   return (
-    <div>
-      <h1 className="text-3xl font-bold">My Leaves</h1>
-      <p className="text-muted-foreground">Apply for leave and track approval status.</p>
+    <div className="space-y-5">
+      <PageHeader
+        icon={CalendarDays}
+        title="My leaves"
+        description="Apply for leave and track approval status."
+      />
 
       {/* Leave balance summary */}
-      <div className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-4">
-        <div className="rounded-2xl border bg-card shadow-xs p-4">
-          <p className="text-xs text-muted-foreground">Total Leaves</p>
-          <p className="text-2xl font-semibold tabular-nums">{stats.leaves.entitlement}</p>
-        </div>
-        <div className="rounded-2xl border bg-card shadow-xs p-4">
-          <p className="text-xs text-muted-foreground">Taken</p>
-          <p className="text-2xl font-semibold tabular-nums">{stats.leaves.taken}</p>
-        </div>
-        <div className="rounded-2xl border bg-card shadow-xs p-4">
-          <p className="text-xs text-muted-foreground">Remaining</p>
-          <p className="text-2xl font-semibold tabular-nums text-primary">
-            {stats.leaves.remaining}
-          </p>
-        </div>
-        <div className="rounded-2xl border bg-card shadow-xs p-4">
-          <p className="text-xs text-muted-foreground">Pending</p>
-          <p className="text-2xl font-semibold tabular-nums">{stats.leaves.pending}</p>
-        </div>
+      <div className="metric-strip grid grid-cols-2 sm:grid-cols-4">
+        <StatCard label="Total leaves" value={stats.leaves.entitlement} icon={CalendarDays} />
+        <StatCard label="Taken" value={stats.leaves.taken} icon={CalendarClock} tone="accent" />
+        <StatCard
+          label="Remaining"
+          value={stats.leaves.remaining}
+          icon={CalendarCheck}
+          tone="success"
+        />
+        <StatCard label="Pending" value={stats.leaves.pending} icon={Hourglass} tone="warning" />
       </div>
 
       {/* Per-type breakdown */}
-      <div className="mt-3 grid gap-3 sm:grid-cols-3">
-        {stats.leaves.byType.map((t) => (
-          <div
-            key={t.type}
-            className="flex items-center justify-between rounded-xl border bg-card shadow-xs px-4 py-3"
-          >
-            <span className="text-sm font-medium">{t.type}</span>
-            <span className="text-sm text-muted-foreground tabular-nums">
-              <span className="font-semibold text-foreground">{t.remaining}</span> left · {t.taken}/
-              {t.quota} used
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-6 rounded-2xl border bg-card shadow-xs p-5">
-        <h3 className="mb-4 text-sm font-semibold">Apply Leave</h3>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div><Label className="text-xs">Type</Label><Select value={form.leaveType} onValueChange={(v) => setForm((p) => ({ ...p, leaveType: v }))}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="Annual">Annual</SelectItem><SelectItem value="Casual">Casual</SelectItem><SelectItem value="Sick">Sick</SelectItem><SelectItem value="Unpaid">Unpaid</SelectItem></SelectContent></Select></div>
-          <div><Label className="text-xs">Total Days</Label><Input value={Math.max(totalDays, 0)} readOnly /></div>
-          <div><Label className="text-xs">Start Date</Label><Input type="date" value={form.startDate} onChange={(e) => setForm((p) => ({ ...p, startDate: e.target.value }))} /></div>
-          <div><Label className="text-xs">End Date</Label><Input type="date" value={form.endDate} onChange={(e) => setForm((p) => ({ ...p, endDate: e.target.value }))} /></div>
-          <div className="md:col-span-2"><Label className="text-xs">Reason</Label><Textarea value={form.reason} onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))} /></div>
+      {stats.leaves.byType.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border bg-card sm:grid sm:grid-cols-3">
+          {stats.leaves.byType.map((t) => (
+            <div
+              key={t.type}
+              className="flex items-center justify-between gap-3 border-b border-divider px-5 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
+            >
+              <span className="text-[13px] font-medium">{t.type}</span>
+              <span className="font-mono text-xs text-muted-foreground">
+                <span className="text-[13px] font-medium text-foreground">{t.remaining}</span> left
+                · {t.taken}/{t.quota} used
+              </span>
+            </div>
+          ))}
         </div>
-        <Button className="mt-4" disabled={mutation.isPending || !form.leaveType || totalDays <= 0} onClick={submit}>
-          {mutation.isPending ? "Submitting..." : "Submit Leave"}
-        </Button>
-      </div>
+      )}
 
-      <div className="mt-6">
+      <ChartCard
+        title="Apply leave"
+        description="Requests go to your admin for approval"
+        icon={CalendarPlus}
+        tone="violet"
+        bodyClassName=""
+      >
+        {mutation.error && (
+          <div role="alert" className="mb-4 flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint px-3 py-2.5 text-[13px] text-danger-ink">
+            <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+            {mutation.error instanceof Error ? mutation.error.message : "Could not submit leave."}
+          </div>
+        )}
+        <div className="grid gap-x-3 gap-y-4 md:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="leave-type">Type</Label>
+            <Select value={form.leaveType} onValueChange={setField("leaveType")}>
+              <SelectTrigger id="leave-type">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Annual">Annual</SelectItem>
+                <SelectItem value="Casual">Casual</SelectItem>
+                <SelectItem value="Sick">Sick</SelectItem>
+                <SelectItem value="Unpaid">Unpaid</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="leave-days">Total days</Label>
+            <Input
+              id="leave-days"
+              className="bg-subtle font-mono"
+              value={Math.max(totalDays, 0)}
+              readOnly
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="leave-start">Start date</Label>
+            <Input
+              id="leave-start"
+              type="date"
+              className="font-mono"
+              value={form.startDate}
+              onChange={(e) => setField("startDate")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="leave-end">End date</Label>
+            <Input
+              id="leave-end"
+              type="date"
+              className="font-mono"
+              value={form.endDate}
+              onChange={(e) => setField("endDate")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5 md:col-span-2">
+            <Label htmlFor="leave-reason">Reason</Label>
+            <Textarea
+              id="leave-reason"
+              value={form.reason}
+              onChange={(e) => setField("reason")(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end pb-1">
+          <Button
+            className="w-full sm:w-auto max-sm:h-11"
+            disabled={mutation.isPending || !form.leaveType || totalDays <= 0}
+            onClick={submit}
+          >
+            {mutation.isPending ? "Submitting..." : "Submit Leave"}
+          </Button>
+        </div>
+      </ChartCard>
+
+      <div className="-mb-2 flex items-center gap-1.5">
+        <History className="size-3.5 text-muted-foreground" />
+        <h3 className="text-sm font-semibold tracking-[-0.2px]">My requests</h3>
+      </div>
+      <div>
         <DataTable<LeaveRequest>
           rowKey={(r) => r.leaveId}
           data={records}
+          empty="No leave requests yet."
           columns={[
-            { key: "leaveType", header: "Type" },
-            { key: "startDate", header: "Start" },
-            { key: "endDate", header: "End" },
-            { key: "totalDays", header: "Days", render: (r) => Number(r.totalDays || 0) },
-            { key: "paidDays", header: "Paid", render: (r) => Number(r.paidDays || 0) },
-            { key: "unpaidDays", header: "Unpaid", render: (r) => Number(r.unpaidDays || 0) },
+            {
+              key: "leaveType",
+              header: "Type",
+              render: (r) => <span className="font-medium">{r.leaveType}</span>,
+            },
+            {
+              key: "startDate",
+              header: "Start",
+              render: (r) => <span className="font-mono text-[13px]">{r.startDate}</span>,
+            },
+            {
+              key: "endDate",
+              header: "End",
+              render: (r) => <span className="font-mono text-[13px]">{r.endDate}</span>,
+            },
+            {
+              key: "totalDays",
+              header: "Days",
+              render: (r) => (
+                <span className="font-mono text-[13px] font-medium">
+                  {Number(r.totalDays || 0)}
+                </span>
+              ),
+            },
+            {
+              key: "paidDays",
+              header: "Paid",
+              render: (r) => (
+                <span className="font-mono text-[13px]">{Number(r.paidDays || 0)}</span>
+              ),
+            },
+            {
+              key: "unpaidDays",
+              header: "Unpaid",
+              render: (r) => (
+                <span className="font-mono text-[13px]">{Number(r.unpaidDays || 0)}</span>
+              ),
+            },
             { key: "status", header: "Status", render: (r) => <StatusBadge status={r.status} /> },
           ]}
         />

@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toneInk } from "@/lib/tones";
 
 interface Props {
   label: string;
@@ -11,48 +12,46 @@ interface Props {
   tone?: "default" | "success" | "warning" | "danger" | "accent";
 }
 
-const toneClasses: Record<NonNullable<Props["tone"]>, string> = {
-  default: "bg-muted text-foreground",
-  success: "bg-[oklch(0.7_0.18_152/0.12)] text-[oklch(0.48_0.18_152)] dark:text-[oklch(0.78_0.18_152)]",
-  warning: "bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.5_0.16_75)] dark:text-[oklch(0.82_0.16_75)]",
-  danger: "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.72_0.23_27)]",
-  accent: "bg-[oklch(0.62_0.19_259/0.12)] text-[oklch(0.5_0.19_259)] dark:text-[oklch(0.72_0.19_259)]",
+const iconTone: Record<NonNullable<Props["tone"]>, string> = {
+  default: toneInk.neutral,
+  success: toneInk.success,
+  warning: toneInk.warning,
+  danger: toneInk.danger,
+  accent: toneInk.info,
 };
 
+/** Figma "Metric": 13px label with a 14px icon over a 26px Geist Mono figure. */
 export function StatCard({ label, value, icon: Icon, trend, hint, tone = "default" }: Props) {
   const up = (trend ?? 0) >= 0;
   return (
-    <div className="group relative overflow-hidden rounded-2xl border bg-card p-4 sm:p-5 transition-all hover:shadow-sm hover:-translate-y-0.5">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1 space-y-1.5">
-          {/* The label wraps rather than truncating: a card headed "Remainin…"
-              tells the reader nothing. The figure itself stays on one line. */}
-          <p className="text-[11px] sm:text-xs font-medium text-muted-foreground text-pretty">
-            {label}
-          </p>
-          <p className="truncate text-lg font-semibold tabular-nums tracking-tight sm:text-xl md:text-2xl">
-            {value}
-          </p>
+    <div className="flex min-w-0 flex-col gap-2.5 rounded-2xl border bg-card px-4 pb-[18px] pt-4 sm:px-5">
+      {/* The label wraps rather than truncating: a card headed "Remainin…"
+          tells the reader nothing. The figure itself stays on one line. */}
+      <div className="flex min-w-0 items-start gap-1.5">
+        {Icon && <Icon className={cn("mt-[2px] size-3.5 shrink-0", iconTone[tone])} />}
+        <p className="min-w-0 text-pretty text-[13px] font-medium leading-[18px] text-muted-foreground">
+          {label}
+        </p>
+      </div>
+      <p className="truncate font-mono text-[22px] font-medium leading-8 tracking-[-0.8px] tabular-nums sm:text-[26px]">
+        {value}
+      </p>
+      {(trend !== undefined || hint) && (
+        <div className="-mt-1 flex items-center gap-2 text-xs">
+          {trend !== undefined && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-0.5 font-mono font-medium",
+                up ? "text-success-ink" : "text-danger-ink",
+              )}
+            >
+              {up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+              {Math.abs(trend)}%
+            </span>
+          )}
+          {hint && <span className="truncate text-muted-foreground">{hint}</span>}
         </div>
-        {Icon && (
-          <div className={cn("grid h-8 w-8 sm:h-9 sm:w-9 shrink-0 place-items-center rounded-lg sm:rounded-xl", toneClasses[tone])}>
-            <Icon className="h-4 w-4" />
-          </div>
-        )}
-      </div>
-      <div className="mt-3 sm:mt-4 flex items-center gap-2 text-[11px] sm:text-xs">
-        {trend !== undefined && (
-          <span className={cn(
-            "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-medium",
-            up ? "bg-[oklch(0.7_0.18_152/0.15)] text-[oklch(0.5_0.18_152)] dark:text-[oklch(0.78_0.18_152)]"
-               : "bg-[oklch(0.62_0.23_27/0.12)] text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.72_0.23_27)]"
-          )}>
-            {up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-            {Math.abs(trend)}%
-          </span>
-        )}
-        {hint && <span className="text-muted-foreground truncate">{hint}</span>}
-      </div>
+      )}
     </div>
   );
 }

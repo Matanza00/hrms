@@ -10,7 +10,8 @@ export type Employee = {
   dob: string;
   joiningDate: string;
   permanentDate: string;
-  endDate?: string;
+  /** Null clears it (the employee is back at LDS). */
+  endDate?: string | null;
   status:
     | "Permanent"
     | "Contract"
@@ -28,12 +29,9 @@ export type Employee = {
   active: boolean | string;
 };
 
-
-
 export const getEmployees = () => apiGet<Employee[]>("employees");
 
-export const getEmployee = (employeeId: string) =>
-  apiGet<Employee>("employee", { employeeId });
+export const getEmployee = (employeeId: string) => apiGet<Employee>("employee", { employeeId });
 
 export const createEmployee = (data: Partial<Employee>) =>
   apiPost<Employee>("createEmployee", data);
