@@ -126,7 +126,10 @@ function LoginPage() {
             </div>
 
             {error && (
-              <div role="alert" className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink">
+              <div
+                role="alert"
+                className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink"
+              >
                 {error}
               </div>
             )}

@@ -113,7 +113,10 @@ function LeaveRequestPage() {
 
       <div className="p-5">
         {error && (
-          <div role="alert" className="mb-4 rounded-lg border border-danger-line bg-danger-tint px-4 py-3 text-[13px] text-danger-ink">
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-danger-line bg-danger-tint px-4 py-3 text-[13px] text-danger-ink"
+          >
             {error}
           </div>
         )}

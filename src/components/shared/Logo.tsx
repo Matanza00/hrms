@@ -5,11 +5,5 @@ import { cn } from "@/lib/utils";
  * Pass sizing + rounding via className (e.g. "h-12 w-12 rounded-xl").
  */
 export function Logo({ className, alt = "LDS" }: { className?: string; alt?: string }) {
-  return (
-    <img
-      src="/LDS.png"
-      alt={alt}
-      className={cn("shrink-0 object-cover", className)}
-    />
-  );
+  return <img src="/LDS.png" alt={alt} className={cn("shrink-0 object-cover", className)} />;
 }

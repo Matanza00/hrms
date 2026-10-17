@@ -9,14 +9,10 @@ export type Holiday = {
   createdAt?: string;
 };
 
-export const getHolidays = () =>
-  apiGet<Holiday[]>("holidays");
+export const getHolidays = () => apiGet<Holiday[]>("holidays");
 
-export const createHoliday = (data: {
-  title: string;
-  holidayDate: string;
-  holidayType: string;
-}) => apiPost<Holiday>("createHoliday", data);
+export const createHoliday = (data: { title: string; holidayDate: string; holidayType: string }) =>
+  apiPost<Holiday>("createHoliday", data);
 
 export const updateHoliday = (data: {
   holidayId: string;

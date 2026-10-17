@@ -174,7 +174,10 @@ function SpecialWorkingDaysPage() {
           title="Special working days"
           description="Override holidays for selected employees when work is required."
         />
-        <div role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
+        <div
+          role="alert"
+          className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink"
+        >
           {error instanceof Error ? error.message : "Something went wrong"}
         </div>
       </div>
@@ -222,7 +225,10 @@ function SpecialWorkingDaysPage() {
               </DialogHeader>
 
               {formError && (
-                <div role="alert" className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink">
+                <div
+                  role="alert"
+                  className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink"
+                >
                   {formError}
                 </div>
               )}

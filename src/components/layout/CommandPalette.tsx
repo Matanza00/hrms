@@ -10,9 +10,20 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  LayoutDashboard, Users, Clock, CalendarDays, Wallet, Receipt,
-  PartyPopper, BarChart3, Settings, User, TrendingUp, TrendingDown,
-  PiggyBank, UserRound,
+  LayoutDashboard,
+  Users,
+  Clock,
+  CalendarDays,
+  Wallet,
+  Receipt,
+  PartyPopper,
+  BarChart3,
+  Settings,
+  User,
+  TrendingUp,
+  TrendingDown,
+  PiggyBank,
+  UserRound,
 } from "lucide-react";
 import { useEmployees } from "@/hooks/useEmployees";
 
@@ -33,7 +44,12 @@ const PAGES: PageLink[] = [
   { label: "Revenue", to: "/accounts/revenue", icon: TrendingUp, keywords: "income client" },
   { label: "Expenses", to: "/accounts/expenses", icon: TrendingDown, keywords: "spend cost" },
   { label: "Reserve", to: "/accounts/reserve", icon: PiggyBank, keywords: "savings" },
-  { label: "Profit Distribution", to: "/accounts/profit-distribution", icon: BarChart3, keywords: "partners sadqah" },
+  {
+    label: "Profit Distribution",
+    to: "/accounts/profit-distribution",
+    icon: BarChart3,
+    keywords: "partners sadqah",
+  },
   { label: "Holidays", to: "/holidays", icon: PartyPopper },
   { label: "Reports", to: "/reports", icon: BarChart3 },
   { label: "Settings", to: "/settings", icon: Settings },
@@ -93,9 +109,7 @@ export function CommandPalette({
                 >
                   <UserRound className="mr-2 h-4 w-4 text-muted-foreground" />
                   <span className="truncate">{e.name}</span>
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {e.employeeCode}
-                  </span>
+                  <span className="ml-auto text-xs text-muted-foreground">{e.employeeCode}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

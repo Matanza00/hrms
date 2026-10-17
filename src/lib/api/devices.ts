@@ -31,12 +31,10 @@ export type ScanInput = {
 };
 
 /** Mark attendance from a scan of the office QR poster. */
-export const scanAttendance = (data: ScanInput) =>
-  apiPost<ScanResult>("scanAttendance", data);
+export const scanAttendance = (data: ScanInput) => apiPost<ScanResult>("scanAttendance", data);
 
 /** Admin: phones currently registered, one per employee. */
-export const getEmployeeDevices = () =>
-  apiGet<EmployeeDevice[]>("employeeDevices");
+export const getEmployeeDevices = () => apiGet<EmployeeDevice[]>("employeeDevices");
 
 /** Admin: unbind an employee's phone so their next scan registers a new one. */
 export const resetEmployeeDevice = (employeeId: string) =>
@@ -46,5 +44,4 @@ export const resetEmployeeDevice = (employeeId: string) =>
 export const getAttendanceQr = () => apiGet<{ code: string }>("attendanceQr");
 
 /** Admin: issue a new code, retiring every printed poster. */
-export const rotateAttendanceQr = () =>
-  apiPost<{ code: string }>("rotateAttendanceQr", {});
+export const rotateAttendanceQr = () => apiPost<{ code: string }>("rotateAttendanceQr", {});

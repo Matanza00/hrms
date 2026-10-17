@@ -594,9 +594,9 @@ function AttendanceOverview() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete attendance record?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This permanently removes the{" "}
-                          {formatDate(r.attendanceDate || r.checkIn)} record for{" "}
-                          {r.employeeName || getEmployeeName(r.employeeId)}. This cannot be undone.
+                          This permanently removes the {formatDate(r.attendanceDate || r.checkIn)}{" "}
+                          record for {r.employeeName || getEmployeeName(r.employeeId)}. This cannot
+                          be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

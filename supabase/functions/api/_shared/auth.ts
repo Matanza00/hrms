@@ -27,10 +27,7 @@ export type Caller = {
  * or an explicit body token (login/me/changePassword send it in the body).
  * Returns null when there is no valid session.
  */
-export async function resolveCaller(
-  req: Request,
-  bodyToken?: string,
-): Promise<Caller | null> {
+export async function resolveCaller(req: Request, bodyToken?: string): Promise<Caller | null> {
   const authHeader = req.headers.get("Authorization") ?? "";
   const headerToken = authHeader.toLowerCase().startsWith("bearer ")
     ? authHeader.slice(7).trim()

@@ -54,9 +54,7 @@ export function EmployeeActivity({
   kind: "attendance" | "leaves" | "payroll";
   employeeId: string;
 }) {
-  const query = useQuery<
-    AttendanceRecord[] | LeaveRequest[] | PayrollRecord[]
-  >({
+  const query = useQuery<AttendanceRecord[] | LeaveRequest[] | PayrollRecord[]>({
     queryKey: [kind],
     queryFn: () =>
       kind === "attendance"
@@ -69,7 +67,10 @@ export function EmployeeActivity({
   if (query.isLoading) return <div className={box}>Loading {kind}…</div>;
   if (query.error) {
     return (
-      <div role="alert" className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+      <div
+        role="alert"
+        className="rounded-2xl border border-destructive/25 bg-destructive/10 p-6 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]"
+      >
         {query.error instanceof Error ? query.error.message : "Something went wrong"}
       </div>
     );
@@ -92,7 +93,11 @@ export function EmployeeActivity({
           { key: "date", header: "Date", render: (r) => formatDate(r.attendanceDate || r.checkIn) },
           { key: "in", header: "Check In", render: (r) => formatTime(r.checkIn) },
           { key: "out", header: "Check Out", render: (r) => formatTime(r.checkOut) },
-          { key: "status", header: "Status", render: (r) => <StatusBadge status={r.attendanceStatus} /> },
+          {
+            key: "status",
+            header: "Status",
+            render: (r) => <StatusBadge status={r.attendanceStatus} />,
+          },
           {
             key: "late",
             header: "Late",

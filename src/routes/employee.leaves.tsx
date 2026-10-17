@@ -123,7 +123,10 @@ function EmployeeLeaves() {
         bodyClassName=""
       >
         {mutation.error && (
-          <div role="alert" className="mb-4 flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint px-3 py-2.5 text-[13px] text-danger-ink">
+          <div
+            role="alert"
+            className="mb-4 flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint px-3 py-2.5 text-[13px] text-danger-ink"
+          >
             <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
             {mutation.error instanceof Error ? mutation.error.message : "Could not submit leave."}
           </div>

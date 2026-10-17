@@ -320,8 +320,8 @@ function AttendanceQr() {
               Most connections are handed a new address whenever the router reconnects, and only the
               last number changes. Registering the block{" "}
               <span className="font-mono font-medium text-foreground">{myBlock}</span> instead keeps
-              working through those changes, at the cost of also admitting anyone else your
-              provider puts in the same block.
+              working through those changes, at the cost of also admitting anyone else your provider
+              puts in the same block.
             </>
           )}
         </div>

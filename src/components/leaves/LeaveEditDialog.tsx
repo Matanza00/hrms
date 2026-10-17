@@ -150,7 +150,10 @@ export function LeaveEditDialog({ open, onOpenChange, leave, employees }: Props)
 
         <div className="space-y-4">
           {error && (
-            <div role="alert" className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink">
+            <div
+              role="alert"
+              className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink"
+            >
               {error}
             </div>
           )}

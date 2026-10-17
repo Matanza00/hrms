@@ -25,14 +25,155 @@ export interface Employee {
 }
 
 export const employees: Employee[] = [
-  { id: "1", code: "NEX-001", name: "Ayesha Khan", email: "ayesha@LDS.co", phone: "+92 300 1234567", cnic: "35202-1234567-1", dob: "1994-03-12", joiningDate: "2022-01-15", permanentDate: "2022-07-15", department: "Engineering", designation: "Senior Frontend Engineer", status: "active", basicSalary: 220000, fuelAllowance: 15000, opdAllowance: 5000, address: "DHA Phase 5, Lahore", emergencyContact: "+92 301 9876543" },
-  { id: "2", code: "NEX-002", name: "Bilal Ahmed", email: "bilal@LDS.co", phone: "+92 321 2345678", cnic: "35202-2345678-2", dob: "1990-08-22", joiningDate: "2021-06-01", permanentDate: "2021-12-01", department: "Engineering", designation: "Tech Lead", status: "active", basicSalary: 320000, fuelAllowance: 20000, opdAllowance: 7000, address: "Bahria Town, Lahore", emergencyContact: "+92 302 1112233" },
-  { id: "3", code: "NEX-003", name: "Hira Saleem", email: "hira@LDS.co", phone: "+92 333 3456789", cnic: "35202-3456789-3", dob: "1996-11-05", joiningDate: "2023-02-10", department: "Design", designation: "Product Designer", status: "active", basicSalary: 180000, fuelAllowance: 12000, opdAllowance: 5000, address: "Gulberg, Lahore", emergencyContact: "+92 303 4445566" },
-  { id: "4", code: "NEX-004", name: "Usman Tariq", email: "usman@LDS.co", phone: "+92 345 4567890", cnic: "35202-4567890-4", dob: "1988-05-19", joiningDate: "2020-03-20", permanentDate: "2020-09-20", department: "Accounts", designation: "Finance Manager", status: "active", basicSalary: 280000, fuelAllowance: 18000, opdAllowance: 6000, address: "Model Town, Lahore", emergencyContact: "+92 304 7778899" },
-  { id: "5", code: "NEX-005", name: "Sana Mirza", email: "sana@LDS.co", phone: "+92 312 5678901", cnic: "35202-5678901-5", dob: "1997-01-30", joiningDate: "2023-08-01", department: "HR", designation: "HR Executive", status: "probation", basicSalary: 120000, fuelAllowance: 8000, opdAllowance: 4000, address: "Johar Town, Lahore", emergencyContact: "+92 305 1231231" },
-  { id: "6", code: "NEX-006", name: "Imran Yousaf", email: "imran@LDS.co", phone: "+92 322 6789012", cnic: "35202-6789012-6", dob: "1992-09-14", joiningDate: "2022-04-05", permanentDate: "2022-10-05", department: "Engineering", designation: "Backend Engineer", status: "on_leave", basicSalary: 240000, fuelAllowance: 15000, opdAllowance: 5000, address: "Wapda Town, Lahore", emergencyContact: "+92 306 4564564" },
-  { id: "7", code: "NEX-007", name: "Mahnoor Sheikh", email: "mahnoor@LDS.co", phone: "+92 334 7890123", cnic: "35202-7890123-7", dob: "1995-07-08", joiningDate: "2024-01-15", department: "Marketing", designation: "Marketing Lead", status: "active", basicSalary: 200000, fuelAllowance: 14000, opdAllowance: 5000, address: "DHA Phase 6, Lahore", emergencyContact: "+92 307 7897897" },
-  { id: "8", code: "NEX-008", name: "Zain Abbas", email: "zain@LDS.co", phone: "+92 346 8901234", cnic: "35202-8901234-8", dob: "1993-12-25", joiningDate: "2021-11-10", permanentDate: "2022-05-10", department: "Operations", designation: "Operations Manager", status: "active", basicSalary: 260000, fuelAllowance: 16000, opdAllowance: 6000, address: "Cantt, Lahore", emergencyContact: "+92 308 1471471" },
+  {
+    id: "1",
+    code: "NEX-001",
+    name: "Ayesha Khan",
+    email: "ayesha@LDS.co",
+    phone: "+92 300 1234567",
+    cnic: "35202-1234567-1",
+    dob: "1994-03-12",
+    joiningDate: "2022-01-15",
+    permanentDate: "2022-07-15",
+    department: "Engineering",
+    designation: "Senior Frontend Engineer",
+    status: "active",
+    basicSalary: 220000,
+    fuelAllowance: 15000,
+    opdAllowance: 5000,
+    address: "DHA Phase 5, Lahore",
+    emergencyContact: "+92 301 9876543",
+  },
+  {
+    id: "2",
+    code: "NEX-002",
+    name: "Bilal Ahmed",
+    email: "bilal@LDS.co",
+    phone: "+92 321 2345678",
+    cnic: "35202-2345678-2",
+    dob: "1990-08-22",
+    joiningDate: "2021-06-01",
+    permanentDate: "2021-12-01",
+    department: "Engineering",
+    designation: "Tech Lead",
+    status: "active",
+    basicSalary: 320000,
+    fuelAllowance: 20000,
+    opdAllowance: 7000,
+    address: "Bahria Town, Lahore",
+    emergencyContact: "+92 302 1112233",
+  },
+  {
+    id: "3",
+    code: "NEX-003",
+    name: "Hira Saleem",
+    email: "hira@LDS.co",
+    phone: "+92 333 3456789",
+    cnic: "35202-3456789-3",
+    dob: "1996-11-05",
+    joiningDate: "2023-02-10",
+    department: "Design",
+    designation: "Product Designer",
+    status: "active",
+    basicSalary: 180000,
+    fuelAllowance: 12000,
+    opdAllowance: 5000,
+    address: "Gulberg, Lahore",
+    emergencyContact: "+92 303 4445566",
+  },
+  {
+    id: "4",
+    code: "NEX-004",
+    name: "Usman Tariq",
+    email: "usman@LDS.co",
+    phone: "+92 345 4567890",
+    cnic: "35202-4567890-4",
+    dob: "1988-05-19",
+    joiningDate: "2020-03-20",
+    permanentDate: "2020-09-20",
+    department: "Accounts",
+    designation: "Finance Manager",
+    status: "active",
+    basicSalary: 280000,
+    fuelAllowance: 18000,
+    opdAllowance: 6000,
+    address: "Model Town, Lahore",
+    emergencyContact: "+92 304 7778899",
+  },
+  {
+    id: "5",
+    code: "NEX-005",
+    name: "Sana Mirza",
+    email: "sana@LDS.co",
+    phone: "+92 312 5678901",
+    cnic: "35202-5678901-5",
+    dob: "1997-01-30",
+    joiningDate: "2023-08-01",
+    department: "HR",
+    designation: "HR Executive",
+    status: "probation",
+    basicSalary: 120000,
+    fuelAllowance: 8000,
+    opdAllowance: 4000,
+    address: "Johar Town, Lahore",
+    emergencyContact: "+92 305 1231231",
+  },
+  {
+    id: "6",
+    code: "NEX-006",
+    name: "Imran Yousaf",
+    email: "imran@LDS.co",
+    phone: "+92 322 6789012",
+    cnic: "35202-6789012-6",
+    dob: "1992-09-14",
+    joiningDate: "2022-04-05",
+    permanentDate: "2022-10-05",
+    department: "Engineering",
+    designation: "Backend Engineer",
+    status: "on_leave",
+    basicSalary: 240000,
+    fuelAllowance: 15000,
+    opdAllowance: 5000,
+    address: "Wapda Town, Lahore",
+    emergencyContact: "+92 306 4564564",
+  },
+  {
+    id: "7",
+    code: "NEX-007",
+    name: "Mahnoor Sheikh",
+    email: "mahnoor@LDS.co",
+    phone: "+92 334 7890123",
+    cnic: "35202-7890123-7",
+    dob: "1995-07-08",
+    joiningDate: "2024-01-15",
+    department: "Marketing",
+    designation: "Marketing Lead",
+    status: "active",
+    basicSalary: 200000,
+    fuelAllowance: 14000,
+    opdAllowance: 5000,
+    address: "DHA Phase 6, Lahore",
+    emergencyContact: "+92 307 7897897",
+  },
+  {
+    id: "8",
+    code: "NEX-008",
+    name: "Zain Abbas",
+    email: "zain@LDS.co",
+    phone: "+92 346 8901234",
+    cnic: "35202-8901234-8",
+    dob: "1993-12-25",
+    joiningDate: "2021-11-10",
+    permanentDate: "2022-05-10",
+    department: "Operations",
+    designation: "Operations Manager",
+    status: "active",
+    basicSalary: 260000,
+    fuelAllowance: 16000,
+    opdAllowance: 6000,
+    address: "Cantt, Lahore",
+    emergencyContact: "+92 308 1471471",
+  },
 ];
 
 export type AttendanceStatus = "present" | "absent" | "late" | "half_day" | "leave";
@@ -88,11 +229,66 @@ export interface LeaveRequest {
 }
 
 export const leaveRequests: LeaveRequest[] = [
-  { id: "lv-1", employeeId: "3", employeeName: "Hira Saleem", type: "annual", startDate: "2026-06-10", endDate: "2026-06-14", days: 5, reason: "Family vacation", status: "pending", appliedOn: "2026-06-01" },
-  { id: "lv-2", employeeId: "6", employeeName: "Imran Yousaf", type: "sick", startDate: "2026-06-02", endDate: "2026-06-04", days: 3, reason: "Flu and fever", status: "approved", appliedOn: "2026-06-01" },
-  { id: "lv-3", employeeId: "5", employeeName: "Sana Mirza", type: "casual", startDate: "2026-06-08", endDate: "2026-06-08", days: 1, reason: "Personal errand", status: "pending", appliedOn: "2026-06-02" },
-  { id: "lv-4", employeeId: "1", employeeName: "Ayesha Khan", type: "annual", startDate: "2026-05-20", endDate: "2026-05-22", days: 3, reason: "Wedding", status: "approved", appliedOn: "2026-05-10" },
-  { id: "lv-5", employeeId: "7", employeeName: "Mahnoor Sheikh", type: "unpaid", startDate: "2026-04-15", endDate: "2026-04-18", days: 4, reason: "Personal", status: "rejected", appliedOn: "2026-04-10" },
+  {
+    id: "lv-1",
+    employeeId: "3",
+    employeeName: "Hira Saleem",
+    type: "annual",
+    startDate: "2026-06-10",
+    endDate: "2026-06-14",
+    days: 5,
+    reason: "Family vacation",
+    status: "pending",
+    appliedOn: "2026-06-01",
+  },
+  {
+    id: "lv-2",
+    employeeId: "6",
+    employeeName: "Imran Yousaf",
+    type: "sick",
+    startDate: "2026-06-02",
+    endDate: "2026-06-04",
+    days: 3,
+    reason: "Flu and fever",
+    status: "approved",
+    appliedOn: "2026-06-01",
+  },
+  {
+    id: "lv-3",
+    employeeId: "5",
+    employeeName: "Sana Mirza",
+    type: "casual",
+    startDate: "2026-06-08",
+    endDate: "2026-06-08",
+    days: 1,
+    reason: "Personal errand",
+    status: "pending",
+    appliedOn: "2026-06-02",
+  },
+  {
+    id: "lv-4",
+    employeeId: "1",
+    employeeName: "Ayesha Khan",
+    type: "annual",
+    startDate: "2026-05-20",
+    endDate: "2026-05-22",
+    days: 3,
+    reason: "Wedding",
+    status: "approved",
+    appliedOn: "2026-05-10",
+  },
+  {
+    id: "lv-5",
+    employeeId: "7",
+    employeeName: "Mahnoor Sheikh",
+    type: "unpaid",
+    startDate: "2026-04-15",
+    endDate: "2026-04-18",
+    days: 4,
+    reason: "Personal",
+    status: "rejected",
+    appliedOn: "2026-04-10",
+  },
 ];
 
 export interface PayrollRecord {
@@ -117,7 +313,12 @@ export const payrollRecords: PayrollRecord[] = employees.map((e) => ({
   allowances: e.fuelAllowance + e.opdAllowance,
   bonuses: Math.round(e.basicSalary * 0.05),
   deductions: Math.round(e.basicSalary * 0.08),
-  netSalary: e.basicSalary + e.fuelAllowance + e.opdAllowance + Math.round(e.basicSalary * 0.05) - Math.round(e.basicSalary * 0.08),
+  netSalary:
+    e.basicSalary +
+    e.fuelAllowance +
+    e.opdAllowance +
+    Math.round(e.basicSalary * 0.05) -
+    Math.round(e.basicSalary * 0.08),
   status: (Number(e.id) % 3 === 0 ? "pending" : "paid") as "paid" | "pending",
 }));
 
@@ -131,11 +332,46 @@ export interface Revenue {
 }
 
 export const revenues: Revenue[] = [
-  { id: "r1", date: "2026-06-01", source: "Project", client: "Acme Corp", amount: 1250000, status: "received" },
-  { id: "r2", date: "2026-05-28", source: "Retainer", client: "Globex", amount: 850000, status: "received" },
-  { id: "r3", date: "2026-05-20", source: "Project", client: "Initech", amount: 620000, status: "invoiced" },
-  { id: "r4", date: "2026-05-12", source: "Consulting", client: "Umbrella", amount: 410000, status: "received" },
-  { id: "r5", date: "2026-05-05", source: "Project", client: "Stark Inc", amount: 1800000, status: "received" },
+  {
+    id: "r1",
+    date: "2026-06-01",
+    source: "Project",
+    client: "Acme Corp",
+    amount: 1250000,
+    status: "received",
+  },
+  {
+    id: "r2",
+    date: "2026-05-28",
+    source: "Retainer",
+    client: "Globex",
+    amount: 850000,
+    status: "received",
+  },
+  {
+    id: "r3",
+    date: "2026-05-20",
+    source: "Project",
+    client: "Initech",
+    amount: 620000,
+    status: "invoiced",
+  },
+  {
+    id: "r4",
+    date: "2026-05-12",
+    source: "Consulting",
+    client: "Umbrella",
+    amount: 410000,
+    status: "received",
+  },
+  {
+    id: "r5",
+    date: "2026-05-05",
+    source: "Project",
+    client: "Stark Inc",
+    amount: 1800000,
+    status: "received",
+  },
 ];
 
 export interface Expense {
@@ -147,12 +383,36 @@ export interface Expense {
 }
 
 export const expenses: Expense[] = [
-  { id: "e1", date: "2026-06-01", category: "Salary", description: "June payroll", amount: 2400000 },
-  { id: "e2", date: "2026-05-30", category: "Utilities", description: "Office electricity & internet", amount: 145000 },
-  { id: "e3", date: "2026-05-25", category: "Tools", description: "Figma, GitHub, Linear", amount: 95000 },
+  {
+    id: "e1",
+    date: "2026-06-01",
+    category: "Salary",
+    description: "June payroll",
+    amount: 2400000,
+  },
+  {
+    id: "e2",
+    date: "2026-05-30",
+    category: "Utilities",
+    description: "Office electricity & internet",
+    amount: 145000,
+  },
+  {
+    id: "e3",
+    date: "2026-05-25",
+    category: "Tools",
+    description: "Figma, GitHub, Linear",
+    amount: 95000,
+  },
   { id: "e4", date: "2026-05-18", category: "Emergency", description: "AC repair", amount: 38000 },
   { id: "e5", date: "2026-05-10", category: "Misc", description: "Team lunch", amount: 52000 },
-  { id: "e6", date: "2026-05-02", category: "Reserve", description: "Reserve transfer", amount: 500000 },
+  {
+    id: "e6",
+    date: "2026-05-02",
+    category: "Reserve",
+    description: "Reserve transfer",
+    amount: 500000,
+  },
 ];
 
 export interface ReserveTxn {
@@ -165,10 +425,38 @@ export interface ReserveTxn {
 }
 
 export const reserveTransactions: ReserveTxn[] = [
-  { id: "rt1", date: "2026-06-01", type: "credit", description: "Monthly reserve transfer", amount: 500000, balance: 4800000 },
-  { id: "rt2", date: "2026-05-01", type: "credit", description: "Monthly reserve transfer", amount: 500000, balance: 4300000 },
-  { id: "rt3", date: "2026-04-15", type: "debit", description: "Emergency equipment", amount: 180000, balance: 3800000 },
-  { id: "rt4", date: "2026-04-01", type: "credit", description: "Monthly reserve transfer", amount: 500000, balance: 3980000 },
+  {
+    id: "rt1",
+    date: "2026-06-01",
+    type: "credit",
+    description: "Monthly reserve transfer",
+    amount: 500000,
+    balance: 4800000,
+  },
+  {
+    id: "rt2",
+    date: "2026-05-01",
+    type: "credit",
+    description: "Monthly reserve transfer",
+    amount: 500000,
+    balance: 4300000,
+  },
+  {
+    id: "rt3",
+    date: "2026-04-15",
+    type: "debit",
+    description: "Emergency equipment",
+    amount: 180000,
+    balance: 3800000,
+  },
+  {
+    id: "rt4",
+    date: "2026-04-01",
+    type: "credit",
+    description: "Monthly reserve transfer",
+    amount: 500000,
+    balance: 3980000,
+  },
 ];
 
 export interface Holiday {
@@ -186,19 +474,19 @@ export const holidays: Holiday[] = [
 ];
 
 export const attendanceTrend = Array.from({ length: 12 }).map((_, i) => ({
-  month: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][i],
+  month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][i],
   present: 85 + Math.round(Math.random() * 12),
   absent: 5 + Math.round(Math.random() * 6),
   late: 3 + Math.round(Math.random() * 5),
 }));
 
 export const payrollTrend = Array.from({ length: 6 }).map((_, i) => ({
-  month: ["Jan","Feb","Mar","Apr","May","Jun"][i],
+  month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"][i],
   payroll: 2100000 + i * 80000 + Math.round(Math.random() * 100000),
 }));
 
 export const revenueExpenseTrend = Array.from({ length: 6 }).map((_, i) => ({
-  month: ["Jan","Feb","Mar","Apr","May","Jun"][i],
+  month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"][i],
   revenue: 3500000 + i * 200000 + Math.round(Math.random() * 400000),
   expense: 2800000 + i * 100000 + Math.round(Math.random() * 200000),
 }));
@@ -212,7 +500,11 @@ export const profitDistribution = [
 ];
 
 export function formatPKR(n: number) {
-  return new Intl.NumberFormat("en-PK", { style: "currency", currency: "PKR", maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("en-PK", {
+    style: "currency",
+    currency: "PKR",
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
 export function formatPKRCompact(n: number) {

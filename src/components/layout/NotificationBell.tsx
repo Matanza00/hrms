@@ -88,9 +88,7 @@ export function NotificationBell() {
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notifications</span>
           {count > 0 && (
-            <span className="text-xs font-normal text-muted-foreground">
-              {count} pending
-            </span>
+            <span className="text-xs font-normal text-muted-foreground">{count} pending</span>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

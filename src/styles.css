@@ -8,7 +8,8 @@
 
 @theme inline {
   --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Mono", Menlo, monospace;
+  --font-mono:
+    "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Mono", Menlo, monospace;
 
   /* Figma radii: 6 badge, 8 control, 10 workspace card, 12 card, 16 panel.
      rounded-2xl is the card radius the pages already use, so it maps to 12px. */
@@ -241,7 +242,10 @@
 
   /* Headings: no single word left stranded on the last line. Tracking comes
      from the type-scale utilities (see design.md), not from here. */
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     text-wrap: balance;
   }
   p {
@@ -278,7 +282,9 @@
     html {
       scroll-behavior: auto;
     }
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;

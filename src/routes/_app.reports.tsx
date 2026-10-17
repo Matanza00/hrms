@@ -19,20 +19,11 @@ import {
   ChartPie,
   type LucideIcon,
 } from "lucide-react";
-import {
-  openPrintableReport,
-  formatPKR,
-  formatReportDate,
-} from "@/lib/reportPdf";
+import { openPrintableReport, formatPKR, formatReportDate } from "@/lib/reportPdf";
 import { getAttendance } from "@/lib/api/attendance";
 import { getPayroll } from "@/lib/api/payroll";
 import { getLeaveRequests } from "@/lib/api/leaves";
-import {
-  getAccountsOverview,
-  getExpenses,
-  getReserveLedger,
-  getRevenue,
-} from "@/lib/api/accounts";
+import { getAccountsOverview, getExpenses, getReserveLedger, getRevenue } from "@/lib/api/accounts";
 import { getEmployees } from "@/lib/api/employees";
 
 // Soft icon tile backgrounds (tint + ink) per report tone.
@@ -275,9 +266,7 @@ function ReportsPage() {
       const { subtitle, columns, rows, numericCols } = await r.build();
       openPrintableReport({ title: r.title, subtitle, columns, rows, numericCols });
     } catch (err) {
-      setError(
-        `${r.title}: ${err instanceof Error ? err.message : "Failed to build report"}`,
-      );
+      setError(`${r.title}: ${err instanceof Error ? err.message : "Failed to build report"}`);
     } finally {
       setBusy(null);
     }

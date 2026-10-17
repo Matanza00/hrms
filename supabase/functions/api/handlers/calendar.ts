@@ -8,7 +8,9 @@ import { camelizeRow, camelizeRows } from "../_shared/case.ts";
 export async function getHolidays(ctx: Ctx) {
   requireCaller(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("holidays").select("*").order("holiday_date", { ascending: true });
+    .from("holidays")
+    .select("*")
+    .order("holiday_date", { ascending: true });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -36,7 +38,11 @@ export async function updateHoliday(ctx: Ctx) {
   if (f.holidayDate !== undefined) patch.holiday_date = str(f.holidayDate);
   if (f.holidayType !== undefined) patch.holiday_type = str(f.holidayType) || "Public";
   const { data, error } = await ctx.svc
-    .from("holidays").update(patch).eq("holiday_id", holidayId).select("*").maybeSingle();
+    .from("holidays")
+    .update(patch)
+    .eq("holiday_id", holidayId)
+    .select("*")
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Holiday not found", 404);
   return camelizeRow(data);
@@ -54,7 +60,9 @@ export async function deleteHoliday(ctx: Ctx) {
 export async function getSpecialWorkingDays(ctx: Ctx) {
   requireCaller(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("special_working_days").select("*").order("working_date", { ascending: true });
+    .from("special_working_days")
+    .select("*")
+    .order("working_date", { ascending: true });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -68,7 +76,11 @@ export async function createSpecialWorkingDay(ctx: Ctx) {
     assigned_employee_ids: str(ctx.data.assignedEmployeeIds) || null,
   };
   if (!row.title || !row.working_date) throw new ApiError("title and workingDate are required");
-  const { data, error } = await ctx.svc.from("special_working_days").insert(row).select("*").single();
+  const { data, error } = await ctx.svc
+    .from("special_working_days")
+    .insert(row)
+    .select("*")
+    .single();
   if (error) throw new ApiError(error.message, 500);
   return camelizeRow(data);
 }

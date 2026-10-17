@@ -34,19 +34,29 @@ export function describeDevice(): string {
   const ua = typeof navigator === "undefined" ? "" : navigator.userAgent;
   if (!ua) return "Unknown device";
 
-  const os =
-    /Android/i.test(ua) ? "Android" :
-    /iPhone|iPad|iPod/i.test(ua) ? "iPhone/iPad" :
-    /Windows/i.test(ua) ? "Windows" :
-    /Mac OS X/i.test(ua) ? "Mac" :
-    /Linux/i.test(ua) ? "Linux" : "Unknown";
+  const os = /Android/i.test(ua)
+    ? "Android"
+    : /iPhone|iPad|iPod/i.test(ua)
+      ? "iPhone/iPad"
+      : /Windows/i.test(ua)
+        ? "Windows"
+        : /Mac OS X/i.test(ua)
+          ? "Mac"
+          : /Linux/i.test(ua)
+            ? "Linux"
+            : "Unknown";
 
-  const browser =
-    /Edg\//i.test(ua) ? "Edge" :
-    /OPR\//i.test(ua) ? "Opera" :
-    /Chrome\//i.test(ua) ? "Chrome" :
-    /Firefox\//i.test(ua) ? "Firefox" :
-    /Safari\//i.test(ua) ? "Safari" : "Browser";
+  const browser = /Edg\//i.test(ua)
+    ? "Edge"
+    : /OPR\//i.test(ua)
+      ? "Opera"
+      : /Chrome\//i.test(ua)
+        ? "Chrome"
+        : /Firefox\//i.test(ua)
+          ? "Firefox"
+          : /Safari\//i.test(ua)
+            ? "Safari"
+            : "Browser";
 
   return `${os} · ${browser}`;
 }

@@ -8,12 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChartColumn, CheckCircle2, Pencil, Plus, Trash2, TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,9 +77,9 @@ function toDateInput(value?: string) {
 }
 
 function uniqueSorted(values: (string | undefined)[]) {
-  return Array.from(
-    new Set(values.map((v) => (v || "").trim()).filter(Boolean)),
-  ).sort((a, b) => a.localeCompare(b));
+  return Array.from(new Set(values.map((v) => (v || "").trim()).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b),
+  );
 }
 
 function formatDate(value?: string) {
@@ -173,10 +168,7 @@ function RevenuePage() {
 
   const saving = createMutation.isPending || updateMutation.isPending;
 
-  const clientOptions = useMemo(
-    () => uniqueSorted(revenues.map((r) => r.client)),
-    [revenues],
-  );
+  const clientOptions = useMemo(() => uniqueSorted(revenues.map((r) => r.client)), [revenues]);
 
   // Sources previously used for the selected client (payments for the same
   // project often arrive as milestones under the same source). Falls back to
@@ -278,7 +270,10 @@ function RevenuePage() {
 
   if (loadError) {
     return (
-      <div role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
+      <div
+        role="alert"
+        className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink"
+      >
         {String(loadError.message)}
       </div>
     );
@@ -530,8 +525,7 @@ function RevenuePage() {
                       <AlertDialogTitle>Delete revenue entry?</AlertDialogTitle>
                       <AlertDialogDescription>
                         This permanently removes the {formatPKR(r.amount)} entry
-                        {r.client ? ` from ${r.client}` : ""}. This cannot be
-                        undone.
+                        {r.client ? ` from ${r.client}` : ""}. This cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

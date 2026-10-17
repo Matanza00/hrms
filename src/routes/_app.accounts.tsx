@@ -127,13 +127,7 @@ function AccountsLayout() {
   );
 }
 
-type RangeKey =
-  | "all"
-  | "thisMonth"
-  | "lastMonth"
-  | "last3"
-  | "last6"
-  | "custom";
+type RangeKey = "all" | "thisMonth" | "lastMonth" | "last3" | "last6" | "custom";
 
 const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
   { key: "all", label: "All time" },
@@ -236,7 +230,10 @@ function Overview() {
 
   if (error) {
     return (
-      <div role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
+      <div
+        role="alert"
+        className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink"
+      >
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );
@@ -255,8 +252,7 @@ function Overview() {
   const isAllTime = rangeKey === "all";
 
   // Reserve share comes from the configured distribution (defaults to 30%).
-  const reservePct =
-    distribution.find((d) => /reserve/i.test(d.name))?.percent ?? 30;
+  const reservePct = distribution.find((d) => /reserve/i.test(d.name))?.percent ?? 30;
 
   const cardValues = isAllTime
     ? {
@@ -272,8 +268,7 @@ function Overview() {
         reserve: ranged.profit > 0 ? (ranged.profit * reservePct) / 100 : 0,
       };
 
-  const rangeLabel =
-    RANGE_OPTIONS.find((o) => o.key === rangeKey)?.label ?? "All time";
+  const rangeLabel = RANGE_OPTIONS.find((o) => o.key === rangeKey)?.label ?? "All time";
   const cardLabelSuffix = isAllTime
     ? "All time"
     : bounds
@@ -294,19 +289,14 @@ function Overview() {
             {rangeLabel} summary
           </h3>
           <p className="text-xs text-muted-foreground">
-            {isAllTime
-              ? "Showing all-time account totals"
-              : `Showing ${cardLabelSuffix}`}
+            {isAllTime ? "Showing all-time account totals" : `Showing ${cardLabelSuffix}`}
           </p>
         </div>
 
         <div className="flex w-full flex-wrap items-end gap-2 sm:w-auto">
           <div className="w-full space-y-1.5 sm:w-[200px]">
             <Label htmlFor="accounts-period">Period</Label>
-            <Select
-              value={rangeKey}
-              onValueChange={(v) => setRangeKey(v as RangeKey)}
-            >
+            <Select value={rangeKey} onValueChange={(v) => setRangeKey(v as RangeKey)}>
               <SelectTrigger id="accounts-period">
                 <SelectValue />
               </SelectTrigger>

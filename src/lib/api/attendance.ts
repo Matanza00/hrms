@@ -60,8 +60,7 @@ export const approveAttendanceCorrection = (correctionId: string) =>
     approvedBy: "Admin",
   });
 
-export const getAttendance = () =>
-  apiGet<AttendanceRecord[]>("attendance");
+export const getAttendance = () => apiGet<AttendanceRecord[]>("attendance");
 
 export const checkIn = (data: {
   employeeCode: string;
@@ -70,11 +69,9 @@ export const checkIn = (data: {
   ipAddress: string;
 }) => apiPost("checkIn", data);
 
-export const breakStart = (employeeCode: string) =>
-  apiPost("breakStart", { employeeCode });
+export const breakStart = (employeeCode: string) => apiPost("breakStart", { employeeCode });
 
-export const breakEnd = (employeeCode: string) =>
-  apiPost("breakEnd", { employeeCode });
+export const breakEnd = (employeeCode: string) => apiPost("breakEnd", { employeeCode });
 
 export const checkOut = (data: {
   employeeCode: string;
@@ -96,10 +93,8 @@ export type AdminAttendanceInput = {
 };
 
 /** Admin-only: directly correct an existing attendance record's times. */
-export const adminUpdateAttendance = (
-  attendanceId: string,
-  data: AdminAttendanceInput
-) => apiPost<AttendanceRecord>("adminUpdateAttendance", { attendanceId, data });
+export const adminUpdateAttendance = (attendanceId: string, data: AdminAttendanceInput) =>
+  apiPost<AttendanceRecord>("adminUpdateAttendance", { attendanceId, data });
 
 /** Admin-only: create an attendance record for a past day that has none. */
 export const adminCreateAttendance = (data: AdminAttendanceInput) =>

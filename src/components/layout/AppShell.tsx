@@ -56,8 +56,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [defaultOpen, setDefaultOpen] = useState<boolean | null>(null);
   // The command palette owns the global ⌘K / Ctrl+K shortcut and searches
   // pages as well as employees.
-  const { open: paletteOpen, setOpen: setPaletteOpen, toggle: togglePalette } =
-    useCommandPalette();
+  const { open: paletteOpen, setOpen: setPaletteOpen, toggle: togglePalette } = useCommandPalette();
 
   const { user, employee, logout } = useAuth();
   const navigate = useNavigate();

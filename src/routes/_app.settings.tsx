@@ -237,7 +237,10 @@ function SettingsPage() {
     return (
       <div>
         <PageHeader icon={Settings} title="Settings" description={DESCRIPTION} />
-        <div role="alert" className="flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint px-4 py-3 text-[13px] text-danger-ink">
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint px-4 py-3 text-[13px] text-danger-ink"
+        >
           <AlertTriangle className="mt-0.5 size-4 shrink-0" />
           {error instanceof Error ? error.message : "Something went wrong"}
         </div>
@@ -438,7 +441,10 @@ function SettingsPage() {
 
       <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
         {message && (
-          <p role="status" className="mr-auto flex items-center gap-1.5 text-[13px] text-success-ink">
+          <p
+            role="status"
+            className="mr-auto flex items-center gap-1.5 text-[13px] text-success-ink"
+          >
             <CircleCheck className="size-3.5" />
             {message}
           </p>

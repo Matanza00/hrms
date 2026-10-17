@@ -109,7 +109,7 @@ export function sameNetwork(allowed: string, seen: string): boolean {
   const block = parseIpv4Block(allowed);
   if (block) {
     const addr = ipv4ToInt(seen);
-    return addr !== null && ((addr & block.mask) >>> 0) === block.network;
+    return addr !== null && (addr & block.mask) >>> 0 === block.network;
   }
   if (allowed.includes("/")) return false; // a malformed or too-wide block matches nothing
 

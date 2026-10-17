@@ -15,12 +15,7 @@ import {
 import { ChartPie, Pencil, Plus, Receipt, Repeat, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -242,7 +237,10 @@ function ExpensesPage() {
 
   if (loadError) {
     return (
-      <div role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink">
+      <div
+        role="alert"
+        className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink"
+      >
         {String(loadError.message)}
       </div>
     );
@@ -454,8 +452,8 @@ function ExpensesPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete expense?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This permanently removes the {formatPKR(r.amount)}{" "}
-                        {r.category} expense. This cannot be undone.
+                        This permanently removes the {formatPKR(r.amount)} {r.category} expense.
+                        This cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

@@ -75,14 +75,15 @@ export function RunPayrollDialog() {
       qc.invalidateQueries({ queryKey: ["accountsOverview"] });
       setResult(
         `Generated ${ok} payslip${ok === 1 ? "" : "s"}` +
-          (failed ? ` · ${failed} skipped (already generated — tick recalculate to overwrite)` : ""),
+          (failed
+            ? ` · ${failed} skipped (already generated — tick recalculate to overwrite)`
+            : ""),
       );
       if (!failed) {
         setTimeout(() => setOpen(false), 900);
       }
     },
-    onError: (err) =>
-      setError(err instanceof Error ? err.message : "Failed to run payroll."),
+    onError: (err) => setError(err instanceof Error ? err.message : "Failed to run payroll."),
   });
 
   function run() {
@@ -113,13 +114,15 @@ export function RunPayrollDialog() {
         <DialogHeader>
           <DialogTitle>Run payroll</DialogTitle>
           <DialogDescription>
-            Generate payslips from attendance, leaves and salary for the selected
-            month.
+            Generate payslips from attendance, leaves and salary for the selected month.
           </DialogDescription>
         </DialogHeader>
 
         {error && (
-          <div role="alert" className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+          <div
+            role="alert"
+            className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]"
+          >
             {error}
           </div>
         )}
@@ -149,29 +152,18 @@ export function RunPayrollDialog() {
 
           <div className="space-y-1.5">
             <Label className="text-xs">Month</Label>
-            <Input
-              type="month"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            />
+            <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
           </div>
 
           {employeeId !== ALL && (
             <div className="space-y-1.5">
               <Label className="text-xs">Bonus (PKR, optional)</Label>
-              <Input
-                type="number"
-                value={bonus}
-                onChange={(e) => setBonus(e.target.value)}
-              />
+              <Input type="number" value={bonus} onChange={(e) => setBonus(e.target.value)} />
             </div>
           )}
 
           <label className="flex items-center gap-2 sm:col-span-2 text-sm">
-            <Checkbox
-              checked={recalculate}
-              onCheckedChange={(v) => setRecalculate(v === true)}
-            />
+            <Checkbox checked={recalculate} onCheckedChange={(v) => setRecalculate(v === true)} />
             Recalculate if a payslip already exists for this month
           </label>
         </div>

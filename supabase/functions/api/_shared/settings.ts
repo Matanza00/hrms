@@ -19,5 +19,9 @@ export function num(v: unknown, fallback = 0): number {
 
 export function bool(v: unknown): boolean {
   if (v === true) return true;
-  return ["true", "1", "yes", "on"].includes(String(v ?? "").trim().toLowerCase());
+  return ["true", "1", "yes", "on"].includes(
+    String(v ?? "")
+      .trim()
+      .toLowerCase(),
+  );
 }

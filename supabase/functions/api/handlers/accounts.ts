@@ -10,7 +10,9 @@ import { karachiParts } from "../_shared/time.ts";
 export async function getRevenue(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("revenue").select("*").order("revenue_date", { ascending: false });
+    .from("revenue")
+    .select("*")
+    .order("revenue_date", { ascending: false });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -47,7 +49,11 @@ export async function updateRevenue(ctx: Ctx) {
   if (f.description !== undefined) patch.description = str(f.description) || null;
   if (f.status !== undefined) patch.status = str(f.status) || null;
   const { data, error } = await ctx.svc
-    .from("revenue").update(patch).eq("revenue_id", revenueId).select("*").maybeSingle();
+    .from("revenue")
+    .update(patch)
+    .eq("revenue_id", revenueId)
+    .select("*")
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Revenue not found", 404);
   return camelizeRow(data);
@@ -59,7 +65,11 @@ export async function setRevenueStatus(ctx: Ctx) {
   const status = str(ctx.data.status);
   if (!revenueId || !status) throw new ApiError("revenueId and status are required");
   const { data, error } = await ctx.svc
-    .from("revenue").update({ status }).eq("revenue_id", revenueId).select("*").maybeSingle();
+    .from("revenue")
+    .update({ status })
+    .eq("revenue_id", revenueId)
+    .select("*")
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Revenue not found", 404);
   return camelizeRow(data);
@@ -78,7 +88,9 @@ export async function getExpenses(ctx: Ctx) {
   requireAdmin(ctx.caller);
   await materializeRecurringExpenses(ctx.svc);
   const { data, error } = await ctx.svc
-    .from("expenses").select("*").order("expense_date", { ascending: false });
+    .from("expenses")
+    .select("*")
+    .order("expense_date", { ascending: false });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -92,7 +104,8 @@ export async function createExpense(ctx: Ctx) {
     description: str(ctx.data.description) || null,
     created_by: caller.username,
   };
-  if (!row.expense_date || !row.category) throw new ApiError("expenseDate and category are required");
+  if (!row.expense_date || !row.category)
+    throw new ApiError("expenseDate and category are required");
   const { data, error } = await ctx.svc.from("expenses").insert(row).select("*").single();
   if (error) throw new ApiError(error.message, 500);
   return camelizeRow(data);
@@ -109,7 +122,11 @@ export async function updateExpense(ctx: Ctx) {
   if (f.category !== undefined) patch.category = str(f.category);
   if (f.description !== undefined) patch.description = str(f.description) || null;
   const { data, error } = await ctx.svc
-    .from("expenses").update(patch).eq("expense_id", expenseId).select("*").maybeSingle();
+    .from("expenses")
+    .update(patch)
+    .eq("expense_id", expenseId)
+    .select("*")
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Expense not found", 404);
   return camelizeRow(data);
@@ -127,7 +144,9 @@ export async function deleteExpense(ctx: Ctx) {
 export async function getReserveLedger(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const { data, error } = await ctx.svc
-    .from("reserve_ledger").select("*").order("created_at", { ascending: false });
+    .from("reserve_ledger")
+    .select("*")
+    .order("created_at", { ascending: false });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -172,8 +191,7 @@ function monthRange(startYm: string, endYm: string, cap: number): string[] {
  */
 export async function materializeRecurringExpenses(svc: SupabaseClient) {
   try {
-    const { data: templates } = await svc
-      .from("recurring_expenses").select("*").eq("active", true);
+    const { data: templates } = await svc.from("recurring_expenses").select("*").eq("active", true);
     if (!templates || templates.length === 0) return;
 
     const currentYm = currentKarachiMonth();
@@ -210,7 +228,9 @@ export async function getRecurringExpenses(ctx: Ctx) {
   requireAdmin(ctx.caller);
   await materializeRecurringExpenses(ctx.svc);
   const { data, error } = await ctx.svc
-    .from("recurring_expenses").select("*").order("created_at", { ascending: false });
+    .from("recurring_expenses")
+    .select("*")
+    .order("created_at", { ascending: false });
   if (error) throw new ApiError(error.message, 500);
   return camelizeRows(data);
 }
@@ -227,8 +247,7 @@ export async function createRecurringExpense(ctx: Ctx) {
     created_by: caller.username,
   };
   if (!row.category) throw new ApiError("category is required");
-  const { data, error } = await ctx.svc
-    .from("recurring_expenses").insert(row).select("*").single();
+  const { data, error } = await ctx.svc.from("recurring_expenses").insert(row).select("*").single();
   if (error) throw new ApiError(error.message, 500);
   await materializeRecurringExpenses(ctx.svc);
   return camelizeRow(data);
@@ -244,10 +263,15 @@ export async function updateRecurringExpense(ctx: Ctx) {
   if (f.category !== undefined) patch.category = str(f.category);
   if (f.description !== undefined) patch.description = str(f.description) || null;
   if (f.dayOfMonth !== undefined) patch.day_of_month = clampDay(numOrNull(f.dayOfMonth) ?? 1);
-  if (f.startMonth !== undefined) patch.start_month = normalizeMonth(str(f.startMonth)) || currentKarachiMonth();
+  if (f.startMonth !== undefined)
+    patch.start_month = normalizeMonth(str(f.startMonth)) || currentKarachiMonth();
   if (f.active !== undefined) patch.active = bool(f.active);
   const { data, error } = await ctx.svc
-    .from("recurring_expenses").update(patch).eq("recurring_id", recurringId).select("*").maybeSingle();
+    .from("recurring_expenses")
+    .update(patch)
+    .eq("recurring_id", recurringId)
+    .select("*")
+    .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Recurring expense not found", 404);
   await materializeRecurringExpenses(ctx.svc);
@@ -260,7 +284,9 @@ export async function deleteRecurringExpense(ctx: Ctx) {
   if (!recurringId) throw new ApiError("recurringId is required");
   // Already-posted expenses keep their row (recurring_id is set null by the FK).
   const { error } = await ctx.svc
-    .from("recurring_expenses").delete().eq("recurring_id", recurringId);
+    .from("recurring_expenses")
+    .delete()
+    .eq("recurring_id", recurringId);
   if (error) throw new ApiError(error.message, 500);
   return { deleted: true, recurringId };
 }
@@ -274,8 +300,16 @@ export async function getAccountsOverview(ctx: Ctx) {
   const [revRes, expRes, reserveRes, distRes] = await Promise.all([
     svc.from("revenue").select("revenue_date, amount"),
     svc.from("expenses").select("expense_date, amount"),
-    svc.from("reserve_ledger").select("balance_after").order("created_at", { ascending: false }).limit(1).maybeSingle(),
-    svc.from("profit_distribution").select("name, percent").order("sort_order", { ascending: true }),
+    svc
+      .from("reserve_ledger")
+      .select("balance_after")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    svc
+      .from("profit_distribution")
+      .select("name, percent")
+      .order("sort_order", { ascending: true }),
   ]);
   if (revRes.error) throw new ApiError(revRes.error.message, 500);
   if (expRes.error) throw new ApiError(expRes.error.message, 500);
@@ -298,8 +332,14 @@ export async function getAccountsOverview(ctx: Ctx) {
     buckets.push({ key, month: label, revenue: 0, expense: 0 });
   }
   const bucketFor = (dateStr: string) => buckets.find((b) => String(dateStr).startsWith(b.key));
-  for (const r of revenue) { const b = bucketFor(str(r.revenue_date)); if (b) b.revenue += Number(r.amount) || 0; }
-  for (const e of expenses) { const b = bucketFor(str(e.expense_date)); if (b) b.expense += Number(e.amount) || 0; }
+  for (const r of revenue) {
+    const b = bucketFor(str(r.revenue_date));
+    if (b) b.revenue += Number(r.amount) || 0;
+  }
+  for (const e of expenses) {
+    const b = bucketFor(str(e.expense_date));
+    if (b) b.expense += Number(e.amount) || 0;
+  }
 
   const distribution = (distRes.data ?? []).map((d) => ({
     name: d.name as string,

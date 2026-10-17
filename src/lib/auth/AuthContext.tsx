@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import {
   login as apiLogin,
   fetchMe,
@@ -13,11 +7,7 @@ import {
   type AuthSession,
   type AuthUser,
 } from "@/lib/api/auth";
-import {
-  clearStoredSession,
-  getStoredSession,
-  setStoredSession,
-} from "./session";
+import { clearStoredSession, getStoredSession, setStoredSession } from "./session";
 
 type Status = "loading" | "authenticated" | "unauthenticated";
 
@@ -88,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const employeeCode =
     session?.employee?.employeeCode ??
-    (role === "Employee" ? session?.user.username ?? null : null);
+    (role === "Employee" ? (session?.user.username ?? null) : null);
 
   const value: AuthContextValue = {
     status,

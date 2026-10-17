@@ -11,12 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -196,20 +191,17 @@ export function RecurringExpensesManager() {
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : recurring.length === 0 ? (
         <p className="rounded-xl border border-dashed p-4 text-center text-xs text-muted-foreground">
-          No recurring expenses yet. Add one (e.g. rent, salaries, internet) and
-          it will post automatically each month.
+          No recurring expenses yet. Add one (e.g. rent, salaries, internet) and it will post
+          automatically each month.
         </p>
       ) : (
         <ul className="divide-y">
           {recurring.map((r) => (
             <li key={r.recurringId} className="flex items-center gap-3 py-3">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
-                  {r.description || r.category}
-                </p>
+                <p className="truncate text-sm font-medium">{r.description || r.category}</p>
                 <p className="text-xs text-muted-foreground">
-                  {formatPKR(r.amount)} · {r.category} · day {r.dayOfMonth} · from{" "}
-                  {r.startMonth}
+                  {formatPKR(r.amount)} · {r.category} · day {r.dayOfMonth} · from {r.startMonth}
                 </p>
               </div>
 
@@ -221,18 +213,17 @@ export function RecurringExpensesManager() {
                 aria-label="Active"
               />
 
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7"
-                onClick={() => openEdit(r)}
-              >
+              <Button size="sm" variant="outline" className="h-7" onClick={() => openEdit(r)}>
                 <Pencil className="h-3 w-3" />
               </Button>
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="sm" variant="outline" className="h-7 text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]"
+                  >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </AlertDialogTrigger>
@@ -240,15 +231,13 @@ export function RecurringExpensesManager() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete recurring expense?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This stops future auto-posting. Expenses already posted for
-                      past months are kept.
+                      This stops future auto-posting. Expenses already posted for past months are
+                      kept.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => deleteMutation.mutate(r.recurringId)}
-                    >
+                    <AlertDialogAction onClick={() => deleteMutation.mutate(r.recurringId)}>
                       Delete
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -268,7 +257,10 @@ export function RecurringExpensesManager() {
           </DialogHeader>
 
           {error && (
-            <div role="alert" className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+            <div
+              role="alert"
+              className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]"
+            >
               {error}
             </div>
           )}
@@ -278,9 +270,7 @@ export function RecurringExpensesManager() {
               <Label className="text-xs">Category</Label>
               <Select
                 value={form.category}
-                onValueChange={(category) =>
-                  setForm((p) => ({ ...p, category }))
-                }
+                onValueChange={(category) => setForm((p) => ({ ...p, category }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select" />
@@ -300,9 +290,7 @@ export function RecurringExpensesManager() {
               <Input
                 type="number"
                 value={form.amount}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, amount: e.target.value }))
-                }
+                onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
               />
             </div>
 
@@ -313,9 +301,7 @@ export function RecurringExpensesManager() {
                 min={1}
                 max={28}
                 value={form.dayOfMonth}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, dayOfMonth: e.target.value }))
-                }
+                onChange={(e) => setForm((p) => ({ ...p, dayOfMonth: e.target.value }))}
               />
             </div>
 
@@ -324,9 +310,7 @@ export function RecurringExpensesManager() {
               <Input
                 type="month"
                 value={form.startMonth}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, startMonth: e.target.value }))
-                }
+                onChange={(e) => setForm((p) => ({ ...p, startMonth: e.target.value }))}
               />
             </div>
 
@@ -334,9 +318,7 @@ export function RecurringExpensesManager() {
               <Label className="text-xs">Description</Label>
               <Input
                 value={form.description}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, description: e.target.value }))
-                }
+                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                 placeholder="e.g. Office rent"
               />
             </div>
@@ -344,9 +326,7 @@ export function RecurringExpensesManager() {
             <div className="flex items-center gap-2 sm:col-span-2">
               <Switch
                 checked={form.active}
-                onCheckedChange={(active) =>
-                  setForm((p) => ({ ...p, active }))
-                }
+                onCheckedChange={(active) => setForm((p) => ({ ...p, active }))}
                 id="recurring-active"
               />
               <Label htmlFor="recurring-active" className="text-xs">

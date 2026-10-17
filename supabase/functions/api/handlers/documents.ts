@@ -107,7 +107,10 @@ export async function deleteEmployeeDocument(ctx: Ctx) {
   if (!documentId) throw new ApiError("documentId is required");
 
   const { data: doc, error: findErr } = await ctx.svc
-    .from("documents").select("file_path").eq("document_id", documentId).maybeSingle();
+    .from("documents")
+    .select("file_path")
+    .eq("document_id", documentId)
+    .maybeSingle();
   if (findErr) throw new ApiError(findErr.message, 500);
   if (!doc) throw new ApiError("Document not found", 404);
 

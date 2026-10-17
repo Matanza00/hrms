@@ -128,7 +128,10 @@ function LeavesOverview() {
 
   if (error) {
     return (
-      <div role="alert" className="rounded-xl border border-danger-line bg-danger-tint p-5 text-[13px] text-danger-ink">
+      <div
+        role="alert"
+        className="rounded-xl border border-danger-line bg-danger-tint p-5 text-[13px] text-danger-ink"
+      >
         {error instanceof Error ? error.message : "Something went wrong"}
       </div>
     );

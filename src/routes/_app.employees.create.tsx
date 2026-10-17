@@ -81,13 +81,7 @@ type EmployeeForm = {
   address: string;
   department: string;
   designation: string;
-  status:
-    | "Permanent"
-    | "Contract"
-    | "Probation"
-    | "Intern"
-    | "Notice Period"
-    | "Resigned";
+  status: "Permanent" | "Contract" | "Probation" | "Intern" | "Notice Period" | "Resigned";
   joiningDate: string;
   permanentDate: string;
   basicSalary: string;
@@ -140,7 +134,7 @@ function EmployeeCreate() {
       // account is created under, so it cannot hold spaces.
       if (!/^[A-Za-z0-9._-]+$/.test(form.employeeCode.trim())) {
         setError(
-          "Employee code can only contain letters, numbers, dots, dashes and underscores — no spaces. It becomes their Login ID."
+          "Employee code can only contain letters, numbers, dots, dashes and underscores — no spaces. It becomes their Login ID.",
         );
         return;
       }
@@ -308,9 +302,7 @@ function EmployeeCreate() {
           <F label="Status">
             <Select
               value={form.status}
-              onValueChange={(value) =>
-                updateField("status", value as EmployeeForm["status"])
-              }
+              onValueChange={(value) => updateField("status", value as EmployeeForm["status"])}
             >
               <SelectTrigger>
                 <SelectValue />

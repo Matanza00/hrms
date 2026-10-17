@@ -29,13 +29,7 @@ import {
   type EmployeeDocument,
 } from "@/lib/api/documents";
 
-const CATEGORIES = [
-  "CNIC",
-  "Educational Certificates",
-  "Medical Documents",
-  "Contract",
-  "Other",
-];
+const CATEGORIES = ["CNIC", "Educational Certificates", "Medical Documents", "Contract", "Other"];
 
 const MAX_BYTES = 8 * 1024 * 1024;
 
@@ -69,8 +63,7 @@ export function EmployeeDocuments({ employeeId }: { employeeId: string }) {
     queryFn: () => getEmployeeDocuments(employeeId),
   });
 
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ["employeeDocuments", employeeId] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["employeeDocuments", employeeId] });
 
   const uploadMutation = useMutation({
     mutationFn: uploadEmployeeDocument,
@@ -80,8 +73,7 @@ export function EmployeeDocuments({ employeeId }: { employeeId: string }) {
       setTitle("");
       if (fileRef.current) fileRef.current.value = "";
     },
-    onError: (err) =>
-      setError(err instanceof Error ? err.message : "Upload failed."),
+    onError: (err) => setError(err instanceof Error ? err.message : "Upload failed."),
   });
 
   const deleteMutation = useMutation({
@@ -131,7 +123,10 @@ export function EmployeeDocuments({ employeeId }: { employeeId: string }) {
         </div>
 
         {error && (
-          <div role="alert" className="mb-3 rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+          <div
+            role="alert"
+            className="mb-3 rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-xs text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]"
+          >
             {error}
           </div>
         )}
@@ -218,7 +213,11 @@ export function EmployeeDocuments({ employeeId }: { employeeId: string }) {
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="h-7 text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[oklch(0.5_0.23_27)] dark:text-[oklch(0.78_0.23_27)]"
+                    >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </AlertDialogTrigger>
@@ -231,9 +230,7 @@ export function EmployeeDocuments({ employeeId }: { employeeId: string }) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => deleteMutation.mutate(d.documentId)}
-                      >
+                      <AlertDialogAction onClick={() => deleteMutation.mutate(d.documentId)}>
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

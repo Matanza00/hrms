@@ -20,8 +20,9 @@ export function openPrintableReport(opts: {
   }
 
   const esc = (v: unknown) =>
-    String(v ?? "").replace(/[&<>"]/g, (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string,
+    String(v ?? "").replace(
+      /[&<>"]/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string,
     );
 
   const numeric = new Set(numericCols);
@@ -41,10 +42,7 @@ export function openPrintableReport(opts: {
         .map(
           (r) =>
             `<tr>${r
-              .map(
-                (cell, i) =>
-                  `<td class="${numeric.has(i) ? "num" : ""}">${esc(cell)}</td>`,
-              )
+              .map((cell, i) => `<td class="${numeric.has(i) ? "num" : ""}">${esc(cell)}</td>`)
               .join("")}</tr>`,
         )
         .join("")

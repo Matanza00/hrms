@@ -3,7 +3,12 @@ import { str } from "../_shared/context.ts";
 import { requireAdmin, requireCaller } from "../_shared/auth.ts";
 import { ApiError } from "../_shared/errors.ts";
 import { withEmployeeName } from "../_shared/rows.ts";
-import { clientIp, MIN_IPV4_PREFIX, normalizeNetwork, parseIpv4Block } from "../_shared/presence.ts";
+import {
+  clientIp,
+  MIN_IPV4_PREFIX,
+  normalizeNetwork,
+  parseIpv4Block,
+} from "../_shared/presence.ts";
 
 /**
  * Accepts a plain IPv4 or IPv6 address, or an IPv4 block no wider than

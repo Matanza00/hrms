@@ -9,11 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 /**
@@ -71,30 +67,18 @@ export function ComboBox({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent
-        className="w-[var(--radix-popover-trigger-width)] p-0"
-        align="start"
-      >
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command>
-          <CommandInput
-            placeholder={searchPlaceholder}
-            value={query}
-            onValueChange={setQuery}
-          />
+          <CommandInput placeholder={searchPlaceholder} value={query} onValueChange={setQuery} />
           <CommandList>
-            {options.length === 0 && !trimmed && (
-              <CommandEmpty>{emptyText}</CommandEmpty>
-            )}
+            {options.length === 0 && !trimmed && <CommandEmpty>{emptyText}</CommandEmpty>}
 
             {options.length > 0 && (
               <CommandGroup>
                 {options.map((o) => (
                   <CommandItem key={o} value={o} onSelect={() => pick(o)}>
                     <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === o ? "opacity-100" : "opacity-0",
-                      )}
+                      className={cn("mr-2 h-4 w-4", value === o ? "opacity-100" : "opacity-0")}
                     />
                     {o}
                   </CommandItem>
@@ -104,10 +88,7 @@ export function ComboBox({
 
             {trimmed && !exists && (
               <CommandGroup>
-                <CommandItem
-                  value={`__add__:${trimmed}`}
-                  onSelect={() => pick(trimmed)}
-                >
+                <CommandItem value={`__add__:${trimmed}`} onSelect={() => pick(trimmed)}>
                   <Plus className="mr-2 h-4 w-4" />
                   {addLabel} “{trimmed}”
                 </CommandItem>
