@@ -35,6 +35,7 @@ const routes: Record<string, Handler> = {
   createEmployee: employees.createEmployee,
   updateEmployee: employees.updateEmployee,
   deactivateEmployee: employees.deactivateEmployee,
+  setEmployeePassword: employees.setEmployeePassword,
 
   // attendance
   attendance: attendance.getAttendance,

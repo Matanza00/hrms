@@ -170,3 +170,33 @@ export async function deactivateEmployee(ctx: Ctx) {
   await ctx.svc.from("users").update({ active: false }).eq("employee_id", employeeId);
   return camelizeRow(data);
 }
+
+/**
+ * Admin sets a new password on an employee's login (e.g. they forgot it).
+ * Only Employee logins: an admin changes their own password from My profile,
+ * where the current password is checked.
+ */
+export async function setEmployeePassword(ctx: Ctx) {
+  requireAdmin(ctx.caller);
+  const employeeId = str(ctx.data.employeeId);
+  const newPassword = str(ctx.data.newPassword);
+  if (!employeeId) throw new ApiError("employeeId is required");
+  if (newPassword.length < 6) throw new ApiError("New password must be at least 6 characters");
+
+  const { data: login, error } = await ctx.svc
+    .from("users")
+    .select("id, role")
+    .eq("employee_id", employeeId)
+    .maybeSingle();
+  if (error) throw new ApiError(error.message, 500);
+  if (!login) throw new ApiError("This employee has no login yet", 404);
+  if (login.role !== "Employee") {
+    throw new ApiError("This is an admin login. Change it from My profile instead.", 403);
+  }
+
+  const { error: updErr } = await ctx.svc.auth.admin.updateUserById(login.id, {
+    password: newPassword,
+  });
+  if (updErr) throw new ApiError(updErr.message, 500);
+  return { message: "Password updated" };
+}

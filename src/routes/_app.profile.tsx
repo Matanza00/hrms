@@ -8,9 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { ChartCard } from "@/components/shared/ChartCard";
-import { IconTile } from "@/components/shared/IconTile";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Bell, Lock, ShieldCheck, Upload, User as UserIcon } from "lucide-react";
+import { ChangePasswordCard } from "@/components/auth/ChangePasswordCard";
+import { Bell, Upload, User as UserIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_app/profile")({
   head: () => ({ meta: [{ title: "Profile — LDS HRMS" }] }),
@@ -123,23 +123,7 @@ function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="security" className="mt-5">
-          <ChartCard
-            title="Security"
-            icon={Lock}
-            tone="violet"
-            action={<StatusBadge status="coming_soon" label="Coming soon" />}
-            bodyClassName=""
-          >
-            <div className="flex items-start gap-3">
-              <IconTile icon={ShieldCheck} tone="neutral" size="md" className="border" />
-              <div>
-                <p className="text-sm font-medium">Password</p>
-                <p className="text-[13px] leading-[18px] text-muted-foreground">
-                  Changing your password from this page isn&apos;t wired up yet.
-                </p>
-              </div>
-            </div>
-          </ChartCard>
+          <ChangePasswordCard />
         </TabsContent>
 
         <TabsContent value="notifications" className="mt-5">

@@ -39,3 +39,7 @@ export function updateEmployee(employeeId: string, data: Partial<Employee>) {
 
 export const deactivateEmployee = (employeeId: string) =>
   apiPost("deactivateEmployee", { employeeId });
+
+/** Admin only: set a new password on this employee's login. */
+export const setEmployeePassword = (employeeId: string, newPassword: string) =>
+  apiPost<{ message: string }>("setEmployeePassword", { employeeId, newPassword });

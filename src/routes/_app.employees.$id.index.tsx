@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { useEmployee } from "@/hooks/useEmployees";
 import { EmployeeActivity } from "@/components/employees/EmployeeActivity";
 import { EmployeeDocuments } from "@/components/employees/EmployeeDocuments";
+import { ResetPasswordDialog } from "@/components/employees/ResetPasswordDialog";
 import { useQuery } from "@tanstack/react-query";
 import { useAttendance } from "@/hooks/useAttendance";
 import type { AttendanceRecord } from "@/lib/api/attendance";
@@ -284,12 +285,19 @@ function EmployeeProfile() {
         title={emp.name}
         description={`${emp.designation || "—"} · ${emp.department || "—"}`}
         actions={
-          <Button asChild>
-            <Link to="/employees/$id/edit" params={{ id: emp.employeeId }}>
-              <Pencil />
-              Edit
-            </Link>
-          </Button>
+          <>
+            <ResetPasswordDialog
+              employeeId={emp.employeeId}
+              employeeName={emp.name}
+              loginId={emp.employeeCode}
+            />
+            <Button asChild>
+              <Link to="/employees/$id/edit" params={{ id: emp.employeeId }}>
+                <Pencil />
+                Edit
+              </Link>
+            </Button>
+          </>
         }
       />
 
