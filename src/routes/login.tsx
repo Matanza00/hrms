@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { homePathForRole } from "@/lib/auth/RequireRole";
 import { Logo } from "@/components/shared/Logo";
+import { requestPasswordReset } from "@/lib/api/auth";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — LDS HRMS" }] }),
@@ -32,6 +33,14 @@ function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // "Forgot password?": employees can't reset it themselves, so this sends a
+  // request to the admin, who sets a new password and shares it.
+  const [forgot, setForgot] = useState(false);
+  const [resetId, setResetId] = useState("");
+  const [resetSending, setResetSending] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetSent, setResetSent] = useState("");
+
   // Already signed in — resume the scan, or go to the right panel.
   if (status === "authenticated") {
     return backToScan ? (
@@ -56,6 +65,102 @@ function LoginPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function handleResetRequest() {
+    if (resetSending || !resetId.trim()) return;
+    setResetError("");
+    setResetSending(true);
+    try {
+      const res = await requestPasswordReset(resetId.trim());
+      setResetSent(res.message);
+    } catch (e) {
+      setResetError(e instanceof Error ? e.message : "Could not send the request.");
+    } finally {
+      setResetSending(false);
+    }
+  }
+
+  if (forgot) {
+    return (
+      <div className="grid min-h-screen-safe place-items-center bg-canvas px-4 py-8">
+        <div className="w-full max-w-[380px]">
+          <div className="mb-6 flex flex-col items-center gap-5 text-center">
+            <Logo className="size-12 rounded-xl" />
+            <div>
+              <h1 className="text-xl font-semibold leading-7 tracking-[-0.4px]">
+                Forgot your password?
+              </h1>
+              <p className="text-[13px] leading-[18px] text-muted-foreground">
+                Only your admin can set a new password. Send them a request.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border bg-card p-6 shadow-xs">
+            {resetSent ? (
+              <div className="space-y-4">
+                <div
+                  role="status"
+                  className="rounded-lg border border-success-line bg-success-tint px-3 py-2 text-xs text-success-ink"
+                >
+                  {resetSent}
+                </div>
+                <Button className="h-11 w-full sm:h-9" onClick={() => setForgot(false)}>
+                  Back to sign in
+                </Button>
+              </div>
+            ) : (
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleResetRequest();
+                }}
+              >
+                <div className="space-y-1.5">
+                  <Label htmlFor="resetId">Login ID</Label>
+                  <Input
+                    id="resetId"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    value={resetId}
+                    onChange={(e) => setResetId(e.target.value)}
+                    placeholder="Your employee code, e.g. EMP001"
+                  />
+                </div>
+
+                {resetError && (
+                  <div
+                    role="alert"
+                    className="rounded-lg border border-danger-line bg-danger-tint px-3 py-2 text-xs text-danger-ink"
+                  >
+                    {resetError}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  className="h-11 w-full sm:h-9"
+                  disabled={resetSending || !resetId.trim()}
+                >
+                  {resetSending ? "Sending…" : "Send request to admin"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-11 w-full sm:h-9"
+                  onClick={() => setForgot(false)}
+                >
+                  Back to sign in
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -120,9 +225,20 @@ function LoginPage() {
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
               </div>
-              <p className="text-right text-xs font-medium text-text-secondary">
-                Forgot password? Ask your admin to reset it.
-              </p>
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResetId(loginId.trim());
+                    setResetError("");
+                    setResetSent("");
+                    setForgot(true);
+                  }}
+                  className="text-xs font-medium text-text-secondary underline-offset-2 hover:text-foreground hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
             </div>
 
             {error && (

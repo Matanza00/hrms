@@ -43,3 +43,19 @@ export const deactivateEmployee = (employeeId: string) =>
 /** Admin only: set a new password on this employee's login. */
 export const setEmployeePassword = (employeeId: string, newPassword: string) =>
   apiPost<{ message: string }>("setEmployeePassword", { employeeId, newPassword });
+
+/** An employee asked (from the login page) for their password to be reset. */
+export type PasswordResetRequest = {
+  requestId: string;
+  employeeId: string;
+  employeeName: string | null;
+  employeeCode: string | null;
+  status: "Pending" | "Resolved" | "Dismissed";
+  requestedAt: string;
+};
+
+export const getPasswordResetRequests = () =>
+  apiGet<PasswordResetRequest[]>("passwordResetRequests");
+
+export const dismissPasswordResetRequest = (requestId: string) =>
+  apiPost<{ dismissed: boolean }>("dismissPasswordResetRequest", { requestId });

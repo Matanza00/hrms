@@ -177,7 +177,7 @@ export async function deactivateEmployee(ctx: Ctx) {
  * where the current password is checked.
  */
 export async function setEmployeePassword(ctx: Ctx) {
-  requireAdmin(ctx.caller);
+  const caller = requireAdmin(ctx.caller);
   const employeeId = str(ctx.data.employeeId);
   const newPassword = str(ctx.data.newPassword);
   if (!employeeId) throw new ApiError("employeeId is required");
@@ -198,5 +198,56 @@ export async function setEmployeePassword(ctx: Ctx) {
     password: newPassword,
   });
   if (updErr) throw new ApiError(updErr.message, 500);
+
+  // Setting a password answers any reset request the employee left open.
+  await ctx.svc
+    .from("password_reset_requests")
+    .update({
+      status: "Resolved",
+      resolved_at: new Date().toISOString(),
+      resolved_by: caller.username,
+    })
+    .eq("employee_id", employeeId)
+    .eq("status", "Pending");
   return { message: "Password updated" };
+}
+
+/** Admin: open password reset requests, oldest first. */
+export async function getPasswordResetRequests(ctx: Ctx) {
+  requireAdmin(ctx.caller);
+  const { data, error } = await ctx.svc
+    .from("password_reset_requests")
+    .select("request_id, employee_id, status, requested_at, employees(name, employee_code)")
+    .eq("status", "Pending")
+    .order("requested_at", { ascending: true });
+  if (error) throw new ApiError(error.message, 500);
+  return (data ?? []).map((r) => {
+    const emp = r.employees as { name?: string; employee_code?: string } | null;
+    return {
+      requestId: r.request_id,
+      employeeId: r.employee_id,
+      employeeName: emp?.name ?? null,
+      employeeCode: emp?.employee_code ?? null,
+      status: r.status,
+      requestedAt: r.requested_at,
+    };
+  });
+}
+
+/** Admin: close a reset request without changing the password. */
+export async function dismissPasswordResetRequest(ctx: Ctx) {
+  const caller = requireAdmin(ctx.caller);
+  const requestId = str(ctx.data.requestId);
+  if (!requestId) throw new ApiError("requestId is required");
+  const { error } = await ctx.svc
+    .from("password_reset_requests")
+    .update({
+      status: "Dismissed",
+      resolved_at: new Date().toISOString(),
+      resolved_by: caller.username,
+    })
+    .eq("request_id", requestId)
+    .eq("status", "Pending");
+  if (error) throw new ApiError(error.message, 500);
+  return { dismissed: true, requestId };
 }

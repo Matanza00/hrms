@@ -28,6 +28,7 @@ const routes: Record<string, Handler> = {
   login: auth.login,
   me: auth.me,
   changePassword: auth.changePassword,
+  requestPasswordReset: auth.requestPasswordReset,
 
   // employees
   employees: employees.getEmployees,
@@ -36,6 +37,8 @@ const routes: Record<string, Handler> = {
   updateEmployee: employees.updateEmployee,
   deactivateEmployee: employees.deactivateEmployee,
   setEmployeePassword: employees.setEmployeePassword,
+  passwordResetRequests: employees.getPasswordResetRequests,
+  dismissPasswordResetRequest: employees.dismissPasswordResetRequest,
 
   // attendance
   attendance: attendance.getAttendance,
@@ -148,9 +151,11 @@ Deno.serve(async (req: Request) => {
     if (!handler) throw new ApiError(`Unknown action: ${action}`, 404);
 
     const svc = serviceClient();
-    // login is public; every other handler enforces its own auth level. Caller
-    // may be null here (resolved from the Authorization header only).
-    const caller = action === "login" ? null : await resolveCaller(req);
+    // login and requestPasswordReset are public; every other handler enforces
+    // its own auth level. Caller may be null here (resolved from the
+    // Authorization header only).
+    const isPublic = action === "login" || action === "requestPasswordReset";
+    const caller = isPublic ? null : await resolveCaller(req);
 
     const ctx: Ctx = { svc, caller, data, req };
     const result = await handler(ctx);

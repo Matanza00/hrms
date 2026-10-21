@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, CalendarDays, Clock, CheckCheck } from "lucide-react";
+import { Bell, CalendarDays, Clock, CheckCheck, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getLeaveRequests } from "@/lib/api/leaves";
 import { getAttendanceCorrections } from "@/lib/api/attendance";
+import { getPasswordResetRequests } from "@/lib/api/employees";
 
 function formatDate(value?: string) {
   if (!value) return "";
@@ -31,8 +32,9 @@ type Note = {
 
 /**
  * Top-nav notifications. Replaces the old bell-that-was-just-a-link with a real
- * dropdown of things needing attention: pending leave requests and pending
- * attendance corrections. Each item jumps to where it's actioned.
+ * dropdown of things needing attention: pending leave requests, pending
+ * attendance corrections and password reset requests. Each item jumps to where
+ * it's actioned.
  */
 export function NotificationBell() {
   const navigate = useNavigate();
@@ -45,9 +47,14 @@ export function NotificationBell() {
     queryKey: ["attendanceCorrections"],
     queryFn: getAttendanceCorrections,
   });
+  const { data: resetsRaw = [] } = useQuery({
+    queryKey: ["passwordResetRequests"],
+    queryFn: getPasswordResetRequests,
+  });
 
   const leaves = Array.isArray(leavesRaw) ? leavesRaw : [];
   const corrections = Array.isArray(correctionsRaw) ? correctionsRaw : [];
+  const resets = Array.isArray(resetsRaw) ? resetsRaw : [];
 
   const pendingLeaves = leaves.filter((l) => l.status === "Pending");
   const pendingCorrections = corrections.filter((c) => c.status === "Pending");
@@ -66,6 +73,13 @@ export function NotificationBell() {
       title: `${c.employeeName || "Employee"} · attendance correction`,
       detail: `${c.requestType || "Correction"} · ${formatDate(c.attendanceDate)} · awaiting review`,
       to: "/attendance/corrections",
+    })),
+    ...resets.map((r) => ({
+      id: `reset-${r.requestId}`,
+      icon: KeyRound,
+      title: `${r.employeeName || "Employee"} · password reset`,
+      detail: `Forgot password · ${formatDate(r.requestedAt)} · set a new one`,
+      to: "/employees",
     })),
   ];
 

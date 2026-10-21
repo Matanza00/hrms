@@ -88,6 +88,31 @@ export async function login(ctx: Ctx) {
   return buildSession(svc, signIn.session.access_token, user);
 }
 
+/**
+ * Public (login page): an employee who forgot their password asks an admin to
+ * reset it. Always answers the same way, so it can't be used to discover which
+ * Login IDs exist. Only active Employee logins create a request, and an
+ * employee has at most one open request (unique partial index).
+ */
+export async function requestPasswordReset(ctx: Ctx) {
+  const loginId = str(ctx.data.loginId).trim();
+  if (!loginId) throw new ApiError("Login ID is required");
+
+  const svc = serviceClient();
+  const user = await findUserByLoginId(svc, loginId);
+  if (user && user.active && user.role === "Employee" && user.employee_id) {
+    const { error } = await svc
+      .from("password_reset_requests")
+      .insert({ employee_id: user.employee_id });
+    // 23505 = a request is already pending for this employee; that's fine.
+    if (error && error.code !== "23505") throw new ApiError(error.message, 500);
+  }
+  return {
+    message:
+      "Your request has been sent. Your admin will set a new password and share it with you.",
+  };
+}
+
 export async function me(ctx: Ctx) {
   const caller = ctx.caller ?? (await resolveCaller(ctx.req, str(ctx.data.token)));
   if (!caller) throw new ApiError("Not authenticated", 401);
@@ -103,6 +128,11 @@ export async function me(ctx: Ctx) {
 export async function changePassword(ctx: Ctx) {
   const caller = ctx.caller ?? (await resolveCaller(ctx.req, str(ctx.data.token)));
   if (!caller) throw new ApiError("Not authenticated", 401);
+  // Employees never set their own password; they request a reset from the
+  // login page and an admin sets it (employees.setEmployeePassword).
+  if (caller.role !== "Admin") {
+    throw new ApiError("Only an admin can change your password. Ask your admin to reset it.", 403);
+  }
 
   const currentPassword = str(ctx.data.currentPassword);
   const newPassword = str(ctx.data.newPassword);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,11 +21,16 @@ export function ResetPasswordDialog({
   employeeId,
   employeeName,
   loginId,
+  size,
+  label = "Reset password",
 }: {
   employeeId: string;
   employeeName: string;
   loginId: string;
+  size?: "sm" | "default";
+  label?: string;
 }) {
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(empty);
   const [error, setError] = useState("");
@@ -36,6 +41,8 @@ export function ResetPasswordDialog({
     onSuccess: () => {
       setForm(empty);
       setDone(true);
+      // Setting the password resolves the employee's open reset request.
+      qc.invalidateQueries({ queryKey: ["passwordResetRequests"] });
     },
     onError: (err) => setError(err instanceof Error ? err.message : "Could not set password."),
   });
@@ -61,9 +68,9 @@ export function ResetPasswordDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" size={size}>
           <KeyRound />
-          Reset password
+          {label}
         </Button>
       </DialogTrigger>
       <DialogContent>

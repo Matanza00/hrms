@@ -32,6 +32,11 @@ export const login = (loginId: string, password: string) =>
 
 export const fetchMe = (token: string) => apiPost<AuthSession>("me", { token });
 
+/** Login page: ask an admin to reset this Login ID's password (no sign-in needed). */
+export const requestPasswordReset = (loginId: string) =>
+  apiPost<{ message: string }>("requestPasswordReset", { loginId });
+
+/** Admins only; employees get their password set by an admin. */
 export const changePassword = (token: string, currentPassword: string, newPassword: string) =>
   apiPost<{ message: string }>("changePassword", {
     token,
