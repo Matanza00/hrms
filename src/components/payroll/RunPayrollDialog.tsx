@@ -73,6 +73,7 @@ export function RunPayrollDialog() {
     onSuccess: ({ ok, failed }) => {
       qc.invalidateQueries({ queryKey: ["payroll"] });
       qc.invalidateQueries({ queryKey: ["accountsOverview"] });
+      qc.invalidateQueries({ queryKey: ["expenses"] });
       setResult(
         `Generated ${ok} payslip${ok === 1 ? "" : "s"}` +
           (failed

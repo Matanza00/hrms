@@ -32,7 +32,8 @@ import {
   type RecurringExpense,
 } from "@/lib/api/accounts";
 
-const categories = ["Salary", "Utilities", "Tools", "Emergency", "Misc", "Reserve"];
+// No "Salary": salaries are posted automatically when payroll is marked paid.
+const categories = ["Utilities", "Tools", "Emergency", "Misc", "Reserve"];
 
 function formatPKR(value: number | string | undefined) {
   return new Intl.NumberFormat("en-PK", {
@@ -276,7 +277,10 @@ export function RecurringExpensesManager() {
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((c) => (
+                  {(categories.includes(form.category) || !form.category
+                    ? categories
+                    : [...categories, form.category]
+                  ).map((c) => (
                     <SelectItem key={c} value={c}>
                       {c}
                     </SelectItem>

@@ -111,10 +111,29 @@ export async function createExpense(ctx: Ctx) {
   return camelizeRow(data);
 }
 
+/** Salary expenses posted from paid payroll are owned by the payroll row (a DB
+ *  trigger keeps them in sync), so they can't be edited or deleted here. */
+async function assertNotPayrollExpense(svc: SupabaseClient, expenseId: string) {
+  const { data, error } = await svc
+    .from("expenses")
+    .select("payroll_id")
+    .eq("expense_id", expenseId)
+    .maybeSingle();
+  if (error) throw new ApiError(error.message, 500);
+  if (!data) throw new ApiError("Expense not found", 404);
+  if (data.payroll_id) {
+    throw new ApiError(
+      "This salary expense comes from payroll. Change or cancel the payroll record instead.",
+      409,
+    );
+  }
+}
+
 export async function updateExpense(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const expenseId = str(ctx.data.expenseId);
   if (!expenseId) throw new ApiError("expenseId is required");
+  await assertNotPayrollExpense(ctx.svc, expenseId);
   const f = ctx.data;
   const patch: Record<string, unknown> = {};
   if (f.expenseDate !== undefined) patch.expense_date = str(f.expenseDate);
@@ -136,6 +155,7 @@ export async function deleteExpense(ctx: Ctx) {
   requireAdmin(ctx.caller);
   const expenseId = str(ctx.data.expenseId);
   if (!expenseId) throw new ApiError("expenseId is required");
+  await assertNotPayrollExpense(ctx.svc, expenseId);
   const { error } = await ctx.svc.from("expenses").delete().eq("expense_id", expenseId);
   if (error) throw new ApiError(error.message, 500);
   return { deleted: true, expenseId };

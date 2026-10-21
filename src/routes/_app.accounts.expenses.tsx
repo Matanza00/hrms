@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChartPie, Pencil, Plus, Receipt, Repeat, Trash2 } from "lucide-react";
+import { ChartPie, Pencil, Plus, Receipt, Repeat, Trash2, Wallet } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -38,6 +38,9 @@ import {
 import { useState } from "react";
 
 const categories = ["Salary", "Utilities", "Tools", "Emergency", "Misc", "Reserve"];
+// Salaries are posted automatically when payroll is marked paid, so they aren't
+// offered for manual entry (it would count them twice).
+const manualCategories = categories.filter((c) => c !== "Salary");
 
 const colors = [
   "var(--color-chart-1)",
@@ -345,7 +348,10 @@ function ExpensesPage() {
                 </SelectTrigger>
 
                 <SelectContent>
-                  {categories.map((c) => (
+                  {(manualCategories.includes(form.category) || !form.category
+                    ? manualCategories
+                    : [...manualCategories, form.category]
+                  ).map((c) => (
                     <SelectItem key={c} value={c}>
                       {c}
                     </SelectItem>
@@ -413,6 +419,15 @@ function ExpensesPage() {
                     Recurring
                   </span>
                 )}
+                {r.payrollId && (
+                  <span
+                    className="inline-flex h-[22px] items-center gap-1 rounded-sm border border-info-line bg-info-tint px-2 text-xs font-medium text-info-ink"
+                    title="Posted automatically when this payroll was marked paid"
+                  >
+                    <Wallet className="size-3" />
+                    Payroll
+                  </span>
+                )}
               </span>
             ),
           },
@@ -434,38 +449,41 @@ function ExpensesPage() {
             key: "actions",
             header: "",
             className: "text-right",
-            render: (r) => (
-              <div className="flex justify-end gap-1.5">
-                <Button size="sm" variant="outline" onClick={() => openEdit(r)}>
-                  <Pencil />
-                  Edit
-                </Button>
+            render: (r) =>
+              r.payrollId ? (
+                <span className="text-xs text-muted-foreground">Managed in Payroll</span>
+              ) : (
+                <div className="flex justify-end gap-1.5">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(r)}>
+                    <Pencil />
+                    Edit
+                  </Button>
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="text-danger-ink">
-                      <Trash2 />
-                      Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete expense?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This permanently removes the {formatPKR(r.amount)} {r.category} expense.
-                        This cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteMutation.mutate(r.expenseId)}>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="text-danger-ink">
+                        <Trash2 />
                         Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            ),
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete expense?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This permanently removes the {formatPKR(r.amount)} {r.category} expense.
+                          This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteMutation.mutate(r.expenseId)}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              ),
           },
         ]}
       />

@@ -368,7 +368,8 @@ function Dashboard() {
     .filter((e) => isInMonth(e.expenseDate || e.createdAt, currentMonth))
     .reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-  const monthlyProfit = monthlyRevenue - monthlyExpenses - monthlyPayroll;
+  // Paid salaries are already posted to expenses, so payroll isn't subtracted again.
+  const monthlyProfit = monthlyRevenue - monthlyExpenses;
 
   // The ledger arrives newest-first; pick by timestamp so either order works.
   const latestReserve = reserveLedger.reduce<ReserveTransaction | null>(
@@ -468,8 +469,8 @@ function Dashboard() {
 
       <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
         <Info className="mt-px size-3.5 shrink-0" />
-        Monthly figures cover {monthLabel}. Monthly profit = revenue − payroll − expenses, so it
-        differs from the all-time profit on Accounts, which excludes payroll.
+        Monthly figures cover {monthLabel}. Monthly profit = revenue − expenses; expenses include
+        salaries once payroll is marked paid.
       </p>
 
       <div className="grid gap-4 lg:grid-cols-3">

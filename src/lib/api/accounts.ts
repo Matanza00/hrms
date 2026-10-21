@@ -91,6 +91,8 @@ export type Expense = {
   /** Set when this expense was auto-posted from a recurring template. */
   recurringId?: string | null;
   sourcePeriod?: string | null;
+  /** Set when this is the salary expense of a paid payroll record (read-only). */
+  payrollId?: string | null;
 };
 
 export const getExpenses = () => apiGet<Expense[]>("expenses");

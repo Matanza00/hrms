@@ -92,6 +92,7 @@ function PayrollOverview() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["payroll"] });
       qc.invalidateQueries({ queryKey: ["accountsOverview"] });
+      qc.invalidateQueries({ queryKey: ["expenses"] });
     },
   });
 
@@ -100,6 +101,7 @@ function PayrollOverview() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["payroll"] });
       qc.invalidateQueries({ queryKey: ["accountsOverview"] });
+      qc.invalidateQueries({ queryKey: ["expenses"] });
     },
   });
 
