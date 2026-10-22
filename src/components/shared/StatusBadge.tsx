@@ -45,7 +45,7 @@ export function StatusBadge({ status, label }: { status: string; label?: string 
       )}
     >
       <span className="size-1.5 rounded-full bg-current" />
-      {(label ?? status).replace(/_/g, " ")}
+      {String(label ?? status ?? "").replace(/_/g, " ")}
     </span>
   );
 }

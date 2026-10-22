@@ -24,8 +24,12 @@ export type Separation = {
 export const getSeparations = (employeeId?: string) =>
   apiGet<Separation[]>("separations", employeeId ? { employeeId } : {});
 
-/** Employee: their own latest separation (null if none). */
-export const getMySeparation = () => apiGet<Separation | null>("mySeparation");
+/** Employee: their own latest separation (null if none). apiGet turns a null
+ *  payload into [], so anything that isn't a separation means "none". */
+export const getMySeparation = () =>
+  apiGet<Separation | null>("mySeparation").then((s) =>
+    s && !Array.isArray(s) && s.separationId ? s : null,
+  );
 
 export const submitResignation = (data: { reason: string; requestedLastDay: string }) =>
   apiPost<Separation>("submitResignation", data);
