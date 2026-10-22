@@ -28,17 +28,54 @@ export async function getEmployeeDocuments(ctx: Ctx) {
     .order("created_at", { ascending: false });
   if (error) throw new ApiError(error.message, 500);
 
-  const rows = camelizeRows<Record<string, unknown>>(data);
-  // Attach a short-lived signed URL so the browser can download each file.
-  for (const row of rows) {
-    const path = str(row.filePath);
-    if (!path) continue;
-    const { data: signed } = await ctx.svc.storage
-      .from(BUCKET)
-      .createSignedUrl(path, SIGNED_URL_TTL);
-    row.url = signed?.signedUrl ?? null;
+  return withSignedUrls(ctx, camelizeRows<Record<string, unknown>>(data));
+}
+
+/** Admin: documents employees uploaded that still need a decision. */
+export async function getPendingDocuments(ctx: Ctx) {
+  requireAdmin(ctx.caller);
+  const { data, error } = await ctx.svc
+    .from("documents")
+    .select("*, employees(name, employee_code)")
+    .eq("status", "Pending")
+    .order("created_at", { ascending: true });
+  if (error) throw new ApiError(error.message, 500);
+  const rows = (data ?? []).map((r) => {
+    const { employees, ...rest } = r as Record<string, unknown> & {
+      employees?: { name?: string; employee_code?: string } | null;
+    };
+    return {
+      ...rest,
+      employee_name: employees?.name ?? null,
+      employee_code: employees?.employee_code ?? null,
+    };
+  });
+  return withSignedUrls(ctx, camelizeRows<Record<string, unknown>>(rows));
+}
+
+/** Admin approves or rejects an uploaded document (a reason helps on reject). */
+export async function reviewEmployeeDocument(ctx: Ctx) {
+  const caller = requireAdmin(ctx.caller);
+  const documentId = str(ctx.data.documentId);
+  const status = str(ctx.data.status);
+  if (!documentId) throw new ApiError("documentId is required");
+  if (status !== "Approved" && status !== "Rejected") {
+    throw new ApiError("status must be Approved or Rejected");
   }
-  return rows;
+  const { data, error } = await ctx.svc
+    .from("documents")
+    .update({
+      status,
+      review_note: str(ctx.data.note).trim() || null,
+      reviewed_by: caller.username,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq("document_id", documentId)
+    .select("*")
+    .maybeSingle();
+  if (error) throw new ApiError(error.message, 500);
+  if (!data) throw new ApiError("Document not found", 404);
+  return camelizeRow(data);
 }
 
 /** Decode a base64 payload (optionally a data: URL) to bytes. */
@@ -55,9 +92,30 @@ function safeName(name: string) {
   return (name || "file").replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 120);
 }
 
+/** Attach a short-lived signed download URL to each document row. */
+async function withSignedUrls(ctx: Ctx, rows: Record<string, unknown>[]) {
+  for (const row of rows) {
+    const path = str(row.filePath);
+    if (!path) continue;
+    const { data: signed } = await ctx.svc.storage
+      .from(BUCKET)
+      .createSignedUrl(path, SIGNED_URL_TTL);
+    row.url = signed?.signedUrl ?? null;
+  }
+  return rows;
+}
+
+/**
+ * Admins upload for anyone (approved straight away). Employees upload their
+ * own documents, which wait for an admin to approve or reject them.
+ */
 export async function uploadEmployeeDocument(ctx: Ctx) {
-  const caller = requireAdmin(ctx.caller);
-  const employeeId = str(ctx.data.employeeId);
+  const caller = requireCaller(ctx.caller);
+  const isAdmin = caller.role === "Admin";
+  const employeeId = isAdmin ? str(ctx.data.employeeId) : (caller.employeeId ?? "");
+  if (!isAdmin && !employeeId) {
+    throw new ApiError("Your account is not linked to an employee record", 403);
+  }
   const title = str(ctx.data.title);
   const fileName = safeName(str(ctx.data.fileName));
   const mimeType = str(ctx.data.mimeType) || "application/octet-stream";
@@ -91,6 +149,9 @@ export async function uploadEmployeeDocument(ctx: Ctx) {
     mime_type: mimeType,
     size_bytes: numOrNull(bytes.byteLength),
     uploaded_by: caller.username,
+    status: isAdmin ? "Approved" : "Pending",
+    reviewed_by: isAdmin ? caller.username : null,
+    reviewed_at: isAdmin ? new Date().toISOString() : null,
   };
   const { data, error } = await ctx.svc.from("documents").insert(row).select("*").single();
   if (error) {
@@ -101,18 +162,25 @@ export async function uploadEmployeeDocument(ctx: Ctx) {
   return camelizeRow(data);
 }
 
+/** Admins delete any document; employees only their own that aren't approved yet. */
 export async function deleteEmployeeDocument(ctx: Ctx) {
-  requireAdmin(ctx.caller);
+  const caller = requireCaller(ctx.caller);
   const documentId = str(ctx.data.documentId);
   if (!documentId) throw new ApiError("documentId is required");
 
   const { data: doc, error: findErr } = await ctx.svc
     .from("documents")
-    .select("file_path")
+    .select("file_path, employee_id, status")
     .eq("document_id", documentId)
     .maybeSingle();
   if (findErr) throw new ApiError(findErr.message, 500);
   if (!doc) throw new ApiError("Document not found", 404);
+  if (caller.role !== "Admin") {
+    if (doc.employee_id !== caller.employeeId) throw new ApiError("Not allowed", 403);
+    if (doc.status === "Approved") {
+      throw new ApiError("Approved documents can only be removed by an admin", 403);
+    }
+  }
 
   if (doc.file_path) {
     await ctx.svc.storage.from(BUCKET).remove([doc.file_path as string]);

@@ -11,9 +11,28 @@ export type EmployeeDocument = {
   sizeBytes?: number;
   uploadedBy?: string;
   createdAt?: string;
+  /** Employee uploads wait for an admin; admin uploads are approved at once. */
+  status?: "Pending" | "Approved" | "Rejected";
+  reviewNote?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
   /** Short-lived signed download URL, attached by the backend on read. */
   url?: string | null;
 };
+
+/** A document waiting for review, with who it belongs to. */
+export type PendingDocument = EmployeeDocument & {
+  employeeName?: string | null;
+  employeeCode?: string | null;
+};
+
+export const getPendingDocuments = () => apiGet<PendingDocument[]>("pendingDocuments");
+
+export const reviewEmployeeDocument = (data: {
+  documentId: string;
+  status: "Approved" | "Rejected";
+  note?: string;
+}) => apiPost<EmployeeDocument>("reviewEmployeeDocument", data);
 
 export const getEmployeeDocuments = (employeeId: string) =>
   apiGet<EmployeeDocument[]>("employeeDocuments", { employeeId });

@@ -60,6 +60,7 @@ function EditEmployee() {
       setSaveError("Enter the date the employee left LDS.");
       return;
     }
+    const wasActive = emp?.active === true || emp?.active === "TRUE";
 
     try {
       await updateEmployee.mutateAsync({
@@ -77,7 +78,10 @@ function EditEmployee() {
           // Leaving LDS deactivates the employee (and their login); the end
           // date only applies to someone who has left.
           active: !form.hasLeft,
-          endDate: form.hasLeft ? form.endDate : null,
+          // Someone serving notice is still active but already has their last
+          // working day as the end date; keep it. Bringing back someone who
+          // had left clears it.
+          endDate: form.hasLeft ? form.endDate : wasActive ? (emp?.endDate ?? null) : null,
         },
       });
     } catch (err) {
@@ -163,10 +167,11 @@ function EditEmployee() {
                 <SelectItem value="Intern">Intern</SelectItem>
                 <SelectItem value="Notice Period">Notice Period</SelectItem>
                 <SelectItem value="Resigned">Resigned</SelectItem>
+                <SelectItem value="Terminated">Terminated</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Set to “Notice Period” when an employee resigns and is serving notice.
+              To record a resignation or termination, use “Offboard” on the employee&apos;s page.
             </p>
           </div>
 

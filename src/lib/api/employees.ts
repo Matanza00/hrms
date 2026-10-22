@@ -12,7 +12,8 @@ export type Employee = {
   permanentDate: string;
   /** Null clears it (the employee is back at LDS). */
   endDate?: string | null;
-  status: "Permanent" | "Contract" | "Intern" | "Probation" | "Notice Period" | "Resigned";
+  status:
+    "Permanent" | "Contract" | "Intern" | "Probation" | "Notice Period" | "Resigned" | "Terminated";
   department: string;
   designation: string;
   basicSalary: number;

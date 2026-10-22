@@ -5,6 +5,7 @@ import { anonClient, serviceClient } from "../_shared/supabase.ts";
 import { authEmailFor, resolveCaller } from "../_shared/auth.ts";
 import { ApiError } from "../_shared/errors.ts";
 import { camelizeRow } from "../_shared/case.ts";
+import { finalizeDueSeparations } from "../_shared/separations.ts";
 
 type UserRow = {
   id: string;
@@ -77,6 +78,10 @@ export async function login(ctx: Ctx) {
   const svc = serviceClient();
   const user = await findUserByLoginId(svc, loginId);
   if (!user) throw new ApiError("Invalid credentials", 401);
+  // A notice period that has ended disables the login before we check it.
+  if (user.active && user.role === "Employee" && user.employee_id) {
+    if ((await finalizeDueSeparations(svc, user.employee_id)) > 0) user.active = false;
+  }
   if (!user.active) throw new ApiError("Account is disabled", 403);
 
   const { data: signIn, error } = await anonClient().auth.signInWithPassword({

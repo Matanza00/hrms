@@ -1,29 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FileText, FolderOpen } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { IconTile } from "@/components/shared/IconTile";
+import { EmployeeDocuments } from "@/components/employees/EmployeeDocuments";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export const Route = createFileRoute("/employee/documents")({
   head: () => ({ meta: [{ title: "Documents — LDS HRMS" }] }),
-  component: () => (
+  component: MyDocumentsPage,
+});
+
+function MyDocumentsPage() {
+  const { employeeId } = useAuth();
+
+  return (
     <div>
       <PageHeader
         icon={FolderOpen}
         title="My documents"
-        description="CNIC, certificates and medical documents."
+        description="Upload your CNIC, certificates and medical documents for your admin to verify."
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {["CNIC", "Educational Certificates", "Medical Documents"].map((d) => (
-          <div key={d} className="flex items-start gap-3 rounded-2xl border bg-card p-5">
-            <IconTile icon={FileText} tone="neutral" size="md" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold tracking-[-0.2px]">{d}</p>
-              <p className="text-xs text-muted-foreground">Google Drive upload pending</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      {employeeId ? (
+        <EmployeeDocuments employeeId={employeeId} mode="self" />
+      ) : (
+        <p className="text-[13px] text-muted-foreground">
+          Your account is not linked to an employee record.
+        </p>
+      )}
     </div>
-  ),
-});
+  );
+}

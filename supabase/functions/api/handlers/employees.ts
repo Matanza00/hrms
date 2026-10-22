@@ -4,6 +4,7 @@ import { str } from "../_shared/context.ts";
 import { authEmailFor, requireAdmin, requireCaller } from "../_shared/auth.ts";
 import { ApiError } from "../_shared/errors.ts";
 import { camelizeRow, camelizeRows, snakeizeObj } from "../_shared/case.ts";
+import { finalizeDueSeparations } from "../_shared/separations.ts";
 
 // Columns an admin is allowed to set (protects generated/audit columns).
 const WRITABLE = new Set([
@@ -42,6 +43,7 @@ function pickWritable(input: Record<string, unknown>): Record<string, unknown> {
 
 export async function getEmployees(ctx: Ctx) {
   const caller = requireCaller(ctx.caller);
+  if (caller.role === "Admin") await finalizeDueSeparations(ctx.svc);
   // Admins see everyone; an employee only ever sees their own record.
   let q = ctx.svc.from("employees").select("*").order("name", { ascending: true });
   if (caller.role !== "Admin") q = q.eq("employee_id", caller.employeeId ?? "");
@@ -54,6 +56,7 @@ export async function getEmployee(ctx: Ctx) {
   const caller = requireCaller(ctx.caller);
   const employeeId = str(ctx.data.employeeId);
   if (!employeeId) throw new ApiError("employeeId is required");
+  if (caller.role === "Admin") await finalizeDueSeparations(ctx.svc, employeeId);
   if (caller.role !== "Admin" && caller.employeeId !== employeeId) {
     throw new ApiError("Not allowed", 403);
   }

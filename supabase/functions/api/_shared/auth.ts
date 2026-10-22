@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "./errors.ts";
 import { serviceClient } from "./supabase.ts";
+import { finalizeDueSeparations } from "./separations.ts";
 
 // Employees log in with a username / employee code, not an email. We give each
 // Auth account a deterministic synthetic email so login can resolve it without
@@ -47,13 +48,19 @@ export async function resolveCaller(req: Request, bodyToken?: string): Promise<C
   if (!profile) return null;
 
   const employees = profile.employees as { employee_code?: string } | null;
+  let active = Boolean(profile.active);
+  // An employee whose notice period just ended loses access now, not when
+  // their current token expires.
+  if (active && profile.role === "Employee" && profile.employee_id) {
+    if ((await finalizeDueSeparations(svc, profile.employee_id as string)) > 0) active = false;
+  }
   return {
     userId: userRes.user.id,
     username: profile.username as string,
     role: profile.role as Role,
     employeeId: (profile.employee_id as string | null) ?? null,
     employeeCode: employees?.employee_code ?? null,
-    active: Boolean(profile.active),
+    active,
   };
 }
 

@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, CalendarDays, Clock, CheckCheck, KeyRound } from "lucide-react";
+import { Bell, CalendarDays, Clock, CheckCheck, FileCheck, KeyRound, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,6 +13,8 @@ import {
 import { getLeaveRequests } from "@/lib/api/leaves";
 import { getAttendanceCorrections } from "@/lib/api/attendance";
 import { getPasswordResetRequests } from "@/lib/api/employees";
+import { getPendingDocuments } from "@/lib/api/documents";
+import { getSeparations } from "@/lib/api/separations";
 
 function formatDate(value?: string) {
   if (!value) return "";
@@ -32,9 +34,9 @@ type Note = {
 
 /**
  * Top-nav notifications. Replaces the old bell-that-was-just-a-link with a real
- * dropdown of things needing attention: pending leave requests, pending
- * attendance corrections and password reset requests. Each item jumps to where
- * it's actioned.
+ * dropdown of things needing attention: pending leave requests, attendance
+ * corrections, password reset requests, resignations and uploaded documents.
+ * Each item jumps to where it's actioned.
  */
 export function NotificationBell() {
   const navigate = useNavigate();
@@ -54,7 +56,20 @@ export function NotificationBell() {
 
   const leaves = Array.isArray(leavesRaw) ? leavesRaw : [];
   const corrections = Array.isArray(correctionsRaw) ? correctionsRaw : [];
+  const { data: docsRaw = [] } = useQuery({
+    queryKey: ["pendingDocuments"],
+    queryFn: getPendingDocuments,
+  });
+  const { data: separationsRaw = [] } = useQuery({
+    queryKey: ["separations"],
+    queryFn: () => getSeparations(),
+  });
+
   const resets = Array.isArray(resetsRaw) ? resetsRaw : [];
+  const pendingDocs = Array.isArray(docsRaw) ? docsRaw : [];
+  const pendingResignations = (Array.isArray(separationsRaw) ? separationsRaw : []).filter(
+    (s) => s.status === "Pending",
+  );
 
   const pendingLeaves = leaves.filter((l) => l.status === "Pending");
   const pendingCorrections = corrections.filter((c) => c.status === "Pending");
@@ -79,6 +94,20 @@ export function NotificationBell() {
       icon: KeyRound,
       title: `${r.employeeName || "Employee"} · password reset`,
       detail: `Forgot password · ${formatDate(r.requestedAt)} · set a new one`,
+      to: "/employees",
+    })),
+    ...pendingResignations.map((s) => ({
+      id: `resign-${s.separationId}`,
+      icon: LogOut,
+      title: `${s.employeeName || "Employee"} · resignation`,
+      detail: `Handed in ${formatDate(s.noticeDate)} · awaiting review`,
+      to: "/employees",
+    })),
+    ...pendingDocs.map((d) => ({
+      id: `doc-${d.documentId}`,
+      icon: FileCheck,
+      title: `${d.employeeName || "Employee"} · ${d.category || "document"}`,
+      detail: `Uploaded ${formatDate(d.createdAt)} · verify it`,
       to: "/employees",
     })),
   ];

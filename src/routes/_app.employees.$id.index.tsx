@@ -24,6 +24,7 @@ import { useEmployee } from "@/hooks/useEmployees";
 import { EmployeeActivity } from "@/components/employees/EmployeeActivity";
 import { EmployeeDocuments } from "@/components/employees/EmployeeDocuments";
 import { ResetPasswordDialog } from "@/components/employees/ResetPasswordDialog";
+import { OffboardDialog, SeparationCard } from "@/components/employees/Separations";
 import { useQuery } from "@tanstack/react-query";
 import { useAttendance } from "@/hooks/useAttendance";
 import type { AttendanceRecord } from "@/lib/api/attendance";
@@ -286,6 +287,7 @@ function EmployeeProfile() {
         description={`${emp.designation || "—"} · ${emp.department || "—"}`}
         actions={
           <>
+            {isActive && <OffboardDialog employeeId={emp.employeeId} employeeName={emp.name} />}
             <ResetPasswordDialog
               employeeId={emp.employeeId}
               employeeName={emp.name}
@@ -339,6 +341,8 @@ function EmployeeProfile() {
               </p>
             </div>
           </div>
+
+          <SeparationCard employeeId={emp.employeeId} />
 
           <ChartCard title="Salary breakdown" icon={Wallet} tone="success" bodyClassName="">
             <div className="space-y-2.5 text-[13px]">
@@ -396,8 +400,11 @@ function EmployeeProfile() {
                   <Field label="Status" value={emp.status} />
                   <Field label="Joining date" value={formatDate(emp.joiningDate)} />
                   <Field label="Permanent date" value={formatDate(emp.permanentDate)} />
-                  {!isActive && (
-                    <Field label="End date" value={formatDate(emp.endDate ?? undefined)} />
+                  {(!isActive || emp.endDate) && (
+                    <Field
+                      label={isActive ? "Last working day" : "End date"}
+                      value={formatDate(emp.endDate ?? undefined)}
+                    />
                   )}
                   <Field label="Active" value={isActive ? "Yes" : "No"} />
                 </div>

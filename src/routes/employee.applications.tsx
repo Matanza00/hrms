@@ -5,19 +5,18 @@ import {
   ClockAlert,
   HandCoins,
   Landmark,
-  LogOut,
   Package,
   Receipt,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { IconTile } from "@/components/shared/IconTile";
+import { ResignationApplication } from "@/components/employees/ResignationApplication";
 
 const upcoming = [
   { label: "Reimbursement", icon: Receipt },
   { label: "Advance Salary", icon: HandCoins },
   { label: "Loan Request", icon: Landmark },
   { label: "Asset Request", icon: Package },
-  { label: "Resignation", icon: LogOut },
 ];
 
 export const Route = createFileRoute("/employee/applications")({
@@ -42,6 +41,8 @@ export const Route = createFileRoute("/employee/applications")({
           </div>
           <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
         </Link>
+
+        <ResignationApplication />
 
         {upcoming.map((a) => (
           <div key={a.label} className="flex items-center gap-3 rounded-2xl border bg-card p-5">

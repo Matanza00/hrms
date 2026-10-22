@@ -19,6 +19,10 @@ const tones: Record<string, Tone> = {
 
   on_leave: "info",
   leave: "info",
+  notice_period: "warning",
+  resigned: "neutral",
+  cancelled: "neutral",
+  completed: "neutral",
 
   rejected: "danger",
   absent: "danger",

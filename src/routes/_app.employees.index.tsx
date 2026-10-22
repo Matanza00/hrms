@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useEmployees } from "@/hooks/useEmployees";
 import { PasswordResetRequests } from "@/components/employees/PasswordResetRequests";
+import { ResignationRequests } from "@/components/employees/Separations";
+import { PendingDocuments } from "@/components/employees/PendingDocuments";
 import type { Employee } from "@/lib/api/employees";
 import { Filter, Plus, Users, Search, MoreHorizontal, Mail, Phone } from "lucide-react";
 import { useState } from "react";
@@ -94,6 +96,8 @@ function EmployeesList() {
       />
 
       <PasswordResetRequests />
+      <ResignationRequests />
+      <PendingDocuments />
 
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative flex-1 max-w-md">
