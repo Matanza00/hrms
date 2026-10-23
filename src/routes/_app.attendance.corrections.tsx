@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   approveAttendanceCorrection,
+  rejectAttendanceCorrection,
   getAttendanceCorrections,
   type AttendanceCorrection,
 } from "@/lib/api/attendance";
@@ -69,13 +70,20 @@ function Corrections() {
     queryFn: getAttendanceCorrections,
   });
 
+  const onDecided = () => {
+    qc.invalidateQueries({ queryKey: ["attendanceCorrections"] });
+    qc.invalidateQueries({ queryKey: ["attendance"] });
+  };
   const approveMutation = useMutation({
     mutationFn: approveAttendanceCorrection,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["attendanceCorrections"] });
-      qc.invalidateQueries({ queryKey: ["attendance"] });
-    },
+    onSuccess: onDecided,
   });
+  const rejectMutation = useMutation({
+    mutationFn: rejectAttendanceCorrection,
+    onSuccess: onDecided,
+  });
+  const decideError = approveMutation.error || rejectMutation.error;
+  const deciding = approveMutation.isPending || rejectMutation.isPending;
 
   if (isLoading) {
     return (
@@ -98,14 +106,12 @@ function Corrections() {
 
   return (
     <div className="space-y-3">
-      {approveMutation.error && (
+      {decideError && (
         <div
           role="alert"
           className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink"
         >
-          {approveMutation.error instanceof Error
-            ? approveMutation.error.message
-            : "Could not approve the request."}
+          {decideError instanceof Error ? decideError.message : "Could not update the request."}
         </div>
       )}
       <DataTable<AttendanceCorrection>
@@ -192,14 +198,26 @@ function Corrections() {
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={approveMutation.isPending}
-                    onClick={() => approveMutation.mutate(r.correctionId)}
+                    disabled={deciding}
+                    onClick={() => {
+                      rejectMutation.reset();
+                      approveMutation.mutate(r.correctionId);
+                    }}
                   >
                     <Check />
                     Approve
                   </Button>
 
-                  <Button size="sm" variant="outline" disabled>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-danger-ink"
+                    disabled={deciding}
+                    onClick={() => {
+                      approveMutation.reset();
+                      rejectMutation.mutate(r.correctionId);
+                    }}
+                  >
                     <X />
                     Reject
                   </Button>

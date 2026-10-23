@@ -54,11 +54,13 @@ export type AttendanceCorrectionInput = {
 export const requestAttendanceCorrection = (data: AttendanceCorrectionInput) =>
   apiPost<AttendanceCorrection>("requestAttendanceCorrection", data);
 
+/** Applies the requested change to that day's attendance, then marks it Approved. */
 export const approveAttendanceCorrection = (correctionId: string) =>
-  apiPost("approveAttendanceCorrection", {
-    correctionId,
-    approvedBy: "Admin",
-  });
+  apiPost("approveAttendanceCorrection", { correctionId });
+
+/** Closes the request without changing attendance. */
+export const rejectAttendanceCorrection = (correctionId: string) =>
+  apiPost("rejectAttendanceCorrection", { correctionId });
 
 export const getAttendance = () => apiGet<AttendanceRecord[]>("attendance");
 

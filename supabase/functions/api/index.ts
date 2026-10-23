@@ -50,6 +50,7 @@ const routes: Record<string, Handler> = {
   attendanceCorrections: attendance.getAttendanceCorrections,
   requestAttendanceCorrection: attendance.requestAttendanceCorrection,
   approveAttendanceCorrection: attendance.approveAttendanceCorrection,
+  rejectAttendanceCorrection: attendance.rejectAttendanceCorrection,
   adminUpdateAttendance: attendance.adminUpdateAttendance,
   adminCreateAttendance: attendance.adminCreateAttendance,
   deleteAttendance: attendance.deleteAttendance,

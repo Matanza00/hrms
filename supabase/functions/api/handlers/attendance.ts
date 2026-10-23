@@ -345,15 +345,150 @@ export async function requestAttendanceCorrection(ctx: Ctx) {
   return withEmployeeNameOne(data);
 }
 
+// Correction request type (as the employee form sends it) -> attendance column.
+const CORRECTION_FIELDS: Record<string, "check_in" | "check_out" | "break_start" | "break_end"> = {
+  "Check In": "check_in",
+  "Check Out": "check_out",
+  "Break Start": "break_start",
+  "Break End": "break_end",
+};
+
+async function loadPendingCorrection(ctx: Ctx, correctionId: string) {
+  const { data, error } = await ctx.svc
+    .from("attendance_corrections")
+    .select("*")
+    .eq("correction_id", correctionId)
+    .maybeSingle();
+  if (error) throw new ApiError(error.message, 500);
+  if (!data) throw new ApiError("Correction not found", 404);
+  if (data.status !== "Pending") {
+    throw new ApiError(`This request was already ${String(data.status).toLowerCase()}`, 409);
+  }
+  return data;
+}
+
+/**
+ * Write an approved correction into the employee's attendance row for that
+ * day, recomputing break/working/deficit and lateness the same way an admin
+ * edit does. Creates the row if the day has none (e.g. a forgotten check-in).
+ */
+async function applyCorrection(ctx: Ctx, c: Record<string, unknown>) {
+  const type = str(c.request_type);
+  const value = str(c.new_value);
+  const column = CORRECTION_FIELDS[type];
+  if (!column && type !== "Status") throw new ApiError(`Unknown correction type: ${type}`);
+  if (column && Number.isNaN(new Date(value).getTime())) {
+    throw new ApiError(`The requested ${type} time is not a valid date/time`);
+  }
+
+  const { data: row, error: findErr } = await ctx.svc
+    .from("attendance")
+    .select("attendance_id, check_in, check_out, break_start, break_end, attendance_status")
+    .eq("employee_id", c.employee_id)
+    .eq("attendance_date", c.attendance_date)
+    .maybeSingle();
+  if (findErr) throw new ApiError(findErr.message, 500);
+
+  if (type === "Status") {
+    if (row) {
+      const { error } = await ctx.svc
+        .from("attendance")
+        .update({ attendance_status: value })
+        .eq("attendance_id", row.attendance_id);
+      if (error) throw new ApiError(error.message, 500);
+    } else {
+      const { error } = await ctx.svc.from("attendance").insert({
+        employee_id: c.employee_id,
+        attendance_date: c.attendance_date,
+        attendance_status: value,
+      });
+      if (error) throw new ApiError(error.message, 500);
+    }
+    return;
+  }
+
+  const times = {
+    checkIn: row?.check_in ?? null,
+    checkOut: row?.check_out ?? null,
+    breakStart: row?.break_start ?? null,
+    breakEnd: row?.break_end ?? null,
+  } as Record<string, unknown>;
+  const key = {
+    check_in: "checkIn",
+    check_out: "checkOut",
+    break_start: "breakStart",
+    break_end: "breakEnd",
+  }[column!];
+  times[key] = new Date(value).toISOString();
+
+  // Refuse a change that leaves the day impossible, so it isn't silently saved.
+  const t = (v: unknown) => (v ? new Date(v as string).getTime() : null);
+  const [ci, co, bs, be] = [
+    t(times.checkIn),
+    t(times.checkOut),
+    t(times.breakStart),
+    t(times.breakEnd),
+  ];
+  if (ci !== null && co !== null && co <= ci) {
+    throw new ApiError("With this change the check-out would be before the check-in");
+  }
+  if (bs !== null && be !== null && be <= bs) {
+    throw new ApiError("With this change the break would end before it starts");
+  }
+  if (ci !== null && bs !== null && bs < ci) {
+    throw new ApiError("With this change the break would start before the check-in");
+  }
+  if (co !== null && be !== null && be > co) {
+    throw new ApiError("With this change the break would end after the check-out");
+  }
+
+  const patch: Record<string, unknown> = {
+    [column!]: times[key],
+    ...(await derivedPatch(ctx.svc, times)),
+  };
+  // A corrected check-in moves the day across the half-day cutoff the same
+  // way checkIn decides it, unless an admin set some other status (Leave…).
+  const currentStatus = str(row?.attendance_status) || "Present";
+  if (column === "check_in" && (currentStatus === "Present" || currentStatus === "Half Day")) {
+    const settings = await loadSettings(ctx.svc);
+    const afterHalfDay = isAfterHalfDayCutoff(
+      new Date(times.checkIn as string),
+      settings.halfDayStartTime || "21:00",
+    );
+    patch.attendance_status = afterHalfDay ? "Half Day" : "Present";
+  }
+  if (row) {
+    const { error } = await ctx.svc
+      .from("attendance")
+      .update(patch)
+      .eq("attendance_id", row.attendance_id);
+    if (error) throw new ApiError(error.message, 500);
+  } else {
+    const { error } = await ctx.svc.from("attendance").insert({
+      employee_id: c.employee_id,
+      attendance_date: c.attendance_date,
+      attendance_status: "Present",
+      ...patch,
+    });
+    if (error) throw new ApiError(error.message, 500);
+  }
+}
+
+/** Admin approves a correction: the change is applied to attendance, then the request is closed. */
 export async function approveAttendanceCorrection(ctx: Ctx) {
   const caller = requireAdmin(ctx.caller);
   const correctionId = str(ctx.data.correctionId);
   if (!correctionId) throw new ApiError("correctionId is required");
+
+  const correction = await loadPendingCorrection(ctx, correctionId);
+  // Apply first: if it can't be applied the request stays Pending.
+  await applyCorrection(ctx, correction);
+
   const { data, error } = await ctx.svc
     .from("attendance_corrections")
     .update({
       status: "Approved",
-      approved_by: str(ctx.data.approvedBy) || caller.username,
+      approved_by: caller.username,
       approved_at: new Date().toISOString(),
     })
     .eq("correction_id", correctionId)
@@ -361,8 +496,29 @@ export async function approveAttendanceCorrection(ctx: Ctx) {
     .maybeSingle();
   if (error) throw new ApiError(error.message, 500);
   if (!data) throw new ApiError("Correction not found", 404);
-  // NOTE: this marks the request approved. Applying the change to the attendance
-  // row itself is done via adminUpdateAttendance (kept explicit on purpose).
+  return withEmployeeNameOne(data);
+}
+
+/** Admin rejects a correction; attendance is left as it is. */
+export async function rejectAttendanceCorrection(ctx: Ctx) {
+  const caller = requireAdmin(ctx.caller);
+  const correctionId = str(ctx.data.correctionId);
+  if (!correctionId) throw new ApiError("correctionId is required");
+  await loadPendingCorrection(ctx, correctionId);
+
+  const { data, error } = await ctx.svc
+    .from("attendance_corrections")
+    .update({
+      status: "Rejected",
+      approved_by: caller.username,
+      approved_at: new Date().toISOString(),
+    })
+    .eq("correction_id", correctionId)
+    .eq("status", "Pending")
+    .select(SELECT)
+    .maybeSingle();
+  if (error) throw new ApiError(error.message, 500);
+  if (!data) throw new ApiError("This request was already decided", 409);
   return withEmployeeNameOne(data);
 }
 
