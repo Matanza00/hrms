@@ -58,6 +58,7 @@ function LeaveRequestPage() {
 
   const mutation = useMutation({
     mutationFn: applyLeave,
+    meta: { inlineErrors: true },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leaveRequests"] });
       navigate({ to: "/leaves" });

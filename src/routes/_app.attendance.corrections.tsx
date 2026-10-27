@@ -76,10 +76,12 @@ function Corrections() {
   };
   const approveMutation = useMutation({
     mutationFn: approveAttendanceCorrection,
+    meta: { inlineErrors: true, success: "Correction applied to attendance" },
     onSuccess: onDecided,
   });
   const rejectMutation = useMutation({
     mutationFn: rejectAttendanceCorrection,
+    meta: { inlineErrors: true, success: "Correction rejected" },
     onSuccess: onDecided,
   });
   const decideError = approveMutation.error || rejectMutation.error;
@@ -166,7 +168,14 @@ function Corrections() {
           {
             key: "reason",
             header: "Reason",
-            render: (r) => <span className="text-muted-foreground">{r.reason || "—"}</span>,
+            render: (r) => (
+              <span
+                title={r.reason || undefined}
+                className="line-clamp-2 text-muted-foreground [overflow-wrap:anywhere]"
+              >
+                {r.reason || "—"}
+              </span>
+            ),
           },
           {
             key: "createdAt",

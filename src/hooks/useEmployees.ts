@@ -26,6 +26,8 @@ export const useCreateEmployee = () => {
 
   return useMutation({
     mutationFn: createEmployee,
+    // The create form shows the error itself.
+    meta: { inlineErrors: true, success: "Employee added" },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["employees"] }),
   });
 };
@@ -36,6 +38,8 @@ export const useUpdateEmployee = () => {
   return useMutation({
     mutationFn: ({ employeeId, data }: { employeeId: string; data: Partial<Employee> }) =>
       updateEmployee(employeeId, data),
+    // The edit form shows the error itself.
+    meta: { inlineErrors: true, success: "Employee saved" },
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ["employees"] });
       qc.invalidateQueries({ queryKey: ["employee", variables.employeeId] });

@@ -121,13 +121,13 @@ export function NotificationBell() {
           <Bell className="h-4 w-4" />
           {count > 0 && (
             <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[oklch(0.62_0.23_27)] px-1 text-[9px] font-semibold text-white">
-              {count}
+              {count > 99 ? "99+" : count}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-[min(20rem,calc(100vw-1rem))]">
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notifications</span>
           {count > 0 && (
@@ -142,7 +142,7 @@ export function NotificationBell() {
             <p className="text-sm text-muted-foreground">You&rsquo;re all caught up.</p>
           </div>
         ) : (
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto overscroll-contain">
             {notes.slice(0, 12).map((n) => (
               <DropdownMenuItem
                 key={n.id}
@@ -153,11 +153,19 @@ export function NotificationBell() {
                   <n.icon className="h-3.5 w-3.5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{n.title}</p>
+                  {/* Two lines, so a long name doesn't hide what the item is about. */}
+                  <p className="line-clamp-2 text-sm font-medium [overflow-wrap:anywhere]">
+                    {n.title}
+                  </p>
                   <p className="truncate text-xs text-muted-foreground">{n.detail}</p>
                 </div>
               </DropdownMenuItem>
             ))}
+            {notes.length > 12 && (
+              <p className="px-2 py-2 text-xs text-muted-foreground">
+                +{notes.length - 12} more waiting
+              </p>
+            )}
           </div>
         )}
 

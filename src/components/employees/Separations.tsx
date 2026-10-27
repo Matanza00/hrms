@@ -30,6 +30,7 @@ import {
   type Separation,
 } from "@/lib/api/separations";
 import { formatDay } from "@/lib/formatDay";
+import { toast } from "sonner";
 
 function todayStr() {
   const d = new Date();
@@ -83,6 +84,7 @@ export function OffboardDialog({
 
   const mutation = useMutation({
     mutationFn: () => recordSeparation({ employeeId, ...form }),
+    meta: { success: "Offboarding recorded" },
     onSuccess: () => {
       invalidate();
       setOpen(false);
@@ -219,9 +221,10 @@ export function DecideResignationDialog({ sep }: { sep: Separation }) {
         lastWorkingDay: decision === "approve" ? lastWorkingDay : undefined,
         note: note.trim() || undefined,
       }),
-    onSuccess: () => {
+    onSuccess: (_data, decision) => {
       invalidate();
       setOpen(false);
+      toast.success(decision === "approve" ? "Resignation accepted" : "Resignation rejected");
     },
     onError: (err) => setError(err instanceof Error ? err.message : "Could not save."),
   });
@@ -298,6 +301,7 @@ function CancelSeparationButton({ sep }: { sep: Separation }) {
   const [error, setError] = useState("");
   const mutation = useMutation({
     mutationFn: () => cancelSeparation({ separationId: sep.separationId }),
+    meta: { success: "Cancelled; their previous status is restored" },
     onSuccess: invalidate,
     onError: (err) => setError(err instanceof Error ? err.message : "Could not cancel."),
   });
@@ -322,8 +326,9 @@ function CancelSeparationButton({ sep }: { sep: Separation }) {
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-3">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-medium">{value}</span>
+      <span className="shrink-0 text-muted-foreground">{label}</span>
+      {/* Long reasons / pasted links wrap inside the card. */}
+      <span className="min-w-0 text-right font-medium [overflow-wrap:anywhere]">{value}</span>
     </div>
   );
 }

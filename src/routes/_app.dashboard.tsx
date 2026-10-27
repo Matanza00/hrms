@@ -1,4 +1,5 @@
 import type React from "react";
+import { chartMotion } from "@/lib/chartMotion";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -459,6 +460,7 @@ function Dashboard() {
           label="Monthly Profit"
           value={formatPKRCompact(monthlyProfit)}
           icon={BadgeDollarSign}
+          tone={monthlyProfit < 0 ? "danger" : "default"}
         />
         <StatCard
           label="Reserve Balance"
@@ -499,6 +501,7 @@ function Dashboard() {
                   <YAxis {...axisProps} allowDecimals={false} />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Area
+                    {...chartMotion("off")}
                     type="monotone"
                     dataKey="present"
                     name="Present"
@@ -507,6 +510,7 @@ function Dashboard() {
                     strokeWidth={2}
                   />
                   <Line
+                    {...chartMotion("off")}
                     type="monotone"
                     dataKey="late"
                     name="Late"
@@ -578,6 +582,7 @@ function Dashboard() {
                   formatter={(v: number) => formatPKR(v)}
                 />
                 <Bar
+                  {...chartMotion("off")}
                   dataKey="payroll"
                   name="Payroll"
                   fill="var(--color-chart-1)"
@@ -609,6 +614,7 @@ function Dashboard() {
                     <YAxis {...axisProps} tickFormatter={millions} />
                     <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => formatPKR(v)} />
                     <Line
+                      {...chartMotion("off")}
                       type="monotone"
                       dataKey="revenue"
                       name="Revenue"
@@ -617,6 +623,7 @@ function Dashboard() {
                       dot={{ r: 3, fill: "var(--color-card)" }}
                     />
                     <Line
+                      {...chartMotion("off")}
                       type="monotone"
                       dataKey="expense"
                       name="Expense"

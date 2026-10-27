@@ -45,7 +45,11 @@ function days(start: string, end: string) {
 function EmployeeLeaves() {
   const qc = useQueryClient();
   const { employeeId, employeeCode } = useAuth();
-  const { data: raw = [] } = useQuery({ queryKey: ["leaveRequests"], queryFn: getLeaveRequests });
+  const {
+    data: raw = [],
+    isLoading,
+    error: loadError,
+  } = useQuery({ queryKey: ["leaveRequests"], queryFn: getLeaveRequests });
   const stats = useEmployeeStats(employeeId);
 
   const [form, setForm] = useState({ leaveType: "", startDate: "", endDate: "", reason: "" });
@@ -53,6 +57,7 @@ function EmployeeLeaves() {
 
   const mutation = useMutation({
     mutationFn: applyLeave,
+    meta: { inlineErrors: true, success: "Leave request sent" },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leaveRequests"] });
       setForm({ leaveType: "", startDate: "", endDate: "", reason: "" });
@@ -203,6 +208,8 @@ function EmployeeLeaves() {
         <DataTable<LeaveRequest>
           rowKey={(r) => r.leaveId}
           data={records}
+          loading={isLoading}
+          error={loadError}
           empty="No leave requests yet."
           columns={[
             {

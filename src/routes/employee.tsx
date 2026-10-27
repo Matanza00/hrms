@@ -64,9 +64,11 @@ function EmployeeShell() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <header className="sticky top-0 z-10 border-b border-divider bg-card/90 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+    <div className="min-h-svh">
+      {/* Thin glass bar: the page scrolls underneath it. Side padding clears
+          the notch in landscape. */}
+      <header className="material-bar sticky top-0 z-10 border-b border-divider pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 py-3 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
           <div className="flex items-center gap-2.5">
             <Logo className="size-8 rounded-md" />
             <div className="flex flex-col">
@@ -91,14 +93,14 @@ function EmployeeShell() {
             </div>
 
             <FeedbackWidget variant="toolbar" />
-            <Button variant="outline" className="shadow-none" onClick={handleLogout}>
+            <Button variant="outline" className="shadow-none max-sm:h-11" onClick={handleLogout}>
               <LogOut />
               Sign out
             </Button>
           </div>
         </div>
 
-        <nav className="mx-auto flex max-w-5xl gap-0.5 overflow-x-auto px-4 pb-2.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav className="mx-auto flex max-w-5xl gap-0.5 overflow-x-auto overscroll-x-contain pb-2.5 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {nav.map((item) => {
             const active = path === item.url || path.startsWith(item.url + "/");
 
@@ -106,7 +108,7 @@ function EmployeeShell() {
               <Link
                 key={item.url}
                 to={item.url}
-                className={`flex h-[34px] shrink-0 items-center gap-2 rounded-md border px-2.5 text-sm transition max-sm:min-h-11 ${
+                className={`flex h-[34px] shrink-0 select-none items-center gap-2 rounded-md border px-2.5 text-sm transition-colors [-webkit-touch-callout:none] max-sm:min-h-11 ${
                   active
                     ? "border-border bg-card font-medium text-foreground shadow-xs"
                     : "border-transparent text-text-secondary hover:bg-muted hover:text-foreground"
@@ -120,7 +122,7 @@ function EmployeeShell() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6 pb-[max(6rem,calc(env(safe-area-inset-bottom)+5rem))]">
+      <main className="mx-auto max-w-5xl py-6 pb-[max(6rem,calc(env(safe-area-inset-bottom)+5rem))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
         <Outlet />
       </main>
     </div>

@@ -11,7 +11,7 @@ function Landing() {
 
   if (status === "loading") {
     return (
-      <div className="grid min-h-screen-safe place-items-center bg-canvas">
+      <div className="grid min-h-screen-safe place-items-center">
         <p className="text-[13px] text-muted-foreground">Loading…</p>
       </div>
     );

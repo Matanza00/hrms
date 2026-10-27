@@ -165,6 +165,7 @@ function SettingsPage() {
 
   const mutation = useMutation({
     mutationFn: updateSettings,
+    meta: { inlineErrors: true },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["settings"] });
       setMessage("Settings saved successfully.");

@@ -234,6 +234,7 @@ function AttendanceOverview() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteAttendance,
+    meta: { success: "Attendance record deleted" },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
   });
 

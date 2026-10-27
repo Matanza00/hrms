@@ -101,6 +101,7 @@ function LeavesOverview() {
         approvedBy: "Admin",
         comments: "Approved from frontend",
       }),
+    meta: { success: "Leave approved" },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leaveRequests"] });
     },
@@ -113,6 +114,7 @@ function LeavesOverview() {
         approvedBy: "Admin",
         comments: "Rejected from frontend",
       }),
+    meta: { success: "Leave rejected" },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leaveRequests"] });
     },

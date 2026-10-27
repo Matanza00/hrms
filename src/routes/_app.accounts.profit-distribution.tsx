@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+
+import { chartMotion } from "@/lib/chartMotion";
 import { ChartCard } from "@/components/shared/ChartCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ChartPie } from "lucide-react";
@@ -20,7 +22,7 @@ const colors = [
 ];
 
 const tooltipStyle = {
-  background: "var(--color-card)",
+  background: "var(--color-popover)",
   border: "1px solid var(--color-border)",
   borderRadius: 8,
   fontSize: 12,
@@ -149,6 +151,7 @@ function ProfitDistributionPage() {
           <ResponsiveContainer>
             <PieChart>
               <Pie
+                {...chartMotion()}
                 data={activeDistribution}
                 dataKey="amount"
                 nameKey="name"

@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Check, FileText, Download, Trash2, UploadCloud, X } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { toast } from "sonner";
 import {
   deleteEmployeeDocument,
   getEmployeeDocuments,
@@ -84,10 +85,11 @@ export function ReviewDocumentButtons({
 
   const review = useMutation({
     mutationFn: reviewEmployeeDocument,
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       invalidate();
       setRejectOpen(false);
       setNote("");
+      toast.success(vars.status === "Approved" ? "Document approved" : "Document rejected");
     },
     onError: (err) => setError(err instanceof Error ? err.message : "Could not save the review."),
   });
@@ -203,6 +205,7 @@ export function EmployeeDocuments({
 
   const deleteMutation = useMutation({
     mutationFn: deleteEmployeeDocument,
+    meta: { success: "Document deleted" },
     onSuccess: invalidate,
   });
 
@@ -343,7 +346,9 @@ export function EmployeeDocuments({
                       {d.sizeBytes ? ` · ${formatSize(d.sizeBytes)}` : ""} · {d.fileName}
                     </p>
                     {status === "Rejected" && d.reviewNote && (
-                      <p className="mt-0.5 text-xs text-danger-ink">Reason: {d.reviewNote}</p>
+                      <p className="mt-0.5 text-xs text-danger-ink [overflow-wrap:anywhere]">
+                        Reason: {d.reviewNote}
+                      </p>
                     )}
                   </div>
 

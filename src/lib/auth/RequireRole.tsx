@@ -5,7 +5,7 @@ import { useAuth } from "./AuthContext";
 
 function FullScreenLoader() {
   return (
-    <div className="grid min-h-screen place-items-center bg-background">
+    <div className="grid min-h-screen-safe place-items-center">
       <p className="text-sm text-muted-foreground">Loading…</p>
     </div>
   );

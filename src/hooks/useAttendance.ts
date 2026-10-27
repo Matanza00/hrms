@@ -13,6 +13,8 @@ export const useCheckIn = () => {
   return useMutation({
     mutationFn: checkIn,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    // The attendance page shows these errors inline.
+    meta: { inlineErrors: true },
   });
 };
 
@@ -22,6 +24,8 @@ export const useBreakStart = () => {
   return useMutation({
     mutationFn: breakStart,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    // The attendance page shows these errors inline.
+    meta: { inlineErrors: true },
   });
 };
 
@@ -31,6 +35,8 @@ export const useBreakEnd = () => {
   return useMutation({
     mutationFn: breakEnd,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    // The attendance page shows these errors inline.
+    meta: { inlineErrors: true },
   });
 };
 
@@ -40,5 +46,7 @@ export const useCheckOut = () => {
   return useMutation({
     mutationFn: checkOut,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    // The attendance page shows these errors inline.
+    meta: { inlineErrors: true },
   });
 };

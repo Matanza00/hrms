@@ -283,8 +283,8 @@ function EmployeeProfile() {
       <PageHeader
         icon={Users}
         eyebrow="Employees"
-        title={emp.name}
-        description={`${emp.designation || "—"} · ${emp.department || "—"}`}
+        title={emp.name || "Unnamed employee"}
+        description={[emp.designation, emp.department].filter(Boolean).join(" · ") || undefined}
         actions={
           <>
             {isActive && <OffboardDialog employeeId={emp.employeeId} employeeName={emp.name} />}

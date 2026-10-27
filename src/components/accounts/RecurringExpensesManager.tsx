@@ -82,6 +82,7 @@ export function RecurringExpensesManager() {
 
   const createMutation = useMutation({
     mutationFn: createRecurringExpense,
+    meta: { inlineErrors: true, success: "Recurring expense added" },
     onSuccess: () => {
       invalidate();
       close();
@@ -90,6 +91,7 @@ export function RecurringExpensesManager() {
 
   const updateMutation = useMutation({
     mutationFn: updateRecurringExpense,
+    meta: { inlineErrors: true, success: "Recurring expense updated" },
     onSuccess: () => {
       invalidate();
       close();
@@ -98,11 +100,13 @@ export function RecurringExpensesManager() {
 
   const toggleMutation = useMutation({
     mutationFn: updateRecurringExpense,
+    meta: { success: "Recurring expense updated" },
     onSuccess: invalidate,
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteRecurringExpense,
+    meta: { success: "Recurring expense deleted" },
     onSuccess: invalidate,
   });
 

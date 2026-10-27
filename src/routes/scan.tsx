@@ -69,14 +69,14 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid min-h-screen-safe place-items-center bg-canvas px-4 py-8">
+    <div className="grid min-h-screen-safe place-items-center px-4 py-8">
       <div className="w-full max-w-[380px]">
         <img
           src="/brand/lds-logo.png"
           alt="LDS"
           className="mx-auto mb-5 size-12 rounded-xl object-cover"
         />
-        <div className="flex flex-col items-center rounded-xl border bg-card p-6 text-center shadow-xs">
+        <div className="flex flex-col items-center material-popover rounded-xl border bg-card p-6 text-center shadow-lg">
           <IconTile
             icon={icon}
             tone={tone}
@@ -112,6 +112,7 @@ function ScanPage() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+    meta: { inlineErrors: true }, // the result panel shows the error
   });
 
   // One scan per page open; the QR is opened fresh by the camera each time.

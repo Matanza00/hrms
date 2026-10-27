@@ -30,6 +30,7 @@ export function PasswordResetRequests() {
 
   const dismiss = useMutation({
     mutationFn: dismissPasswordResetRequest,
+    meta: { success: "Request dismissed" },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["passwordResetRequests"] }),
   });
 

@@ -127,6 +127,7 @@ function AttendanceQr() {
 
   const addIp = useMutation({
     mutationFn: addEmployeeIp,
+    meta: { inlineErrors: true, success: "Network added" },
     onSuccess: () => {
       setIpAddress("");
       setIpLabel("");
@@ -136,11 +137,13 @@ function AttendanceQr() {
 
   const removeIp = useMutation({
     mutationFn: removeEmployeeIp,
+    meta: { inlineErrors: true, success: "Network removed" },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["employeeIps"] }),
   });
 
   const rotate = useMutation({
     mutationFn: rotateAttendanceQr,
+    meta: { inlineErrors: true, success: "New QR code generated" },
     onSuccess: () => {
       setConfirmRotate(false);
       qc.invalidateQueries({ queryKey: ["attendanceQr"] });
@@ -149,6 +152,7 @@ function AttendanceQr() {
 
   const reset = useMutation({
     mutationFn: resetEmployeeDevice,
+    meta: { inlineErrors: true, success: "Phone registration reset" },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["employeeDevices"] }),
   });
 

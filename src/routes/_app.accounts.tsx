@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+
+import { chartMotion } from "@/lib/chartMotion";
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
@@ -62,7 +64,7 @@ const axisTick = {
 };
 
 const tooltipStyle = {
-  background: "var(--color-card)",
+  background: "var(--color-popover)",
   border: "1px solid var(--color-border)",
   borderRadius: 8,
   fontSize: 12,
@@ -110,7 +112,7 @@ function AccountsLayout() {
             <Link
               key={t.url}
               to={t.url}
-              className={`inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-3 py-1 text-[13px] font-medium transition-all sm:h-[26px] sm:min-h-0 ${
+              className={`inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-3 py-1 text-[13px] font-medium transition-[color,background-color,box-shadow] duration-150 sm:h-[26px] sm:min-h-0 ${
                 active
                   ? "bg-card text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -406,6 +408,7 @@ function Overview() {
                   />
 
                   <Line
+                    {...chartMotion()}
                     type="linear"
                     dataKey="revenue"
                     name="Revenue"
@@ -416,6 +419,7 @@ function Overview() {
                   />
 
                   <Line
+                    {...chartMotion()}
                     type="linear"
                     dataKey="expense"
                     name="Expenses"

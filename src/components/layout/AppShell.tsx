@@ -100,9 +100,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     <SidebarProvider defaultOpen={defaultOpen} className="bg-sidebar">
       <AppSidebar />
 
-      <SidebarInset className="min-w-0 overflow-hidden bg-card">
-        {/* Figma "Top Bar": 56px, divider below, breadcrumbs left, tools right. */}
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-divider bg-card/90 pl-3 pr-3 backdrop-blur sm:pr-4">
+      {/* Transparent panel: cards sit straight on the ambient backdrop rather
+          than glass-on-glass. overflow-x-clip (not hidden) so the sticky
+          header below sticks to the window instead of scrolling away. */}
+      <SidebarInset className="min-w-0 overflow-x-clip bg-transparent">
+        {/* Figma "Top Bar": 56px, divider below, breadcrumbs left, tools right.
+            Thin glass: the page scrolls underneath it. */}
+        <header className="material-bar sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-divider pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] sm:pr-[max(1rem,env(safe-area-inset-right))]">
           <SidebarTrigger className="size-8 rounded-md border border-border bg-card shadow-none hover:bg-muted" />
 
           <nav
@@ -197,7 +201,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 overflow-x-hidden p-4 pb-16 md:p-6">{children}</main>
+        <main className="min-w-0 flex-1 overflow-x-hidden p-4 pb-16 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:p-6">
+          {children}
+        </main>
       </SidebarInset>
 
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface Column<T> {
   key: string;
@@ -18,9 +19,46 @@ interface Props<T> {
   data: T[];
   empty?: ReactNode;
   rowKey: (row: T) => string;
+  /** Still fetching: show placeholder rows, never the "nothing here" message. */
+  loading?: boolean;
+  /** The fetch failed: say so instead of pretending the list is empty. */
+  error?: unknown;
 }
 
-export function DataTable<T>({ columns, data, empty, rowKey }: Props<T>) {
+export function DataTable<T>({ columns, data, empty, rowKey, loading, error }: Props<T>) {
+  if (loading && data.length === 0) {
+    // Same height as real rows, so nothing jumps when the data lands.
+    return (
+      <div
+        aria-busy="true"
+        aria-label="Loading"
+        className="overflow-hidden rounded-2xl border bg-card"
+      >
+        {Array.from({ length: 4 }, (_, i) => (
+          <div
+            key={i}
+            className="flex h-[52px] items-center gap-4 border-b border-divider px-4 last:border-0"
+          >
+            <Skeleton className="h-3.5 w-1/4" />
+            <Skeleton className="h-3.5 w-1/6" />
+            <Skeleton className="ml-auto h-3.5 w-1/5" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error && data.length === 0) {
+    return (
+      <div
+        role="alert"
+        className="rounded-lg border border-danger-line bg-danger-tint p-4 text-[13px] text-danger-ink"
+      >
+        {error instanceof Error ? error.message : "Couldn't load this list."}
+      </div>
+    );
+  }
+
   if (data.length === 0) {
     return (
       <div className="rounded-lg border border-dashed bg-card p-8 text-center text-[13px] text-muted-foreground sm:p-10">
@@ -52,11 +90,19 @@ export function DataTable<T>({ columns, data, empty, rowKey }: Props<T>) {
               {mobileColumns.map((c) =>
                 c.header ? (
                   <div key={c.key} className="flex items-start justify-between gap-3">
-                    <dt className="text-xs text-muted-foreground">{c.header}</dt>
-                    <dd className="min-w-0 text-right text-sm">{cell(row, c)}</dd>
+                    <dt className="shrink-0 text-xs text-muted-foreground">{c.header}</dt>
+                    {/* Long emails / names break instead of running off the card. */}
+                    <dd className="min-w-0 text-right text-sm [overflow-wrap:anywhere]">
+                      {cell(row, c)}
+                    </dd>
                   </div>
                 ) : (
-                  <div key={c.key} className="flex flex-wrap gap-2 pt-1">
+                  // Row actions wrap on narrow phones instead of pushing the
+                  // last button off the card; link-buttons get the 44px target too.
+                  <div
+                    key={c.key}
+                    className="flex flex-wrap gap-2 pt-1 [&>div]:flex-wrap [&>div]:justify-start [&_a]:min-h-11 [&_a]:px-4"
+                  >
                     {cell(row, c)}
                   </div>
                 ),

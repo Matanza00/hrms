@@ -143,6 +143,7 @@ function HolidaysPage() {
 
   const createMutation = useMutation({
     mutationFn: createHoliday,
+    meta: { inlineErrors: true, success: "Holiday added" },
     onSuccess: () => {
       invalidate();
       closeDialog();
@@ -151,6 +152,7 @@ function HolidaysPage() {
 
   const updateMutation = useMutation({
     mutationFn: updateHoliday,
+    meta: { inlineErrors: true, success: "Holiday updated" },
     onSuccess: () => {
       invalidate();
       closeDialog();
@@ -159,6 +161,7 @@ function HolidaysPage() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteHoliday,
+    meta: { success: "Holiday deleted" },
     onSuccess: invalidate,
   });
 

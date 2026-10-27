@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getLeaveRequests } from "@/lib/api/leaves";
 import { getPayroll } from "@/lib/api/payroll";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { formatHoursMinutes } from "@/lib/hoursBalance";
 
 export const Route = createFileRoute("/employee/")({
   component: EmployeeDashboard,
@@ -57,7 +58,14 @@ function EmployeeDashboard() {
   const myPayroll = payroll.filter((p) => p.employeeId === employeeId);
 
   const todayAttendance = myAttendance.find((a) => today(a.attendanceDate || a.checkIn));
-  const latestPayroll = myPayroll[myPayroll.length - 1];
+  // Newest non-cancelled payslip. (The API lists payroll newest-first, so the
+  // last element was the *oldest* one.)
+  const latestPayroll = myPayroll
+    .filter((p) => p.status !== "Cancelled")
+    .reduce<(typeof myPayroll)[number] | undefined>(
+      (best, p) => (!best || String(p.month) > String(best.month) ? p : best),
+      undefined,
+    );
 
   const times = [
     { label: "Check in", value: todayAttendance?.checkIn },
@@ -77,13 +85,14 @@ function EmployeeDashboard() {
       <div className="metric-strip grid grid-cols-2 md:grid-cols-4">
         <StatCard
           label="Today status"
-          value={todayAttendance?.attendanceStatus || "Not checked in"}
+          value={todayAttendance?.attendanceStatus || "—"}
+          hint={todayAttendance ? undefined : "Not checked in yet"}
           icon={UserCheck}
           tone="accent"
         />
         <StatCard
           label="Working hours"
-          value={`${(Number(todayAttendance?.workingMinutes || 0) / 60).toFixed(2)}h`}
+          value={formatHoursMinutes(Number(todayAttendance?.workingMinutes || 0))}
           icon={Clock}
           tone="warning"
         />
@@ -95,7 +104,8 @@ function EmployeeDashboard() {
         />
         <StatCard
           label="Latest net salary"
-          value={formatPKR(latestPayroll?.netSalary)}
+          value={latestPayroll ? formatPKR(latestPayroll.netSalary) : "—"}
+          hint={latestPayroll ? undefined : "No payslip yet"}
           icon={Wallet}
           tone="success"
         />

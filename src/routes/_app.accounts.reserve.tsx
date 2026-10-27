@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+
+import { chartMotion } from "@/lib/chartMotion";
 import { DataTable } from "@/components/shared/DataTable";
 import { ChartCard } from "@/components/shared/ChartCard";
 import { ArrowDownLeft, ArrowUpRight, PiggyBank } from "lucide-react";
@@ -27,7 +29,7 @@ const axisTick = {
 };
 
 const tooltipStyle = {
-  background: "var(--color-card)",
+  background: "var(--color-popover)",
   border: "1px solid var(--color-border)",
   borderRadius: 8,
   fontSize: 12,
@@ -165,6 +167,7 @@ function ReservePage() {
                 />
 
                 <Area
+                  {...chartMotion()}
                   type="monotone"
                   dataKey="balance"
                   name="Balance"

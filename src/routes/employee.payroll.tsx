@@ -24,7 +24,11 @@ const money = "font-mono text-[13px] font-medium";
 
 function EmployeePayroll() {
   const { employeeId } = useAuth();
-  const { data: raw = [] } = useQuery({ queryKey: ["payroll"], queryFn: getPayroll });
+  const {
+    data: raw = [],
+    isLoading,
+    error,
+  } = useQuery({ queryKey: ["payroll"], queryFn: getPayroll });
   const records = Array.isArray(raw) ? raw.filter((p) => p.employeeId === employeeId) : [];
 
   return (
@@ -38,6 +42,8 @@ function EmployeePayroll() {
       <DataTable<PayrollRecord>
         rowKey={(r) => r.payrollId}
         data={records}
+        loading={isLoading}
+        error={error}
         empty="No payslips yet."
         columns={[
           {

@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+
+import { chartMotion } from "@/lib/chartMotion";
 import { DataTable } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ChartCard } from "@/components/shared/ChartCard";
@@ -43,7 +45,7 @@ const axisTick = {
 };
 
 const tooltipStyle = {
-  background: "var(--color-card)",
+  background: "var(--color-popover)",
   border: "1px solid var(--color-border)",
   borderRadius: 8,
   fontSize: 12,
@@ -142,6 +144,7 @@ function RevenuePage() {
 
   const createMutation = useMutation({
     mutationFn: createRevenue,
+    meta: { inlineErrors: true, success: "Revenue saved" },
     onSuccess: () => {
       invalidate();
       closeDialog();
@@ -150,6 +153,7 @@ function RevenuePage() {
 
   const updateMutation = useMutation({
     mutationFn: updateRevenue,
+    meta: { inlineErrors: true, success: "Revenue updated" },
     onSuccess: () => {
       invalidate();
       closeDialog();
@@ -158,11 +162,13 @@ function RevenuePage() {
 
   const statusMutation = useMutation({
     mutationFn: setRevenueStatus,
+    meta: { success: "Revenue status updated" },
     onSuccess: invalidate,
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteRevenue,
+    meta: { success: "Revenue deleted" },
     onSuccess: invalidate,
   });
 
@@ -320,6 +326,7 @@ function RevenuePage() {
                 />
 
                 <Bar
+                  {...chartMotion()}
                   dataKey="revenue"
                   name="Revenue"
                   fill="var(--color-success)"

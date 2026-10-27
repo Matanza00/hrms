@@ -103,6 +103,7 @@ function SpecialWorkingDaysPage() {
 
   const createMutation = useMutation({
     mutationFn: createSpecialWorkingDay,
+    meta: { inlineErrors: true },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["specialWorkingDays"] });
       setOpen(false);

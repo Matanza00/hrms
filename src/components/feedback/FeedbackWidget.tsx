@@ -160,6 +160,7 @@ export function FeedbackWidget({
           type="button"
           variant="outline"
           size="icon"
+          className="max-sm:size-11"
           onClick={() => setOpen(true)}
           aria-label="Send feedback"
           title="Send feedback"
@@ -171,7 +172,7 @@ export function FeedbackWidget({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 z-40 flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 py-3 text-[13px] font-medium text-primary-foreground shadow-lg transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-5 z-40 flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 py-3 text-[13px] font-medium text-primary-foreground shadow-lg select-none transition-[opacity,transform] duration-100 ease-out hover:opacity-90 motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Send feedback"
         >
           <MessageSquarePlus className="h-4 w-4" />
@@ -274,7 +275,7 @@ export function FeedbackWidget({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex w-full flex-col items-center gap-1.5 rounded-xl border-2 border-dashed p-5 text-center transition hover:bg-muted/40"
+                    className="flex w-full flex-col items-center gap-1.5 rounded-xl border-2 border-dashed p-5 text-center transition-colors hover:bg-muted/40"
                   >
                     <ImagePlus className="h-5 w-5 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">

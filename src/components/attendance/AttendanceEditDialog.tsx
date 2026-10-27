@@ -202,7 +202,7 @@ export function AttendanceEditDialog({ open, onOpenChange, record, employees }: 
               <Label>Date</Label>
               <Input
                 type="date"
-                className="font-mono text-[13px]"
+                className="font-mono text-base md:text-[13px]"
                 value={attendanceDate}
                 onChange={(e) => setAttendanceDate(e.target.value)}
               />
@@ -226,7 +226,7 @@ export function AttendanceEditDialog({ open, onOpenChange, record, employees }: 
               <Label>Check In</Label>
               <Input
                 type="datetime-local"
-                className="font-mono text-[13px]"
+                className="font-mono text-base md:text-[13px]"
                 value={checkIn}
                 onChange={(e) => setCheckIn(e.target.value)}
               />
@@ -235,7 +235,7 @@ export function AttendanceEditDialog({ open, onOpenChange, record, employees }: 
               <Label>Check Out</Label>
               <Input
                 type="datetime-local"
-                className="font-mono text-[13px]"
+                className="font-mono text-base md:text-[13px]"
                 value={checkOut}
                 onChange={(e) => setCheckOut(e.target.value)}
               />
@@ -244,7 +244,7 @@ export function AttendanceEditDialog({ open, onOpenChange, record, employees }: 
               <Label>Break Start</Label>
               <Input
                 type="datetime-local"
-                className="font-mono text-[13px]"
+                className="font-mono text-base md:text-[13px]"
                 value={breakStart}
                 onChange={(e) => setBreakStart(e.target.value)}
               />
@@ -253,7 +253,7 @@ export function AttendanceEditDialog({ open, onOpenChange, record, employees }: 
               <Label>Break End</Label>
               <Input
                 type="datetime-local"
-                className="font-mono text-[13px]"
+                className="font-mono text-base md:text-[13px]"
                 value={breakEnd}
                 onChange={(e) => setBreakEnd(e.target.value)}
               />

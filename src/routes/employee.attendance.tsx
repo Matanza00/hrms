@@ -72,6 +72,10 @@ function EmployeeAttendance() {
   const checkOut = useCheckOut();
   const businessDate = useCurrentBusinessDate();
   const [actionError, setActionError] = useState("");
+  // Getting the GPS fix can take seconds before the request even starts; the
+  // button must lock (and say so) from the first tap, or a second tap sends a
+  // second check-in/out.
+  const [locating, setLocating] = useState<"in" | "out" | null>(null);
 
   // Surface server rejections (already checked in, holiday, geofence, ...)
   // instead of the button silently doing nothing.
@@ -85,24 +89,30 @@ function EmployeeAttendance() {
   );
 
   async function handleCheckIn() {
-    if (!employeeCode) return;
+    if (!employeeCode || locating || checkIn.isPending) return;
     setActionError("");
+    setLocating("in");
     try {
       const where = await currentPosition();
       checkIn.mutate({ employeeCode, ...where, ipAddress: "browser" }, { onError });
     } catch (err) {
       onError(err as Error);
+    } finally {
+      setLocating(null);
     }
   }
 
   async function handleCheckOut() {
-    if (!employeeCode) return;
+    if (!employeeCode || locating || checkOut.isPending) return;
     setActionError("");
+    setLocating("out");
     try {
       const where = await currentPosition();
       checkOut.mutate({ employeeCode, ...where, ipAddress: "browser" }, { onError });
     } catch (err) {
       onError(err as Error);
+    } finally {
+      setLocating(null);
     }
   }
 
@@ -137,11 +147,11 @@ function EmployeeAttendance() {
         <div className="flex flex-wrap gap-2">
           <Button
             className={actionBtn}
-            disabled={!!todayRecord?.checkIn || checkIn.isPending}
+            disabled={!!todayRecord?.checkIn || checkIn.isPending || locating !== null}
             onClick={handleCheckIn}
           >
             <LogIn />
-            Check In
+            {locating === "in" ? "Locating…" : checkIn.isPending ? "Checking in…" : "Check In"}
           </Button>
 
           <Button
@@ -175,11 +185,16 @@ function EmployeeAttendance() {
           <Button
             variant="outline"
             className={actionBtn}
-            disabled={!todayRecord?.checkIn || !!todayRecord?.checkOut || checkOut.isPending}
+            disabled={
+              !todayRecord?.checkIn ||
+              !!todayRecord?.checkOut ||
+              checkOut.isPending ||
+              locating !== null
+            }
             onClick={handleCheckOut}
           >
             <LogOut />
-            Check Out
+            {locating === "out" ? "Locating…" : checkOut.isPending ? "Checking out…" : "Check Out"}
           </Button>
         </div>
 

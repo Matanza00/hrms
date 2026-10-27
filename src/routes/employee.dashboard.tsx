@@ -138,7 +138,7 @@ function EmployeeDashboard() {
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-divider">
                     <div
-                      className={`h-full rounded-full transition-all ${toneSolid[barTones[i % barTones.length]]}`}
+                      className={`h-full rounded-full ${toneSolid[barTones[i % barTones.length]]}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>

@@ -20,12 +20,15 @@ export function PageHeader({
   tone?: Tone;
 }) {
   return (
-    <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 items-center gap-3">
+    // Wraps rather than squeezing: when the title and the actions don't both
+    // fit, the actions move onto their own row instead of stacking into a
+    // narrow column beside the title.
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-6">
+      <div className="flex min-w-0 flex-[1_1_18rem] items-center gap-3">
         {icon && <IconTile icon={icon} tone={tone} size="lg" />}
         <div className="min-w-0">
           {eyebrow && <p className="mb-0.5 font-mono text-xs text-muted-foreground">{eyebrow}</p>}
-          <h1 className="text-xl font-semibold leading-7 tracking-[-0.4px] text-foreground">
+          <h1 className="text-xl font-semibold leading-7 tracking-[-0.4px] text-foreground [overflow-wrap:anywhere]">
             {title}
           </h1>
           {description && (
@@ -35,7 +38,9 @@ export function PageHeader({
           )}
         </div>
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2">{actions}</div>
+      )}
     </div>
   );
 }

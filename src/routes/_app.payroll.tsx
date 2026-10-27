@@ -89,6 +89,7 @@ function PayrollOverview() {
 
   const markPaidMutation = useMutation({
     mutationFn: markPayrollPaid,
+    meta: { success: "Marked as paid; salary added to expenses" },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["payroll"] });
       qc.invalidateQueries({ queryKey: ["accountsOverview"] });
@@ -98,6 +99,7 @@ function PayrollOverview() {
 
   const cancelMutation = useMutation({
     mutationFn: cancelPayroll,
+    meta: { success: "Payroll cancelled" },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["payroll"] });
       qc.invalidateQueries({ queryKey: ["accountsOverview"] });
@@ -182,20 +184,27 @@ function PayrollOverview() {
             {
               key: "bonus",
               header: "Bonus",
-              render: (r) => (
-                <span className="font-mono text-[13px] tabular-nums text-success-ink">
-                  +{formatPKR(r.bonus)}
-                </span>
-              ),
+              // Zero is "nothing", not a green "+Rs 0".
+              render: (r) =>
+                Number(r.bonus) ? (
+                  <span className="font-mono text-[13px] tabular-nums text-success-ink">
+                    +{formatPKR(r.bonus)}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
             },
             {
               key: "deductionAmount",
               header: "Deductions",
-              render: (r) => (
-                <span className="font-mono text-[13px] tabular-nums text-danger-ink">
-                  -{formatPKR(r.deductionAmount)}
-                </span>
-              ),
+              render: (r) =>
+                Number(r.deductionAmount) ? (
+                  <span className="font-mono text-[13px] tabular-nums text-danger-ink">
+                    −{formatPKR(r.deductionAmount)}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
             },
             {
               key: "totalDeductionDays",

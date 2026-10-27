@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { chartMotion } from "@/lib/chartMotion";
 import { DataTable } from "@/components/shared/DataTable";
 import { ChartCard } from "@/components/shared/ChartCard";
 import { RecurringExpensesManager } from "@/components/accounts/RecurringExpensesManager";
@@ -57,7 +58,7 @@ export const Route = createFileRoute("/_app/accounts/expenses")({
 });
 
 const tooltipStyle = {
-  background: "var(--color-card)",
+  background: "var(--color-popover)",
   border: "1px solid var(--color-border)",
   borderRadius: 8,
   fontSize: 12,
@@ -136,6 +137,7 @@ function ExpensesPage() {
 
   const createMutation = useMutation({
     mutationFn: createExpense,
+    meta: { inlineErrors: true, success: "Expense saved" },
     onSuccess: () => {
       invalidate();
       closeDialog();
@@ -144,6 +146,7 @@ function ExpensesPage() {
 
   const updateMutation = useMutation({
     mutationFn: updateExpense,
+    meta: { inlineErrors: true, success: "Expense updated" },
     onSuccess: () => {
       invalidate();
       closeDialog();
@@ -152,6 +155,7 @@ function ExpensesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteExpense,
+    meta: { success: "Expense deleted" },
     onSuccess: invalidate,
   });
 
@@ -267,6 +271,7 @@ function ExpensesPage() {
               <ResponsiveContainer>
                 <PieChart>
                   <Pie
+                    {...chartMotion()}
                     data={byCat}
                     dataKey="value"
                     nameKey="name"

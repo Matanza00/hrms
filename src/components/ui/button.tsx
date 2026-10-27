@@ -5,7 +5,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-[13px] leading-[18px] font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  // Pressed state shows the instant a finger/pointer goes down (no waiting for
+  // release) and long-press doesn't select the label. No scale for reduced motion.
+  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-[13px] leading-[18px] font-medium cursor-pointer select-none [-webkit-touch-callout:none] transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-100 ease-out motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {

@@ -20,6 +20,15 @@
   --radius-2xl: 12px;
   --radius-3xl: 16px;
 
+  /* Motion. The built-in curves are too soft to feel responsive, so these
+     replace them app-wide (tw-animate reads --tw-ease, which ease-* sets):
+     ease-out  = things entering / reacting to the user (strong start);
+     ease-in-out = something already on screen moving to a new place;
+     ease-drawer = sheets and drawers sliding in (iOS-like). */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
   /* Figma has a single elevation: Shadow/XS, 0 1 2 #0000000A. */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
@@ -90,6 +99,7 @@
 }
 
 :root {
+  color-scheme: light;
   --radius: 0.75rem;
 
   /* neutral/* */
@@ -159,7 +169,32 @@
   --sidebar-ring: #a3a3a3;
 }
 
+/* --- Glass ------------------------------------------------------------------
+   Surfaces are lightly translucent over a soft ambient backdrop (body::before),
+   so the UI reads as layered material rather than flat paper. Only surfaces
+   that float above scrolling content get a real backdrop blur (.material-*);
+   cards stay translucent-only, which is cheap. Everything turns solid for
+   prefers-reduced-transparency / prefers-contrast (see the end of this file). */
+:root {
+  --card: rgb(255 255 255 / 0.72);
+  --subtle: rgb(0 0 0 / 0.025);
+  --muted: rgb(0 0 0 / 0.04);
+  --secondary: rgb(0 0 0 / 0.04);
+  --accent: rgb(0 0 0 / 0.04);
+  --border: rgb(0 0 0 / 0.08);
+  --input: rgb(0 0 0 / 0.1);
+  --divider: rgb(0 0 0 / 0.05);
+  --sidebar: transparent;
+  --sidebar-accent: rgb(255 255 255 / 0.7);
+  --sidebar-border: rgb(0 0 0 / 0.08);
+  --ambient-1: rgb(59 130 246 / 0.16);
+  --ambient-2: rgb(124 58 237 / 0.11);
+  --ambient-3: rgb(16 185 129 / 0.09);
+}
+
 .dark {
+  /* Native controls (date pickers, scrollbars) follow the theme. */
+  color-scheme: dark;
   --canvas: #0a0a0a;
   --background: #111111;
   --subtle: #161616;
@@ -222,6 +257,22 @@
   --sidebar-accent-foreground: #ededed;
   --sidebar-border: #262626;
   --sidebar-ring: #525252;
+
+  /* Glass (dark): see the light block above. */
+  --card: rgb(23 23 23 / 0.66);
+  --subtle: rgb(255 255 255 / 0.03);
+  --muted: rgb(255 255 255 / 0.06);
+  --secondary: rgb(255 255 255 / 0.06);
+  --accent: rgb(255 255 255 / 0.06);
+  --border: rgb(255 255 255 / 0.09);
+  --input: rgb(255 255 255 / 0.12);
+  --divider: rgb(255 255 255 / 0.06);
+  --sidebar: transparent;
+  --sidebar-accent: rgb(255 255 255 / 0.08);
+  --sidebar-border: rgb(255 255 255 / 0.09);
+  --ambient-1: rgb(59 130 246 / 0.2);
+  --ambient-2: rgb(139 92 246 / 0.16);
+  --ambient-3: rgb(16 185 129 / 0.1);
 }
 
 @layer base {
@@ -231,13 +282,29 @@
   html,
   body {
     font-family: var(--font-sans);
-    background-color: var(--color-canvas);
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Solid colour on the root only: a body background would paint over the
+     ambient backdrop (body::before), which sits behind the body's content. */
   html {
-    scroll-behavior: smooth;
+    background-color: var(--color-canvas);
+  }
+  html {
+    /* No grey flash on tap; buttons give their own pressed state instead.
+       (No smooth scroll-behavior: the router scrolls to the top on every page
+       change and that should jump, not glide.) */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Taps fire immediately instead of waiting to rule out a double-tap zoom. */
+  button,
+  a,
+  label,
+  summary,
+  [role="button"] {
+    touch-action: manipulation;
   }
 
   /* Headings: no single word left stranded on the last line. Tracking comes
@@ -278,16 +345,26 @@
     }
   }
 
+  /* Reduced motion means gentler, not none: pop-ups and sheets keep a short
+     fade (it helps people see what changed) but lose every zoom and slide,
+     and nothing moves position. Loading pulses/spinners keep running so
+     there is still feedback. Charts are handled in JS (usePrefersReducedMotion). */
   @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
     *,
     *::before,
     *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+      --tw-enter-scale: 1 !important;
+      --tw-exit-scale: 1 !important;
+      --tw-enter-translate-x: 0 !important;
+      --tw-enter-translate-y: 0 !important;
+      --tw-exit-translate-x: 0 !important;
+      --tw-exit-translate-y: 0 !important;
+      --tw-enter-rotate: 0 !important;
+      --tw-exit-rotate: 0 !important;
+    }
+    .animate-in,
+    .animate-out {
+      animation-duration: 150ms !important;
     }
   }
 
@@ -334,5 +411,95 @@
 @supports (min-height: 100svh) {
   .min-h-screen-safe {
     min-height: 100svh;
+  }
+}
+
+/* Ambient backdrop the glass sits on: three soft, still colour fields, fixed
+   to the viewport (no motion, so nothing for reduced-motion to worry about). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60vmax 50vmax at 0% 0%, var(--ambient-1), transparent 70%),
+    radial-gradient(55vmax 45vmax at 100% 10%, var(--ambient-2), transparent 70%),
+    radial-gradient(60vmax 50vmax at 60% 100%, var(--ambient-3), transparent 70%), var(--canvas);
+}
+
+/* Thin material: sticky top bars. Content scrolls underneath and shows
+   through, so the bar floats above the page instead of eating a strip. */
+.material-bar {
+  background-color: color-mix(in oklab, var(--color-background) 62%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Thick material: things that float over everything (dialogs, menus, sheets,
+   toasts, the login card). Bigger surfaces read as thicker: more opaque and
+   more blur, so text on them stays crisp over whatever is behind. */
+.material-popover {
+  background-color: color-mix(in oklab, var(--color-popover) 80%, transparent);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+}
+
+/* No backdrop-filter support: fall back to solid so text never sits on a
+   see-through surface without blur. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .material-bar {
+    background-color: var(--color-background);
+  }
+  .material-popover {
+    background-color: var(--color-popover);
+  }
+}
+
+/* People who ask for less transparency or more contrast get solid surfaces
+   (and, for contrast, firmer borders and no ambient colour). */
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  .dark {
+    --card: var(--background);
+    --subtle: var(--canvas);
+  }
+  .material-bar {
+    background-color: var(--color-background);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .material-popover {
+    background-color: var(--color-popover);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+@media (prefers-contrast: more) {
+  :root {
+    --card: #ffffff;
+    --border: #a3a3a3;
+    --input: #a3a3a3;
+    --divider: #d4d4d4;
+  }
+  .dark {
+    --card: #111111;
+    --border: #525252;
+    --input: #525252;
+    --divider: #333333;
+  }
+  body::before {
+    background: var(--canvas);
+  }
+  .material-bar,
+  .material-popover {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .material-bar {
+    background-color: var(--color-background);
+  }
+  .material-popover {
+    background-color: var(--color-popover);
   }
 }

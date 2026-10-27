@@ -120,13 +120,7 @@ function EmployeesList() {
         rowKey={(r) => r.employeeId}
         data={filtered}
         columns={[
-          {
-            key: "employeeCode",
-            header: "Code",
-            render: (r) => (
-              <span className="font-mono text-sm text-muted-foreground">{r.employeeCode}</span>
-            ),
-          },
+          // Name first: on phones the first column heads each card.
           {
             key: "name",
             header: "Employee",
@@ -134,7 +128,7 @@ function EmployeesList() {
               <Link
                 to="/employees/$id"
                 params={{ id: r.employeeId }}
-                className="group flex min-w-0 items-center gap-3"
+                className="group flex min-w-0 max-w-64 items-center gap-3"
               >
                 <Avatar className="size-9">
                   <AvatarFallback className="bg-muted text-[11px] text-text-secondary">
@@ -149,6 +143,13 @@ function EmployeesList() {
                   <p className="truncate text-xs text-muted-foreground">{r.designation || "—"}</p>
                 </div>
               </Link>
+            ),
+          },
+          {
+            key: "employeeCode",
+            header: "Code",
+            render: (r) => (
+              <span className="font-mono text-sm text-muted-foreground">{r.employeeCode}</span>
             ),
           },
           {
@@ -175,9 +176,9 @@ function EmployeesList() {
                   <Phone className="size-3 shrink-0 text-muted-foreground" />
                   {r.phone || "—"}
                 </p>
-                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground sm:justify-start">
                   <Mail className="size-3 shrink-0" />
-                  {r.email || "—"}
+                  <span className="min-w-0 [overflow-wrap:anywhere]">{r.email || "—"}</span>
                 </p>
               </div>
             ),

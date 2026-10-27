@@ -23,8 +23,10 @@ const iconTone: Record<NonNullable<Props["tone"]>, string> = {
 /** Figma "Metric": 13px label with a 14px icon over a 26px Geist Mono figure. */
 export function StatCard({ label, value, icon: Icon, trend, hint, tone = "default" }: Props) {
   const up = (trend ?? 0) >= 0;
+  // A negative figure (a loss, an overdraft) reads as one at a glance.
+  const negative = /^[-−]/.test(String(value).trim());
   return (
-    <div className="flex min-w-0 flex-col gap-2.5 rounded-2xl border bg-card px-4 pb-[18px] pt-4 sm:px-5">
+    <div className="@container flex min-w-0 flex-col gap-2.5 rounded-2xl border bg-card px-4 pb-[18px] pt-4 sm:px-5">
       {/* The label wraps rather than truncating: a card headed "Remainin…"
           tells the reader nothing. The figure itself stays on one line. */}
       <div className="flex min-w-0 items-start gap-1.5">
@@ -33,7 +35,16 @@ export function StatCard({ label, value, icon: Icon, trend, hint, tone = "defaul
           {label}
         </p>
       </div>
-      <p className="truncate font-mono text-[22px] font-medium leading-8 tracking-[-0.8px] tabular-nums sm:text-[26px]">
+      {/* Amounts are never cut short: the figure scales with the card's own
+          width (container units), so "Rs 12,345,678" fits a half-width phone
+          card; 26px is the cap, 14px the floor. */}
+      <p
+        title={String(value)}
+        className={cn(
+          "truncate font-mono text-[clamp(14px,11cqi,22px)] font-medium leading-8 tracking-[-0.8px] tabular-nums sm:text-[clamp(14px,11cqi,26px)]",
+          negative && "text-danger-ink",
+        )}
+      >
         {value}
       </p>
       {(trend !== undefined || hint) && (
